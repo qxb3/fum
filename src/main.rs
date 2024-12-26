@@ -102,7 +102,9 @@ fn main() {
     let mut current_progress = Duration::from_secs(0);
 
     if let Ok(player) = &player {
-        current_progress = player.get_position().expect("");
+        current_progress = player
+            .get_position()
+            .expect("Failed to get player's position.");
     }
 
     loop {
@@ -113,8 +115,11 @@ fn main() {
             Message::Tick => {
                 if now.elapsed() >= Duration::from_secs(1) {
                     if let Ok(player) = &player {
-                        current_progress = player.get_position().expect("");
+                        current_progress = player
+                            .get_position()
+                            .expect("Failed to get player's position.");
                     }
+
                     now = Instant::now();
                 }
 
@@ -386,7 +391,7 @@ fn tick(tx: Sender<Message>) {
     thread::spawn(move || {
         loop {
             send_message!(tx, Message::Tick);
-            thread::sleep(Duration::from_millis(500));
+            thread::sleep(Duration::from_millis(250));
         }
     });
 }
