@@ -581,7 +581,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "fum"
+name = "fum-player"
 version = "0.1.0"
 dependencies = [
  "image",
