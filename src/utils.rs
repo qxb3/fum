@@ -46,11 +46,23 @@ pub mod player {
 
     use crate::Meta;
 
-    pub fn get_active_player() -> Result<Player, String> {
-        PlayerFinder::new()
+    pub fn get_supported_player() -> Result<Player, String> {
+        let players = PlayerFinder::new()
             .map_err(|err| format!("Failed to connect to D-Bus: {:?}.", err))?
-            .find_by_name("spotify")
-            .map_err(|err| format!("Failed to find active player: {:?}.", err))
+            .find_all()
+            .map_err(|err| format!("There is no any active players: {:?}.", err))?;
+
+        for player in players {
+            if matches!(player.identity().to_lowercase().as_str(),
+                "spotify" | "spotifyd" | "vlc" | "mpv" |
+                "rhythmbox" | "banshee" | "amarok" |
+                "cmus" | "audacious" | "elisa" | "mopidy"
+            ) {
+                return Ok(player);
+            }
+        }
+
+        Err("Failed to find any supported players.".to_string())
     }
 
     pub fn get_metadata(player: &Player) -> Result<Metadata, String> {
