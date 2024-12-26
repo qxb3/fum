@@ -11,12 +11,8 @@ use ratatui::{
         },
         execute,
     },
-    layout::{Constraint, Flex, Layout, Position, Rect},
-    text::Text,
-    widgets::{Block, Borders, Paragraph, Wrap},
-    Frame,
+    layout::Position
 };
-use ratatui_image::{picker::Picker, StatefulImage};
 use ui::Ui;
 use std::{
     io::stdout,
