@@ -1,5 +1,6 @@
 [package]
 name = "fum-player"
+description = "A tui-based mpris music client."
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
