@@ -13,7 +13,11 @@
   </div>
 </div>
 
-<br>
+![](https://badgers.space/github/open-issues/qxb3/fum)
+![](https://badgers.space/github/closed-issues/qxb3/fum)
+![](https://badgers.space/github/license/qxb3/fum)
+![](https://badgers.space/crates/name/fum-player)
+![](https://badgers.space/crates/version/fum-player)
 
 ## Demo
 
