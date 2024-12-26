@@ -2,8 +2,10 @@
 name = "fum-player"
 description = "A tui-based mpris music client."
 version = "0.1.0"
-edition = "2021"
+repository = "https://github.com/qxb3/fum"
+homepage = "https://github.com/qxb3/fum"
 license = "MIT"
+edition = "2021"
 
 [dependencies]
 image = "0.25.5"
