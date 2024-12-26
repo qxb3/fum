@@ -1,7 +1,7 @@
 mod utils;
 
 use image::DynamicImage;
-use mpris::{PlaybackStatus, ProgressTracker};
+use mpris::PlaybackStatus;
 use ratatui::{
     crossterm::{
         event::{
@@ -90,7 +90,7 @@ fn main() {
     };
 
     let mut meta = Meta::default();
-    let mut player = utils::player::get_player();
+    let mut player = utils::player::get_supported_player();
 
     let (tx, rx) = mpsc::channel::<Message>();
 
@@ -133,7 +133,7 @@ fn main() {
                     )).expect("Failed to draw frame.");
             },
             Message::MetaChanged(Meta { title, artists, status, length, cover_art }) => {
-                player = utils::player::get_player();
+                player = utils::player::get_supported_player();
                 current_progress = Duration::from_secs(0);
 
                 meta.title = title;
@@ -301,7 +301,7 @@ fn draw(
 fn handle_mpris_events(tx: Sender<Message>) {
     thread::spawn(move || {
         loop {
-            let player = match utils::player::get_player() {
+            let player = match utils::player::get_supported_player() {
                 Ok(player) => player,
                 Err(_) => {
                     send_message!(tx, Message::MetaChanged(Meta::default()));
