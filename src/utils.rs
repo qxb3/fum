@@ -49,7 +49,7 @@ pub mod player {
     pub fn get_active_player() -> Result<Player, String> {
         PlayerFinder::new()
             .map_err(|err| format!("Failed to connect to D-Bus: {:?}.", err))?
-            .find_active()
+            .find_by_name("spotify")
             .map_err(|err| format!("Failed to find active player: {:?}.", err))
     }
 

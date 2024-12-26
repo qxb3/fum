@@ -1,7 +1,7 @@
 mod utils;
 
 use image::DynamicImage;
-use mpris::PlaybackStatus;
+use mpris::{PlaybackStatus, ProgressTracker};
 use ratatui::{
     crossterm::{
         event::{
@@ -20,7 +20,7 @@ use std::{
     io::stdout,
     sync::mpsc::{self, Sender},
     thread,
-    time::Duration,
+    time::{Duration, Instant},
 };
 
 const WIDTH: u16 = 20;
@@ -53,6 +53,7 @@ impl Default for Meta {
     }
 }
 
+#[derive(Debug)]
 enum Message {
     Tick,
 
@@ -97,22 +98,38 @@ fn main() {
     handle_mpris_events(tx.clone());
     handle_term_events(tx.clone());
 
+    let mut now = Instant::now();
+    let mut current_progress = Duration::from_secs(0);
+
+    if let Ok(player) = &player {
+        current_progress = player.get_position().expect("");
+    }
+
     loop {
         let event = rx.recv()
             .expect("Failed to receive event");
 
         match event {
             Message::Tick => {
+                if now.elapsed() >= Duration::from_secs(1) {
+                    if let Ok(player) = &player {
+                        current_progress = player.get_position().expect("");
+                    }
+                    now = Instant::now();
+                }
+
                 terminal
                     .draw(|frame| draw(
                         frame,
                         picker,
                         &mut buttons,
-                        &meta
+                        &meta,
+                        &current_progress
                     )).expect("Failed to draw frame.");
             },
             Message::MetaChanged(Meta { title, artists, status, length, cover_art }) => {
                 player = utils::player::get_active_player();
+                current_progress = Duration::from_secs(0);
 
                 meta.title = title;
                 meta.artists = artists;
@@ -133,7 +150,7 @@ fn main() {
                     player.previous()
                         .expect("Cannot prev.");
                 }
-           },
+            },
             Message::Toggle => {
                 if let Ok(player) = &player {
                     player.play_pause()
@@ -165,7 +182,8 @@ fn draw(
     frame: &mut Frame<'_>,
     picker: Picker,
     buttons: &mut Buttons,
-    meta: &Meta
+    meta: &Meta,
+    current_progress: &Duration
 ) {
     let [area] = Layout::horizontal([Constraint::Length(WIDTH)])
         .flex(Flex::Center)
@@ -252,8 +270,22 @@ fn draw(
     );
     frame.render_widget(Text::from("󰒭").centered(), buttons.next);
 
-    frame.render_widget(Text::from("󰝤".repeat(WIDTH.into())), progress);
-    frame.render_widget(Text::from("0:32").left_aligned(), pos_current);
+    if meta.length.as_secs() != 0 {
+        let ratio = current_progress.as_secs() as f64 / meta.length.as_secs() as f64;
+        let filled = (ratio * WIDTH as f64).round();
+        let empty = WIDTH.saturating_sub(filled as u16);
+        let filled_bar = "󰝤".repeat(filled as usize);
+        let empty_bar = "󰁱".repeat(empty.into());
+
+        frame.render_widget(Text::from(format!("{filled_bar}{empty_bar}")), progress);
+    } else {
+        frame.render_widget(Text::from("󰁱".repeat(WIDTH.into())), progress);
+    }
+
+    frame.render_widget(
+        Text::from(format!("{}:{:02}", current_progress.as_secs() / 60, current_progress.as_secs() % 60)).left_aligned(),
+        pos_current
+    );
 
     frame.render_widget(
         Text::from(format!("{}:{:02}", meta.length.as_secs() / 60, meta.length.as_secs() % 60)).right_aligned(),
@@ -274,8 +306,7 @@ fn handle_mpris_events(tx: Sender<Message>) {
 
             let meta = match utils::player::get_meta(&player) {
                 Ok(meta) => meta,
-                Err(err) => {
-                    send_err!(tx, err.to_string());
+                Err(_) => {
                     continue;
                 }
             };
@@ -355,7 +386,7 @@ fn tick(tx: Sender<Message>) {
     thread::spawn(move || {
         loop {
             send_message!(tx, Message::Tick);
-            thread::sleep(Duration::from_millis(100));
+            thread::sleep(Duration::from_millis(500));
         }
     });
 }
