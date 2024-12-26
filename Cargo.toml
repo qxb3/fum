@@ -7,6 +7,10 @@ homepage = "https://github.com/qxb3/fum"
 license = "MIT"
 edition = "2021"
 
+[[bin]]
+name = "fum"
+path = "./src/main.rs"
+
 [dependencies]
 image = "0.25.5"
 mpris = "2.0.1"
