@@ -25,9 +25,10 @@ https://github.com/user-attachments/assets/2d26a2e8-becb-4ec0-a490-e1c59ab3948e
 
 ## Roadmap
 
-- [ ] CLI with clap
-- [ ] Config
+- [ ] width, height on config
 - [ ] Customization of layout
+- [x] Config
+- [x] CLI with clap
 
 ## Installation
 
