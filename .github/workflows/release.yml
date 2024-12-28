@@ -22,13 +22,13 @@ jobs:
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y libdbus-1-dev pkg-config
 
-      - name: Install dependencies
+      - name: Compile dependencies
         run: cargo build --release --locked
 
       - name: Build release artifacts
         run: cargo build --release
 
-      - name: Rename binary with version
+      - name: Add postfix to binary
         run: |
           VERSION=$(git describe --tags --abbrev=0)
           mv target/release/fum target/release/fum-x86-64_${VERSION}
@@ -38,4 +38,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: target/release/fum-x86-64_${VERSION}
+          files: target/release/fum-x86-64_${{ github.ref_name }}
