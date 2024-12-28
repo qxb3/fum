@@ -28,9 +28,14 @@ jobs:
       - name: Build release artifacts
         run: cargo build --release
 
+      - name: Rename binary with version
+        run: |
+          VERSION=$(git describe --tags --abbrev=0)
+          mv target/release/fum target/release/fum-x86-64_${VERSION}
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: target/release/fum
+          files: target/release/fum-x86-64_${VERSION}
