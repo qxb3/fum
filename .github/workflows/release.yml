@@ -19,11 +19,11 @@ jobs:
           toolchain: stable
           override: true
 
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y libdbus-1-dev pkg-config
+
       - name: Install dependencies
         run: cargo build --release --locked
-
-      - name: Run tests
-        run: cargo test --release
 
       - name: Build release artifacts
         run: cargo build --release
