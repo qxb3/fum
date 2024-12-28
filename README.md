@@ -48,8 +48,8 @@ cargo build --release
 # Either copy/move `target/release/yum` to /usr/bin
 # Or add the release path to your system's path
 
-# Moving yum binary to /usr/bin
-mv target/release/yum /usr/bin
+# Moving fum binary to /usr/bin
+mv target/release/fum /usr/bin
 ```
 
 ## Contributing
