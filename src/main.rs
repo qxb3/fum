@@ -1,5 +1,7 @@
+mod cli;
 mod ui;
 mod utils;
+mod config;
 
 use image::DynamicImage;
 use mpris::PlaybackStatus;
@@ -13,12 +15,10 @@ use ratatui::{
     },
     layout::Position
 };
+use config::Config;
 use ui::Ui;
 use std::{
-    io::stdout,
-    sync::mpsc::{self, Sender},
-    thread,
-    time::{Duration, Instant},
+    io::stdout, process, sync::mpsc::{self, Sender}, thread, time::{Duration, Instant}
 };
 
 #[derive(Debug)]
@@ -65,13 +65,21 @@ enum Message {
 }
 
 fn main() {
+    let config = match cli::run() {
+        Ok(config) => config,
+        Err(err) => {
+            eprintln!("[ERR] {}.", err);
+            process::exit(1);
+        }
+    };
+
     execute!(stdout(), EnableMouseCapture)
         .expect("Failed to enable mouse capture.");
 
     let mut terminal = ratatui::init();
 
     let mut meta = Meta::default();
-    let mut player = utils::player::get_supported_player();
+    let mut player = utils::player::get_player(&config);
 
     let mut ui = Ui::new()
         .expect("Failed to create ui.");
@@ -79,7 +87,7 @@ fn main() {
     let (tx, rx) = mpsc::channel::<Message>();
 
     tick(tx.clone());
-    handle_mpris_events(tx.clone());
+    handle_mpris_events(tx.clone(), config.clone());
     handle_term_events(tx.clone());
 
     let mut now = Instant::now();
@@ -111,7 +119,7 @@ fn main() {
                     .expect("Failed to draw frame.");
             },
             Message::MetaChanged(Meta { title, artists, status, length, cover_art }) => {
-                player = utils::player::get_supported_player();
+                player = utils::player::get_player(&config);
                 current_progress = Duration::from_secs(0);
 
                 meta.title = title;
@@ -154,6 +162,7 @@ fn main() {
             },
             Message::Exit => {
                 utils::restore();
+                println!("exited.");
                 break;
             },
             Message::Dbg(message) => println!("[DEBUG] {}", message)
@@ -161,10 +170,10 @@ fn main() {
     }
 }
 
-fn handle_mpris_events(tx: Sender<Message>) {
+fn handle_mpris_events(tx: Sender<Message>, config: Config) {
     thread::spawn(move || {
         loop {
-            let player = match utils::player::get_supported_player() {
+            let player = match utils::player::get_player(&config) {
                 Ok(player) => player,
                 Err(_) => {
                     send_message!(tx, Message::MetaChanged(Meta::default()));

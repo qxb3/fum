@@ -44,25 +44,21 @@ pub mod player {
     use mpris::{Metadata, PlaybackStatus, Player, PlayerFinder};
     use reqwest::header::RANGE;
 
-    use crate::Meta;
+    use crate::{config::Config, Meta};
 
-    pub fn get_supported_player() -> Result<Player, String> {
+    pub fn get_player(config: &Config) -> Result<Player, String> {
         let players = PlayerFinder::new()
             .map_err(|err| format!("Failed to connect to D-Bus: {:?}.", err))?
             .find_all()
             .map_err(|err| format!("There is no any active players: {:?}.", err))?;
 
         for player in players {
-            if matches!(player.identity().to_lowercase().as_str(),
-                "spotify" | "spotifyd" | "vlc" | "mpv" |
-                "rhythmbox" | "banshee" | "amarok" |
-                "cmus" | "audacious" | "elisa" | "mopidy"
-            ) {
+            if config.players.contains(&player.identity().to_lowercase()) {
                 return Ok(player);
             }
         }
 
-        Err("Failed to find any supported players.".to_string())
+        Err("Failed to find any specified players.".to_string())
     }
 
     pub fn get_metadata(player: &Player) -> Result<Metadata, String> {
