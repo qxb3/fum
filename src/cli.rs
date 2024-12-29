@@ -9,7 +9,13 @@ struct FumCli {
     config: Option<String>,
 
     #[arg(short, long, value_name = "string", value_delimiter = ',')]
-    players: Option<Vec<String>>
+    players: Option<Vec<String>>,
+
+    #[arg(long, value_name = "number")]
+    width: Option<u16>,
+
+    #[arg(long, value_name = "number")]
+    height: Option<u16>,
 }
 
 pub fn run() -> Result<Config, String> {
@@ -22,6 +28,14 @@ pub fn run() -> Result<Config, String> {
 
     if let Some(players) = fum_cli.players.as_ref() {
         config.players = players.to_owned();
+    }
+
+    if let Some(width) = fum_cli.width.as_ref() {
+        config.width = width.to_owned();
+    }
+
+    if let Some(height) = fum_cli.height.as_ref() {
+        config.height = height.to_owned();
     }
 
     Ok(config)

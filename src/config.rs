@@ -1,17 +1,26 @@
-use std::{fs, path::PathBuf};
+use std::{fs, path::PathBuf, u16};
 use serde::Deserialize;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Config {
-    pub players: Vec<String>
+    #[serde(default = "players")]
+    pub players: Vec<String>,
+    #[serde(default = "width")]
+    pub width: u16,
+    #[serde(default = "height")]
+    pub height: u16
 }
+
+fn players() -> Vec<String> { vec!["spotify".to_string()] }
+fn width() -> u16 { 20 }
+fn height() -> u16 { 15 }
 
 impl Default for Config {
     fn default() -> Self {
         Self {
-            players: vec![
-                "spotify".to_string()
-            ]
+            players: players(),
+            width: width(),
+            height: height()
         }
     }
 }

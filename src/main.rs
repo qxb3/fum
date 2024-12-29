@@ -81,7 +81,7 @@ fn main() {
     let mut meta = Meta::default();
     let mut player = utils::player::get_player(&config);
 
-    let mut ui = Ui::new()
+    let mut ui = Ui::new(&config)
         .expect("Failed to create ui.");
 
     let (tx, rx) = mpsc::channel::<Message>();
