@@ -134,7 +134,7 @@ impl<'a> Ui<'a> {
         if meta.length.as_secs() != 0 {
             let ratio = current_progress.as_secs() as f64 / meta.length.as_secs() as f64;
             let filled = (ratio * self.config.width as f64).round();
-            let empty = self.config.height.saturating_sub(filled as u16);
+            let empty = self.config.width.saturating_sub(filled as u16);
             let filled_bar = "󰝤".repeat(filled as usize);
             let empty_bar = "󰁱".repeat(empty.into());
 
