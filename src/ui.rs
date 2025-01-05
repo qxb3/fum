@@ -47,7 +47,7 @@ impl<'a> Ui<'a> {
         current_progress: &Duration
     ) {
         let area = utils::layout::get_align(
-            self.config.align,
+            &self.config.align,
             frame,
             self.config.width,
             self.config.height

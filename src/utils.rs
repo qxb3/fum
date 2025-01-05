@@ -245,7 +245,7 @@ pub mod layout {
         area
     }
 
-    pub fn get_align(align: String, frame: &mut Frame<'_>, width: u16, height: u16) -> Rect {
+    pub fn get_align(align: &String, frame: &mut Frame<'_>, width: u16, height: u16) -> Rect {
         match align.as_str() {
             "center" => center(frame, width, height),
             "top" => top(frame, width, height),
