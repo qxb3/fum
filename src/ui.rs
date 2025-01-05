@@ -46,13 +46,18 @@ impl<'a> Ui<'a> {
         meta: &Meta,
         current_progress: &Duration
     ) {
-        let [area] = Layout::horizontal([Constraint::Length(self.config.width)])
-            .flex(Flex::Center)
-            .areas(frame.area());
-
-        let [area] = Layout::vertical([Constraint::Length(self.config.height)])
-            .flex(Flex::Center)
-            .areas(area);
+        let area = match self.config.align.as_str() {
+            "center" => utils::layout::center(frame, self.config.width, self.config.height),
+            "top" => utils::layout::top(frame, self.config.width, self.config.height),
+            "left" => utils::layout::left(frame, self.config.width, self.config.height),
+            "bottom" => utils::layout::bottom(frame, self.config.width, self.config.height),
+            "right" => utils::layout::right(frame, self.config.width, self.config.height),
+            "top-left" => utils::layout::top_left(frame, self.config.width, self.config.height),
+            "top-right" => utils::layout::top_right(frame, self.config.width, self.config.height),
+            "bottom-left" => utils::layout::bottom_left(frame, self.config.width, self.config.height),
+            "bottom-right" => utils::layout::bottom_right(frame, self.config.width, self.config.height),
+            _ => unreachable!()
+        };
 
         // Terminal window is too small
         if frame.area().width < self.config.width ||

@@ -145,3 +145,103 @@ pub mod player {
         })
     }
 }
+
+pub mod layout {
+    use ratatui::{layout::{Constraint, Flex, Layout, Rect}, Frame};
+
+    pub fn center(frame: &mut Frame<'_>, width: u16, height: u16) -> Rect {
+        let [area] = Layout::horizontal([Constraint::Length(width)])
+            .flex(Flex::Center)
+            .areas(frame.area());
+
+        let [area] = Layout::vertical([Constraint::Length(height)])
+            .flex(Flex::Center)
+            .areas(area);
+
+        area
+    }
+
+    pub fn top(frame: &mut Frame<'_>, width: u16, height: u16) -> Rect {
+        let [area] = Layout::horizontal([Constraint::Length(width)])
+            .flex(Flex::Center)
+            .areas(frame.area());
+
+        let [area] = Layout::vertical([Constraint::Length(height)])
+            .areas(area);
+
+        area
+    }
+
+    pub fn left(frame: &mut Frame<'_>, width: u16, height: u16) -> Rect {
+        let [area] = Layout::vertical([Constraint::Length(height)])
+            .flex(Flex::Center)
+            .areas(frame.area());
+
+        let [area] = Layout::horizontal([Constraint::Length(width)])
+            .areas(area);
+
+        area
+    }
+
+    pub fn bottom(frame: &mut Frame<'_>, width: u16, height: u16) -> Rect {
+        let [area] = Layout::horizontal([Constraint::Length(width)])
+            .flex(Flex::Center)
+            .areas(frame.area());
+
+        let [_, area] = Layout::vertical([Constraint::Min(0), Constraint::Length(height)])
+            .areas(area);
+
+        area
+    }
+
+    pub fn right(frame: &mut Frame<'_>, width: u16, height: u16) -> Rect {
+        let [area] = Layout::vertical([Constraint::Length(height)])
+            .flex(Flex::Center)
+            .areas(frame.area());
+
+        let [_, area] = Layout::horizontal([Constraint::Min(0), Constraint::Length(width)])
+            .areas(area);
+
+        area
+    }
+
+    pub fn top_left(frame: &mut Frame<'_>, width: u16, height: u16) -> Rect {
+        let [area, _] = Layout::horizontal([Constraint::Length(width), Constraint::Min(0)])
+            .areas(frame.area());
+
+        let [area, _] = Layout::vertical([Constraint::Length(height), Constraint::Min(0)])
+            .areas(area);
+
+        area
+    }
+
+    pub fn top_right(frame: &mut Frame<'_>, width: u16, height: u16) -> Rect {
+        let [_, area] = Layout::horizontal([Constraint::Min(0), Constraint::Length(width)])
+            .areas(frame.area());
+
+        let [area, _] = Layout::vertical([Constraint::Length(height), Constraint::Min(0)])
+            .areas(area);
+
+        area
+    }
+
+    pub fn bottom_left(frame: &mut Frame<'_>, width: u16, height: u16) -> Rect {
+        let [area, _] = Layout::horizontal([Constraint::Length(width), Constraint::Min(0)])
+            .areas(frame.area());
+
+        let [_, area] = Layout::vertical([Constraint::Min(0), Constraint::Length(height)])
+            .areas(area);
+
+        area
+    }
+
+    pub fn bottom_right(frame: &mut Frame<'_>, width: u16, height: u16) -> Rect {
+        let [_, area] = Layout::horizontal([Constraint::Min(0), Constraint::Length(width)])
+            .areas(frame.area());
+
+        let [_, area] = Layout::vertical([Constraint::Min(0), Constraint::Length(height)])
+            .areas(area);
+
+        area
+    }
+}
