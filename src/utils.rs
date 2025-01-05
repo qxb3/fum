@@ -147,7 +147,7 @@ pub mod player {
 }
 
 pub mod layout {
-    use ratatui::{layout::{Constraint, Flex, Layout, Rect}, Frame};
+    use ratatui::{{Constraint, Flex, Layout, Rect}, Frame};
 
     pub fn center(frame: &mut Frame<'_>, width: u16, height: u16) -> Rect {
         let [area] = Layout::horizontal([Constraint::Length(width)])
@@ -243,5 +243,20 @@ pub mod layout {
             .areas(area);
 
         area
+    }
+
+    pub fn get_align(align: String, frame: &mut Frame<'_>, width: u16, height: u16) -> Rect {
+        match align.as_str() {
+            "center" => center(frame, width, height),
+            "top" => top(frame, width, height),
+            "left" => left(frame, width, height),
+            "bottom" => bottom(frame, width, height),
+            "right" => right(frame, width, height),
+            "top-left" => top_left(frame, width, height),
+            "top-right" => top_right(frame, width, height),
+            "bottom-left" => bottom_left(frame, width, height),
+            "bottom-right" => bottom_right(frame, width, height),
+            _ => unreachable!()
+        }
     }
 }

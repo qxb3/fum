@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use ratatui::{layout::{Constraint, Flex, Layout, Rect}, text::Text, widgets::{Block, Borders, Paragraph, Wrap}, Frame};
 use ratatui_image::{picker::Picker, StatefulImage};
-use crate::{config::Config, utils, Meta};
+use crate::{config::Config, utils::{self, layout}, Meta};
 
 pub struct PlaybackButtons {
     pub prev: Rect,
@@ -46,18 +46,12 @@ impl<'a> Ui<'a> {
         meta: &Meta,
         current_progress: &Duration
     ) {
-        let area = match self.config.align.as_str() {
-            "center" => utils::layout::center(frame, self.config.width, self.config.height),
-            "top" => utils::layout::top(frame, self.config.width, self.config.height),
-            "left" => utils::layout::left(frame, self.config.width, self.config.height),
-            "bottom" => utils::layout::bottom(frame, self.config.width, self.config.height),
-            "right" => utils::layout::right(frame, self.config.width, self.config.height),
-            "top-left" => utils::layout::top_left(frame, self.config.width, self.config.height),
-            "top-right" => utils::layout::top_right(frame, self.config.width, self.config.height),
-            "bottom-left" => utils::layout::bottom_left(frame, self.config.width, self.config.height),
-            "bottom-right" => utils::layout::bottom_right(frame, self.config.width, self.config.height),
-            _ => unreachable!()
-        };
+        let area = layout::get_align(
+            self.config.align,
+            frame,
+            self.config.width,
+            self.config.height
+        );
 
         // Terminal window is too small
         if frame.area().width < self.config.width ||
