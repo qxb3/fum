@@ -80,6 +80,11 @@ Config are located on `~/.config/fum/config.json`.
 | `progress` | string    | The char that will be displayed on current progress. |
 | `empty`    | string    | The char that will be displayed on empty progress. |
 
+## Compability
+
+Some terminals will have some issues of rendering the image as those don't support an image protocol yet.
+See [Compability](https://github.com/benjajaja/ratatui-image?tab=readme-ov-file#compatibility-matrix) For compatible terminals.
+
 ## Contributing
 
 Thank you for considering contributing to fum! Contributions are welcome and appreciated.
