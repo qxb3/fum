@@ -147,7 +147,7 @@ pub mod player {
 }
 
 pub mod layout {
-    use ratatui::{{Constraint, Flex, Layout, Rect}, Frame};
+    use ratatui::{layout::{Constraint, Flex, Layout, Rect}, Frame};
 
     pub fn center(frame: &mut Frame<'_>, width: u16, height: u16) -> Rect {
         let [area] = Layout::horizontal([Constraint::Length(width)])
