@@ -53,6 +53,33 @@ cargo build --release
 mv target/release/fum /usr/bin
 ```
 
+## Configuration
+
+Config are located on `~/.config/fum/config.json`.
+
+### Example config with their default values:
+```json
+{
+    "players": ["spotify"],
+    "align": "center",
+    "width": 20,
+    "height": 15,
+    "progress": "󰝤",
+    "empty": "󰁱"
+}
+```
+
+### Values:
+
+| `Name`     | `Type`    | `Description` |
+|------------|-----------|---------------|
+| `players`  | string[]  | String of player names that will be detected by fum. |
+| `align`    | string    | Where in the terminal fum will be. Values: `center` `top` `left` `bottom` `right` `top-left` `top-right` `bottom-left` `bottom-right`. |
+| `width`    | number    | Total width of fum. |
+| `height`   | number    | Total height of fum. |
+| `progress` | string    | The char that will be displayed on current progress. |
+| `empty`    | string    | The char that will be displayed on empty progress. |
+
 ## Contributing
 
 Thank you for considering contributing to fum! Contributions are welcome and appreciated.
