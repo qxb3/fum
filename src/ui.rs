@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use ratatui::{layout::{Constraint, Flex, Layout, Rect}, text::Text, widgets::{Block, Borders, Paragraph, Wrap}, Frame};
 use ratatui_image::{picker::Picker, StatefulImage};
-use crate::{config::Config, utils::{self, layout}, Meta};
+use crate::{config::Config, utils, Meta};
 
 pub struct PlaybackButtons {
     pub prev: Rect,
@@ -46,7 +46,7 @@ impl<'a> Ui<'a> {
         meta: &Meta,
         current_progress: &Duration
     ) {
-        let area = layout::get_align(
+        let area = utils::layout::get_align(
             self.config.align,
             frame,
             self.config.width,
