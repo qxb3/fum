@@ -131,7 +131,7 @@ impl<'a> Ui<'a> {
         );
         frame.render_widget(Text::from("󰒭").centered(), self.playback_buttons.next);
 
-        if meta.length.as_secs() != 0 {
+        if meta.length.as_secs() > 0{
             let ratio = current_progress.as_secs() as f64 / meta.length.as_secs() as f64;
             let filled = (ratio * self.config.width as f64).round();
             let empty = self.config.width.saturating_sub(filled as u16);

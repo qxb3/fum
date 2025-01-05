@@ -68,7 +68,7 @@ fn main() {
     let config = match cli::run() {
         Ok(config) => config,
         Err(err) => {
-            eprintln!("[ERR] {}.", err);
+            eprintln!("[CONFIG ERR] -> {}.", err);
             process::exit(1);
         }
     };
