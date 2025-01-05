@@ -19,6 +19,12 @@ struct FumCli {
 
     #[arg(long, value_name = "number")]
     height: Option<u16>,
+
+    #[arg(long, value_name = "char")]
+    progress: Option<char>,
+
+    #[arg(long, value_name = "char")]
+    empty: Option<char>,
 }
 
 pub fn run() -> Result<Config, String> {
@@ -43,6 +49,14 @@ pub fn run() -> Result<Config, String> {
 
     if let Some(height) = fum_cli.height.as_ref() {
         config.height = height.to_owned();
+    }
+
+    if let Some(progress) = fum_cli.progress.as_ref() {
+        config.progress = progress.to_owned();
+    }
+
+    if let Some(empty) = fum_cli.empty.as_ref() {
+        config.empty = empty.to_owned();
     }
 
     Ok(config)

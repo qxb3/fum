@@ -5,6 +5,8 @@ fn players() -> Vec<String> { vec!["spotify".to_string()] }
 fn align() -> String { "center".to_string() }
 fn width() -> u16 { 20 }
 fn height() -> u16 { 15 }
+fn progress() -> char { '󰝤' }
+fn empty() -> char { '󰁱' }
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Config {
@@ -18,7 +20,13 @@ pub struct Config {
     pub width: u16,
 
     #[serde(default = "height")]
-    pub height: u16
+    pub height: u16,
+
+    #[serde(default = "progress")]
+    pub progress: char,
+
+    #[serde(default = "empty")]
+    pub empty: char
 }
 
 impl Default for Config {
@@ -27,7 +35,9 @@ impl Default for Config {
             players: players(),
             align: align(),
             width: width(),
-            height: height()
+            height: height(),
+            progress: progress(),
+            empty: empty()
         }
     }
 }
