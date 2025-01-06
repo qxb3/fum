@@ -39,7 +39,7 @@ https://github.com/user-attachments/assets/2d26a2e8-becb-4ec0-a490-e1c59ab3948e
 ## Roadmap / TODO
 
 - [ ] Make some stuff visible optional
-- [ ] Dont start if it cant find set players
+- [x] Dont start if it cant find set players
 - [x] Customization of layout
 - [x] width, height on config
 - [x] Config
