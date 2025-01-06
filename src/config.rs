@@ -4,6 +4,7 @@ use serde::Deserialize;
 fn players() -> Vec<String> { vec!["spotify".to_string()] }
 fn align() -> String { "center".to_string() }
 fn layout() -> String { "top-to-bottom".to_string() }
+fn hidden() -> Vec<String> { vec![] }
 fn progress() -> char { '󰝤' }
 fn empty() -> char { '󰁱' }
 
@@ -18,6 +19,9 @@ pub struct Config {
     #[serde(default = "layout")]
     pub layout: String,
 
+    #[serde(default = "hidden")]
+    pub hidden: Vec<String>,
+
     #[serde(default = "progress")]
     pub progress: char,
 
@@ -31,6 +35,7 @@ impl Default for Config {
             players: players(),
             align: align(),
             layout: layout(),
+            hidden: hidden(),
             progress: progress(),
             empty: empty()
         }
@@ -43,23 +48,6 @@ impl Config {
             Ok(config_file) => {
                 let config: Config = serde_json::from_str(&config_file)
                     .map_err(|err| format!("Failed to parse config: {err}"))?;
-
-                if !matches!(
-                    config.align.as_str(),
-                    "center" | "top" | "left" |
-                    "bottom" | "right" | "top-left" |
-                    "top-right" | "bottom-left" | "bottom-right"
-                ) {
-                    return Err("Invalid value for 'align'".to_string())
-                }
-
-                if !matches!(
-                    config.layout.as_str(),
-                    "top-to-bottom" | "bottom-to-top" |
-                    "left-to-right" | "right-to-left"
-                ) {
-                    return Err("Invalid value for 'layout'".to_string())
-                }
 
                 Ok(config)
             },
