@@ -267,7 +267,7 @@ fn tick(tx: Sender<Message>) {
     thread::spawn(move || {
         loop {
             send_message!(tx, Message::Tick);
-            thread::sleep(Duration::from_millis(250));
+            thread::sleep(Duration::from_millis(100));
         }
     });
 }
