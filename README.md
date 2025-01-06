@@ -77,6 +77,7 @@ Config are located on `~/.config/fum/config.json`.
 {
     "players": ["spotify"],
     "align": "center",
+    "layout": "top-to-bottom",
     "progress": "󰝤",
     "empty": "󰁱"
 }
@@ -88,7 +89,7 @@ Config are located on `~/.config/fum/config.json`.
 |--------------|-----------|---------------|
 | `players`    | string[]  | String of player names that will be detected by fum. |
 | `align`      | string    | Where in the terminal fum will be. Values: `center` `top` `left` `bottom` `right` `top-left` `top-right` `bottom-left` `bottom-right`. |
-| `direction`  | string    | Which layout / direction fum will use. Values: `top-to-bottom` `bottom-to-top` `left-to-right` `right-to-right`. |
+| `layout`     | string    | Which layout fum will use. Values: `top-to-bottom` `bottom-to-top` `left-to-right` `right-to-right`. |
 | `progress`   | string    | The char that will be displayed on current progress. |
 | `empty`      | string    | The char that will be displayed on empty progress. |
 
