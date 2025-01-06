@@ -2,6 +2,7 @@ mod cli;
 mod ui;
 mod utils;
 mod config;
+mod term_config;
 
 use image::DynamicImage;
 use mpris::PlaybackStatus;
@@ -16,6 +17,7 @@ use ratatui::{
     layout::Position
 };
 use config::Config;
+use term_config::TermConfig;
 use ui::Ui;
 use std::{
     io::stdout, process, sync::mpsc::{self, Sender}, thread, time::{Duration, Instant}
@@ -73,6 +75,8 @@ fn main() {
         }
     };
 
+    let term_config = TermConfig::from_config(&config);
+
     execute!(stdout(), EnableMouseCapture)
         .expect("Failed to enable mouse capture.");
 
@@ -81,7 +85,7 @@ fn main() {
     let mut meta = Meta::default();
     let mut player = utils::player::get_player(&config);
 
-    let mut ui = Ui::new(&config)
+    let mut ui = Ui::new(&config, &term_config)
         .expect("Failed to create ui.");
 
     let (tx, rx) = mpsc::channel::<Message>();

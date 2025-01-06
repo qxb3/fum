@@ -1,10 +1,9 @@
-use std::{fs, path::PathBuf, u16};
+use std::{fs, path::PathBuf};
 use serde::Deserialize;
 
 fn players() -> Vec<String> { vec!["spotify".to_string()] }
 fn align() -> String { "center".to_string() }
-fn width() -> u16 { 20 }
-fn height() -> u16 { 15 }
+fn layout() -> String { "top-to-bottom".to_string() }
 fn progress() -> char { '󰝤' }
 fn empty() -> char { '󰁱' }
 
@@ -16,11 +15,8 @@ pub struct Config {
     #[serde(default = "align")]
     pub align: String,
 
-    #[serde(default = "width")]
-    pub width: u16,
-
-    #[serde(default = "height")]
-    pub height: u16,
+    #[serde(default = "layout")]
+    pub layout: String,
 
     #[serde(default = "progress")]
     pub progress: char,
@@ -34,8 +30,7 @@ impl Default for Config {
         Self {
             players: players(),
             align: align(),
-            width: width(),
-            height: height(),
+            layout: layout(),
             progress: progress(),
             empty: empty()
         }
@@ -56,6 +51,14 @@ impl Config {
                     "top-right" | "bottom-left" | "bottom-right"
                 ) {
                     return Err("Invalid value for 'align'".to_string())
+                }
+
+                if !matches!(
+                    config.layout.as_str(),
+                    "top-to-bottom" | "bottom-to-top" |
+                    "left-to-right" | "right-to-left"
+                ) {
+                    return Err("Invalid value for 'layout'".to_string())
                 }
 
                 Ok(config)

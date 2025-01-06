@@ -14,11 +14,8 @@ struct FumCli {
     #[arg(short, long, value_name = "center,top,left,bottom,right,top-left,top-right,bottom-left,bottom-right")]
     align: Option<String>,
 
-    #[arg(long, value_name = "number")]
-    width: Option<u16>,
-
-    #[arg(long, value_name = "number")]
-    height: Option<u16>,
+    #[arg(short, long, value_name = "top-to-bottom,left-to-right,bottom-to-top,right-to-left")]
+    layout: Option<String>,
 
     #[arg(long, value_name = "char")]
     progress: Option<char>,
@@ -43,12 +40,8 @@ pub fn run() -> Result<Config, String> {
         config.align = align.to_string();
     }
 
-    if let Some(width) = fum_cli.width.as_ref() {
-        config.width = width.to_owned();
-    }
-
-    if let Some(height) = fum_cli.height.as_ref() {
-        config.height = height.to_owned();
+    if let Some(layout) = fum_cli.layout.as_ref() {
+        config.layout = layout.to_string();
     }
 
     if let Some(progress) = fum_cli.progress.as_ref() {

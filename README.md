@@ -36,9 +36,11 @@
 
 https://github.com/user-attachments/assets/2d26a2e8-becb-4ec0-a490-e1c59ab3948e
 
-## Roadmap
+## Roadmap / TODO
 
-- [ ] Customization of layout
+- [ ] Make some stuff visible optional
+- [ ] Dont start if it cant find set players
+- [x] Customization of layout
 - [x] width, height on config
 - [x] Config
 - [x] CLI with clap
@@ -75,8 +77,6 @@ Config are located on `~/.config/fum/config.json`.
 {
     "players": ["spotify"],
     "align": "center",
-    "width": 20,
-    "height": 15,
     "progress": "󰝤",
     "empty": "󰁱"
 }
@@ -84,14 +84,13 @@ Config are located on `~/.config/fum/config.json`.
 
 ### Values:
 
-| `Name`     | `Type`    | `Description` |
-|------------|-----------|---------------|
-| `players`  | string[]  | String of player names that will be detected by fum. |
-| `align`    | string    | Where in the terminal fum will be. Values: `center` `top` `left` `bottom` `right` `top-left` `top-right` `bottom-left` `bottom-right`. |
-| `width`    | number    | Total width of fum. |
-| `height`   | number    | Total height of fum. |
-| `progress` | string    | The char that will be displayed on current progress. |
-| `empty`    | string    | The char that will be displayed on empty progress. |
+| `Name`       | `Type`    | `Description` |
+|--------------|-----------|---------------|
+| `players`    | string[]  | String of player names that will be detected by fum. |
+| `align`      | string    | Where in the terminal fum will be. Values: `center` `top` `left` `bottom` `right` `top-left` `top-right` `bottom-left` `bottom-right`. |
+| `direction`  | string    | Which layout / direction fum will use. Values: `top-to-bottom` `bottom-to-top` `left-to-right` `right-to-right`. |
+| `progress`   | string    | The char that will be displayed on current progress. |
+| `empty`      | string    | The char that will be displayed on empty progress. |
 
 ## Compability
 

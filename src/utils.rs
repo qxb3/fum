@@ -146,7 +146,7 @@ pub mod player {
     }
 }
 
-pub mod layout {
+pub mod align {
     use ratatui::{layout::{Constraint, Flex, Layout, Rect}, Frame};
 
     pub fn center(frame: &mut Frame<'_>, width: u16, height: u16) -> Rect {
@@ -256,6 +256,70 @@ pub mod layout {
             "top-right" => top_right(frame, width, height),
             "bottom-left" => bottom_left(frame, width, height),
             "bottom-right" => bottom_right(frame, width, height),
+            _ => unreachable!()
+        }
+    }
+}
+
+pub mod layout {
+    use ratatui::layout::{Constraint, Layout, Rect};
+
+    pub fn top_to_bottom(area: Rect) -> (Rect, Rect) {
+        let [image_area, meta_area] = Layout::vertical([
+            Constraint::Min(0),
+            Constraint::Min(0)
+        ]).areas(area);
+
+        (image_area, meta_area)
+    }
+
+    pub fn bottom_to_top(area: Rect) -> (Rect, Rect) {
+        let [meta_area, image_area] = Layout::vertical([
+            Constraint::Min(0),
+            Constraint::Min(0)
+        ]).areas(area);
+
+        (image_area, meta_area)
+    }
+
+    pub fn left_to_right(area: Rect) -> (Rect, Rect) {
+        let [image_area, _, meta_area] = Layout::horizontal([
+            Constraint::Percentage(54),
+            Constraint::Length(2),
+            Constraint::Min(0)
+        ]).areas(area);
+
+        let [_, meta_area, _] = Layout::vertical([
+            Constraint::Length(1),
+            Constraint::Min(0),
+            Constraint::Length(1)
+        ]).areas(meta_area);
+
+        (image_area, meta_area)
+    }
+
+    pub fn right_to_left(area: Rect) -> (Rect, Rect) {
+        let [meta_area, _, image_area] = Layout::horizontal([
+            Constraint::Min(0),
+            Constraint::Length(2),
+            Constraint::Percentage(54)
+        ]).areas(area);
+
+        let [_, meta_area, _] = Layout::vertical([
+            Constraint::Length(1),
+            Constraint::Min(0),
+            Constraint::Length(1)
+        ]).areas(meta_area);
+
+        (image_area, meta_area)
+    }
+
+    pub fn get_layout(layout: &str, area: Rect) -> (Rect, Rect) {
+        match layout {
+            "top-to-bottom" => top_to_bottom(area),
+            "bottom-to-top" => bottom_to_top(area),
+            "left-to-right" => left_to_right(area),
+            "right-to-left" => right_to_left(area),
             _ => unreachable!()
         }
     }
