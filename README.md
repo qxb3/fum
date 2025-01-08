@@ -34,7 +34,10 @@
 
 ## Demo
 
-https://github.com/user-attachments/assets/2d26a2e8-becb-4ec0-a490-e1c59ab3948e
+<img
+  width="800px"
+  src="https://github.com/user-attachments/assets/97aa278e-432c-4ea5-961a-840eac1cefe7" 
+/>
 
 ## Roadmap / TODO
 
