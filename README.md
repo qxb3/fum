@@ -36,12 +36,12 @@
 
 <img
   width="800px"
-  src="https://github.com/user-attachments/assets/97aa278e-432c-4ea5-961a-840eac1cefe7" 
+  src="https://github.com/user-attachments/assets/97aa278e-432c-4ea5-961a-840eac1cefe7"
 />
 
 ## Roadmap / TODO
 
-- [ ] Make some stuff visible optional
+- [x] Make some stuff visible optional
 - [x] Dont start if it cant find set players
 - [x] Customization of layout
 - [x] width, height on config
@@ -91,7 +91,7 @@ Config are located on `~/.config/fum/config.json`.
 
 | `Name`       | `Type`    | `Description` |
 |--------------|-----------|---------------|
-| `players`    | string[]  | String of player names that will be detected by fum. |
+| `players`    | string[]  | String of player names that will be detected by fum. This can be the identity or the bus_name of the player. Note that identity is case `INSESITIVE` and bus_name are `NOT`. |
 | `align`      | string    | Where in the terminal fum will be. Values: `center` `top` `left` `bottom` `right` `top-left` `top-right` `bottom-left` `bottom-right`. |
 | `layout`     | string    | Which layout fum will use. Values: `top-to-bottom` `bottom-to-top` `left-to-right` `right-to-right`. |
 | `hidden`     | string[]  | Hide some stuff from the ui. Values: `title` `artists` `buttons` `progress-bar` `progress-text`. |
