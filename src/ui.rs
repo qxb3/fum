@@ -203,10 +203,9 @@ impl<'a> Ui<'a> {
             }
         };
 
-        let [current_pos_area, _, length_area] = Layout::horizontal([
-            Constraint::Length(4),
-            Constraint::Min(0),
-            Constraint::Length(4),
+        let [current_pos_area, length_area] = Layout::horizontal([
+            Constraint::Percentage(50),
+            Constraint::Percentage(50)
         ]).areas(progress_text_area);
 
         if !self.config.hidden.contains(&"progress-bar".to_string()) {
@@ -225,13 +224,47 @@ impl<'a> Ui<'a> {
 
         if !self.config.hidden.contains(&"progress-text".to_string()) {
             frame.render_widget(
-                Text::from(format!("{}:{:02}", current_progress.as_secs() / 60, current_progress.as_secs() % 60)).left_aligned(),
-                current_pos_area
+                Text::from(format!(
+                    "{}",
+                    if current_progress.as_secs() >= 3600 {
+                        format!(
+                            "{}:{:02}:{:02}",
+                            current_progress.as_secs() / 3600,
+                            (current_progress.as_secs() % 3600) / 60,
+                            current_progress.as_secs() % 60
+                        )
+                    } else {
+                        format!(
+                            "{}:{:02}",
+                            current_progress.as_secs() / 60,
+                            current_progress.as_secs() % 60
+                        )
+                    }
+                ))
+                    .left_aligned(),
+                current_pos_area,
             );
 
             frame.render_widget(
-                Text::from(format!("{}:{:02}", meta.length.as_secs() / 60, meta.length.as_secs() % 60)).right_aligned(),
-                length_area
+                Text::from(format!(
+                    "{}",
+                    if meta.length.as_secs() >= 3600 {
+                        format!(
+                            "{}:{:02}:{:02}",
+                            meta.length.as_secs() / 3600,
+                            (meta.length.as_secs() % 3600) / 60,
+                            meta.length.as_secs() % 60
+                        )
+                    } else {
+                        format!(
+                            "{}:{:02}",
+                            meta.length.as_secs() / 60,
+                            meta.length.as_secs() % 60
+                        )
+                    }
+                ))
+                    .right_aligned(),
+                length_area,
             );
         }
     }
