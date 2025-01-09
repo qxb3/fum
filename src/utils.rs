@@ -53,7 +53,13 @@ pub mod player {
             .map_err(|err| format!("There is no any active players: {:?}.", err))?;
 
         for player in players {
-            if config.players.contains(&player.identity().to_lowercase()) {
+            let identity = player.identity().to_lowercase();
+            let bus_name = player.bus_name();
+
+            if config.players.iter().any(|p|
+                p.to_lowercase() == identity.to_lowercase() ||
+                bus_name.starts_with(p)
+            ) {
                 return Ok(player);
             }
         }
