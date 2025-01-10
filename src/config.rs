@@ -2,6 +2,7 @@ use std::{fs, path::PathBuf};
 use serde::Deserialize;
 
 fn players() -> Vec<String> { vec!["spotify".to_string()] }
+fn use_active_player() -> bool { false }
 fn align() -> String { "center".to_string() }
 fn layout() -> String { "top-to-bottom".to_string() }
 fn hidden() -> Vec<String> { vec![] }
@@ -12,6 +13,9 @@ fn empty() -> char { '󰁱' }
 pub struct Config {
     #[serde(default = "players")]
     pub players: Vec<String>,
+
+    #[serde(default = "use_active_player")]
+    pub use_active_player: bool,
 
     #[serde(default = "align")]
     pub align: String,
@@ -33,6 +37,7 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             players: players(),
+            use_active_player: use_active_player(),
             align: align(),
             layout: layout(),
             hidden: hidden(),

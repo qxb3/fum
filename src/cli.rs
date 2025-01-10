@@ -11,6 +11,9 @@ struct FumCli {
     #[arg(short, long, value_name = "string[]", value_delimiter = ',')]
     players: Option<Vec<String>>,
 
+    #[arg(long, value_name = "boolean")]
+    use_active_player: Option<bool>,
+
     #[arg(short, long, value_name = "center,top,left,bottom,right,top-left,top-right,bottom-left,bottom-right")]
     align: Option<String>,
 
@@ -37,6 +40,10 @@ pub fn run() -> Result<Config, String> {
 
     if let Some(players) = fum_cli.players.as_ref() {
         config.players = players.to_owned();
+    }
+
+    if let Some(use_active_player) = fum_cli.use_active_player.as_ref() {
+        config.use_active_player = use_active_player.to_owned();
     }
 
     if let Some(align) = fum_cli.align.as_ref() {

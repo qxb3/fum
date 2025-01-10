@@ -64,6 +64,14 @@ pub mod player {
             }
         }
 
+        // Find the most likely player to be used
+        if config.use_active_player {
+            return PlayerFinder::new()
+                .map_err(|err| format!("Failed to connect to D-Bus: {:?}.", err))?
+                .find_active()
+                .map_err(|err| format!("'use-active-player' is set to true but failed to get active player: {:?}", err));
+        }
+
         Err("Failed to find any specified players.".to_string())
     }
 
