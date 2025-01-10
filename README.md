@@ -79,6 +79,7 @@ Config are located on `~/.config/fum/config.json`.
 ```json
 {
     "players": ["spotify"],
+    "use_active_player": false,
     "align": "center",
     "layout": "top-to-bottom",
     "hidden": [],
