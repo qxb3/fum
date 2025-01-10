@@ -89,14 +89,15 @@ Config are located on `~/.config/fum/config.json`.
 
 ### Values:
 
-| `Name`       | `Type`    | `Description` |
-|--------------|-----------|---------------|
-| `players`    | string[]  | String of player names that will be detected by fum. This can be the identity or the bus_name of the player. Note that identity is case `INSESITIVE` and bus_name are `NOT`. |
-| `align`      | string    | Where in the terminal fum will be. Values: `center` `top` `left` `bottom` `right` `top-left` `top-right` `bottom-left` `bottom-right`. |
-| `layout`     | string    | Which layout fum will use. Values: `top-to-bottom` `bottom-to-top` `left-to-right` `right-to-right`. |
-| `hidden`     | string[]  | Hide some stuff from the ui. Values: `title` `artists` `buttons` `progress-bar` `progress-text`. |
-| `progress`   | string    | The char that will be displayed on current progress. |
-| `empty`      | string    | The char that will be displayed on empty progress. |
+| `Name`                | `Type`    | `Description` |
+|-----------------------|-----------|---------------|
+| `players`             | string[]  | String of player names that will be detected by fum. This can be the identity or the bus_name of the player. Note that identity is case `INSESITIVE` and bus_name are `NOT`. |
+| `use_active_player`   | boolean   | Wether to use the most likely active player when there it can't find players on the `players` array. |
+| `align`               | string    | Where in the terminal fum will be. Values: `center` `top` `left` `bottom` `right` `top-left` `top-right` `bottom-left` `bottom-right`. |
+| `layout`              | string    | Which layout fum will use. Values: `top-to-bottom` `bottom-to-top` `left-to-right` `right-to-right`. |
+| `hidden`              | string[]  | Hide some stuff from the ui. Values: `title` `artists` `buttons` `progress-bar` `progress-text`. |
+| `progress`            | string    | The char that will be displayed on current progress. |
+| `empty`               | string    | The char that will be displayed on empty progress. |
 
 ## Compability
 
