@@ -77,13 +77,11 @@ fn main() {
 
     let term_config = TermConfig::from_config(&config);
 
-    let mut player = match utils::player::get_player(&config) {
-        Ok(player) => player,
-        Err(err) => {
-            eprintln!("[ERR] {err}");
-            return;
-        }
-    };
+    let mut player = utils::player::get_player(&config);
+    if let Err(err) = &player {
+        eprintln!("[ERR] {err}");
+        process::exit(1);
+    }
 
     execute!(stdout(), EnableMouseCapture)
         .expect("Failed to enable mouse capture.");
@@ -100,8 +98,12 @@ fn main() {
     handle_term_events(tx.clone());
 
     let mut now = Instant::now();
-    let mut current_progress = player.get_position()
-        .expect("Failed to get player's position.");
+    let mut current_progress = Duration::from_secs(0);
+
+    if let Ok(player) = &player {
+        current_progress = player.get_position()
+            .expect("Failed to get player's position.");
+    }
 
     loop {
         let event = rx.recv()
@@ -110,9 +112,11 @@ fn main() {
         match event {
             Message::Tick => {
                 if now.elapsed() >= Duration::from_secs(1) {
-                    current_progress = player
-                        .get_position()
-                        .expect("Failed to get player's position.");
+                    if let Ok(player) = &player {
+                        current_progress = player
+                            .get_position()
+                            .expect("Failed to get player's position.");
+                    }
 
                     now = Instant::now();
                 }
@@ -121,13 +125,10 @@ fn main() {
                     .expect("Failed to draw frame.");
             },
             Message::MetaChanged(Meta { title, artists, status, length, cover_art }) => {
-                player = match utils::player::get_player(&config) {
-                    Ok(player) => player,
-                    Err(err) => {
-                        eprintln!("[ERR] {err}");
-                        return;
-                    }
-                };
+                player = utils::player::get_player(&config);
+                if let Err(_) = &player {
+                    current_progress = Duration::from_secs(0);
+                }
 
                 meta.title = title;
                 meta.artists = artists;
@@ -144,16 +145,22 @@ fn main() {
                 }
             },
             Message::Prev => {
-                player.previous()
-                    .expect("Cannot prev.");
+                if let Ok(player) = &player {
+                    player.previous()
+                        .expect("Cannot prev.");
+                }
             },
             Message::Toggle => {
-                player.play_pause()
-                    .expect("Cannot toggle.");
+                if let Ok(player) = &player {
+                    player.play_pause()
+                        .expect("Cannot toggle.");
+                }
             },
             Message::Next => {
-                player.next()
-                    .expect("Cannot next.");
+                if let Ok(player) = &player {
+                    player.next()
+                        .expect("Cannot next.");
+                }
             },
 
             Message::Err(err) => {
@@ -176,15 +183,20 @@ fn handle_mpris_events(tx: Sender<Message>, config: Config) {
         loop {
             let player = match utils::player::get_player(&config) {
                 Ok(player) => player,
-                Err(err) => {
-                    send_err!(tx, err);
-                    return;
+                Err(_) => {
+                    tx.send(Message::MetaChanged(Meta::default()))
+                        .unwrap();
+
+                    continue;
                 }
             };
 
             let meta = match utils::player::get_meta(&player) {
                 Ok(meta) => meta,
                 Err(_) => {
+                    tx.send(Message::MetaChanged(Meta::default()))
+                        .unwrap();
+
                     continue;
                 }
             };
@@ -224,6 +236,8 @@ fn handle_mpris_events(tx: Sender<Message>, config: Config) {
                     Err(_) => break
                 }
             }
+
+            thread::sleep(Duration::from_millis(250));
         }
     });
 }
