@@ -70,6 +70,16 @@ cargo build --release
 # Moving fum binary to /usr/bin
 mv target/release/fum /usr/bin
 ```
+## Keystrokes
+
+Fum uses a keymap similar to (n)vim:
+
+| Key           | Action                          |
+|---------------|---------------------------------|
+| <kbd>q</kbd>  | Quits out of Fum.              |
+| <kbd>space</kbd> | Stops the current track.       |
+| <kbd>n</kbd>  | Plays the next track (if available). |
+| <kbd>p</kbd>  | Plays the previous track (if available). |
 
 ## Configuration
 
