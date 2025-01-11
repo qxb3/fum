@@ -100,6 +100,15 @@ Config are located on `~/.config/fum/config.json`.
 | `progress`            | string    | The char that will be displayed on current progress. |
 | `empty`               | string    | The char that will be displayed on empty progress. |
 
+## Keyboard shortcuts
+
+| Key               | Action                          |
+|-------------------|---------------------------------|
+| <kbd>q</kbd>      | Quits out of Fum.              |
+| <kbd>space</kbd>  | Stops the current track.       |
+| <kbd>n</kbd>      | Plays the next track (if available). |
+| <kbd>p</kbd>      | Plays the previous track (if available). |
+
 ## Compability
 
 Some terminals will have some issues of rendering the image as those don't support an image protocol yet.
