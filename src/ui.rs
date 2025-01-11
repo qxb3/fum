@@ -204,9 +204,11 @@ impl<'a> Ui<'a> {
         };
 
         let [current_pos_area, length_area] = Layout::horizontal([
-            Constraint::Percentage(50),
-            Constraint::Percentage(50)
-        ]).areas(progress_text_area);
+            Constraint::Min(0),
+            Constraint::Min(0)
+        ])
+            .flex(Flex::SpaceBetween)
+            .areas(progress_text_area);
 
         if !self.config.hidden.contains(&"progress-bar".to_string()) {
             if meta.length.as_secs() > 0 {
