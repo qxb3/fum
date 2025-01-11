@@ -21,3 +21,9 @@ ratatui-image = { version = "4.1.0", features = ["crossterm"] }
 reqwest = { version = "0.12.9", features = ["blocking"] }
 serde = { version = "1.0.217", features = ["derive"] }
 serde_json = "1.0.134"
+
+[profile.release]
+opt-level = "z"
+lto = "thin"
+panic = "abort"
+strip = true
