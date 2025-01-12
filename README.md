@@ -114,6 +114,10 @@ Config are located on `~/.config/fum/config.json`.
 Some terminals will have some issues of rendering the image as those don't support an image protocol yet.
 See [Compability](https://github.com/benjajaja/ratatui-image?tab=readme-ov-file#compatibility-matrix) For compatible terminals.
 
+## Showcase on a rice
+
+<img src="https://github.com/qxb3/fum/blob/main/repo/showcase.png" />
+
 ## Contributing
 
 Thank you for considering contributing to fum! Contributions are welcome and appreciated.
