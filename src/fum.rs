@@ -8,6 +8,7 @@ use ratatui_image::picker::Picker;
 use crate::{config::Config, meta::Meta, term_config::TermConfig, ui::Ui, utils};
 
 pub struct Fum<'a> {
+    config: &'a Config,
     terminal: Terminal<CrosstermBackend<Stdout>>,
     ui: Ui<'a>,
     picker: Picker,
@@ -35,6 +36,7 @@ impl<'a> Fum<'a> {
             .expect("Failed to enable mouse capture");
 
         Ok(Self {
+            config,
             terminal: ratatui::init(),
             ui: Ui::new(config, term_config),
             picker,
@@ -105,6 +107,7 @@ impl<'a> Fum<'a> {
             return;
         }
 
+        self.player = utils::player::get_player(&self.config).ok();
         self.meta = Meta::default();
     }
 
