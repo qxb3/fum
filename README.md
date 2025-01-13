@@ -39,15 +39,6 @@
   src="https://github.com/user-attachments/assets/97aa278e-432c-4ea5-961a-840eac1cefe7"
 />
 
-## Roadmap / TODO
-
-- [x] Make some stuff visible optional
-- [x] Dont start if it cant find set players
-- [x] Customization of layout
-- [x] width, height on config
-- [x] Config
-- [x] CLI with clap
-
 ## Installation
 
 ### Arch
@@ -117,6 +108,25 @@ See [Compability](https://github.com/benjajaja/ratatui-image?tab=readme-ov-file#
 ## Showcase on a rice
 
 <img src="https://github.com/qxb3/fum/blob/main/repo/showcase.png" />
+
+## Roadmap / TODO
+
+- [x] Make some stuff visible optional
+- [x] Dont start if it cant find set players
+- [x] Customization of layout
+- [x] width, height on config
+- [x] Config
+- [x] CLI with clap
+
+## FaQ
+
+####  Q: Why is there a delay in updating/changing the music?
+- Two things: your internet & cpu. Everytime the song/music has been updated fum will fetch/download the image so depending on your internet speed
+  this might take a while. after the image has been fetched fum will also decode the image to properly render the image from your terminal and this decoding
+  is done thru your cpu.
+
+####  Q: Why is there a slight or huge cpu spike whenever music is updated/changed?
+- As stated in the answer above fum will also require to decode the image to properly render the image, And this decoding part is expensive.
 
 ## Contributing
 
