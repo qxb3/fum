@@ -38,12 +38,12 @@ pub fn restore() {
 }
 
 pub mod player {
-    use std::{io::Cursor, time::Duration};
+    use std::{fs, io::Cursor, str::FromStr, time::Duration};
 
     use image::ImageReader;
     use mpris::{Metadata, PlaybackStatus, Player, PlayerFinder};
     use ratatui_image::picker::Picker;
-    use reqwest::header::RANGE;
+    use reqwest::{header::RANGE, Url};
 
     use crate::{config::Config, meta::{CoverArt, Meta}};
 
@@ -133,6 +133,28 @@ pub mod player {
                         return Ok(current_art.clone());
                     }
                 }
+            }
+
+            // Handle if artUrl is on file:// scheme
+            if art_url.starts_with("file://") {
+                let art_path =  Url::from_str(&art_url)
+                    .map_err(|err| format!("Failed to parse url: {art_url}: {err}"))?
+                    .to_file_path()
+                    .map_err(|_| format!("Failed to convert url: {art_url} to file_path"))?;
+
+                let bytes = fs::read(&art_path)
+                    .map_err(|err| format!("Failed to read art file: {err}"))?;
+
+                let cover_art = ImageReader::new(Cursor::new(bytes))
+                    .with_guessed_format()
+                    .map_err(|_| "Unknown image file_type".to_string())?
+                    .decode()
+                    .map_err(|_| "Failed to decode image".to_string())?;
+
+                return Ok(CoverArt {
+                    url: art_url.to_string(),
+                    image: picker.new_resize_protocol(cover_art)
+                })
             }
 
             let client = reqwest::blocking::Client::new();
