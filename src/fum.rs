@@ -3,6 +3,7 @@ use std::{io::Stdout, time::Duration};
 use crossterm::event::{Event, KeyCode, KeyEventKind};
 use mpris::Player;
 use ratatui::{prelude::CrosstermBackend, Terminal};
+use ratatui_image::picker::Picker;
 
 use crate::{config::Config, meta::Meta, term_config::TermConfig, ui::Ui, utils};
 
@@ -11,6 +12,7 @@ pub struct Fum<'a> {
     term_config: &'a TermConfig,
 
     terminal: Terminal<CrosstermBackend<Stdout>>,
+    picker: Picker,
     player: Option<Player>,
     meta: Meta,
     redraw: bool,
@@ -21,8 +23,11 @@ impl<'a> Fum<'a> {
     pub fn new(config: &'a Config, term_config: &'a TermConfig) -> Result<Self, String> {
         let player = utils::player::get_player(&config).ok();
 
+        let picker = Picker::from_query_stdio()
+            .expect("Failed to query font size. This terminal might not be supported.");
+
         let meta = match &player {
-            Some(player) => utils::player::get_meta(player, None)
+            Some(player) => utils::player::get_meta(player, &picker, None)
                 .unwrap_or((Meta::default(), false)).0,
             None => Meta::default()
         };
@@ -32,6 +37,7 @@ impl<'a> Fum<'a> {
             term_config,
 
             terminal: ratatui::init(),
+            picker,
             player,
             meta,
             redraw: true, // Draw at startup
@@ -45,7 +51,7 @@ impl<'a> Fum<'a> {
         while !self.exit {
             if self.redraw {
                 self.terminal.draw(|frame| {
-                    ui.draw(frame, &self.meta);
+                    ui.draw(frame, &mut self.meta);
                     self.redraw = false;
                 }).expect("Failed to draw frame");
             }
@@ -78,8 +84,8 @@ impl<'a> Fum<'a> {
 
     fn update_meta(&mut self) {
         if let Some(player) = &self.player {
-            let (new_meta, changed) = utils::player::get_meta(player, Some(&self.meta))
-                .expect("Failed to get player metadata");
+            let (new_meta, changed) = utils::player::get_meta(player, &self.picker, Some(&self.meta))
+                .unwrap_or((Meta::default(), true));
 
             self.meta = new_meta;
             self.redraw = changed;

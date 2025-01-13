@@ -1,16 +1,22 @@
 use std::time::Duration;
 
-use image::DynamicImage;
 use mpris::PlaybackStatus;
+use ratatui_image::protocol::StatefulProtocol;
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
+pub struct CoverArt {
+    pub url: String,
+    pub image: StatefulProtocol
+}
+
+#[derive(Clone)]
 pub struct Meta {
     pub title: String,
     pub artists: Vec<String>,
     pub status: PlaybackStatus,
     pub position: Duration,
     pub length: Duration,
-    pub cover_art: DynamicImage
+    pub cover_art: Option<CoverArt>
 }
 
 impl Default for Meta {
@@ -21,7 +27,7 @@ impl Default for Meta {
             status: PlaybackStatus::Stopped,
             position: Duration::from_secs(0),
             length: Duration::from_secs(0),
-            cover_art: DynamicImage::default()
+            cover_art: None
         }
     }
 }

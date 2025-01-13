@@ -42,9 +42,10 @@ pub mod player {
 
     use image::{DynamicImage, ImageReader};
     use mpris::{Metadata, PlaybackStatus, Player, PlayerFinder};
+    use ratatui_image::{picker::Picker, protocol::StatefulProtocol};
     use reqwest::header::RANGE;
 
-    use crate::{config::Config, meta::Meta};
+    use crate::{config::Config, meta::{CoverArt, Meta}};
 
     pub fn get_player(config: &Config) -> Result<Player, String> {
         let players = PlayerFinder::new()
@@ -120,12 +121,20 @@ pub mod player {
             .ok_or("Failed to get mpris:length".to_string())
     }
 
-    pub fn get_cover_art(metadata: &Metadata) -> Result<DynamicImage, String> {
+    pub fn get_cover_art(metadata: &Metadata, picker: &Picker, current: Option<&Meta>) -> Result<CoverArt, String> {
         let art_url = metadata
             .get("mpris:artUrl")
             .ok_or("Failed to get mpris:artUrl")?;
 
         if let mpris::MetadataValue::String(art_url) = art_url {
+            if let Some(current) = &current {
+                if let Some(current_art) = &current.cover_art {
+                    if current_art.url == *art_url {
+                        return Ok(current_art.clone());
+                    }
+                }
+            }
+
             let client = reqwest::blocking::Client::new();
             let resp = client
                 .get(art_url)
@@ -142,39 +151,35 @@ pub mod player {
                 .decode()
                 .map_err(|_| "Failed to decode image".to_string())?;
 
-            return Ok(cover_art)
+            return Ok(CoverArt {
+                url: art_url.to_string(),
+                image: picker.new_resize_protocol(cover_art)
+            })
         }
 
         Err("mpris:artUrl is not a string.".to_string())
     }
 
-    pub fn get_meta(player: &Player, current: Option<&Meta>) -> Result<(Meta, bool), String> {
+    pub fn get_meta(player: &Player, picker: &Picker, current: Option<&Meta>) -> Result<(Meta, bool), String> {
         let metadata = get_metadata(player)?;
         let title = get_title(&metadata)?;
         let artists = get_artists(&metadata)?;
         let status = get_status(player)?;
         let position = get_position(player)?;
         let length = get_length(&metadata)?;
+        let cover_art = get_cover_art(&metadata, picker, current)?;
+
         let mut changed = false;
 
-        let cover_art = match current {
-            Some(current) => {
-                let mut cover_art = current.cover_art.clone();
-
-                if current.title != title ||
-                    current.artists != artists ||
-                    current.status != status ||
-                    position.as_secs() > current.position.as_secs() ||
-                    current.length != length
-                {
-                    cover_art = get_cover_art(&metadata)?;
-                    changed = true;
-                }
-
-                cover_art
-            },
-            None => get_cover_art(&metadata)?
-        };
+        if let Some(current) = &current {
+            if current.title != title ||
+                current.artists != artists ||
+                current.status != status ||
+                current.length != length ||
+                position.as_secs() > current.position.as_secs() {
+                changed = true;
+            }
+        }
 
         Ok((Meta {
             title,
@@ -182,7 +187,7 @@ pub mod player {
             status,
             position,
             length,
-            cover_art
+            cover_art: Some(cover_art)
         }, changed))
     }
 }

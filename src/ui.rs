@@ -1,7 +1,5 @@
-use std::time::Duration;
-
 use ratatui::{layout::{Constraint, Flex, Layout, Rect}, text::Text, widgets::{Block, Borders, Paragraph, Wrap}, Frame};
-use ratatui_image::{picker::Picker, StatefulImage};
+use ratatui_image::StatefulImage;
 use crate::{config::Config, term_config::TermConfig, utils, meta::Meta};
 
 pub struct PlaybackButtons {
@@ -21,7 +19,6 @@ impl Default for PlaybackButtons {
 }
 
 pub struct Ui<'a> {
-    pub picker: Picker,
     pub playback_buttons: PlaybackButtons,
     config: &'a Config,
     term_config: &'a TermConfig
@@ -29,13 +26,9 @@ pub struct Ui<'a> {
 
 impl<'a> Ui<'a> {
     pub fn new(config: &'a Config, term_config: &'a TermConfig) -> Self {
-        let picker = Picker::from_query_stdio()
-            .expect("Failed to query font size. This terminal might not be supported.");
-
         let playback_buttons = PlaybackButtons::default();
 
         Self {
-            picker,
             playback_buttons,
             config,
             term_config
@@ -45,7 +38,7 @@ impl<'a> Ui<'a> {
     pub fn draw(
         &mut self,
         frame: &mut Frame<'_>,
-        meta: &Meta
+        meta: &mut Meta
     ) {
         let area = utils::align::get_align(
             &self.config.align,
@@ -108,11 +101,13 @@ impl<'a> Ui<'a> {
             }
         };
 
-        frame.render_stateful_widget(
-            StatefulImage::default(),
-            image_area,
-            &mut self.picker.new_resize_protocol(meta.cover_art.clone())
-        );
+        if let Some(cover_art) = meta.cover_art.as_mut() {
+            frame.render_stateful_widget(
+                StatefulImage::default(),
+                image_area,
+                &mut cover_art.image
+            );
+        }
 
         if !self.config.hidden.contains(&"title".to_string()) {
             frame.render_widget(
