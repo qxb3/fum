@@ -109,25 +109,19 @@ impl<'a> Ui<'a> {
             );
         }
 
-        if !self.config.hidden.contains(&"title".to_string()) {
-            frame.render_widget(
-                Text::from(utils::truncate(&meta.title, 14).as_str())
-                    .centered(),
-                title_area
-            );
-        }
+        frame.render_widget(
+            Text::from(utils::truncate(&meta.title, 14).as_str())
+                .centered(),
+            title_area
+        );
 
-        if !self.config.hidden.contains(&"artists".to_string()) {
-            frame.render_widget(
-                Text::from(utils::truncate(&meta.artists.join(", "), 14).as_str())
-                    .centered(),
-                artists_area
-            );
-        }
+        frame.render_widget(
+            Text::from(utils::truncate(&meta.artists.join(", "), 14).as_str())
+                .centered(),
+            artists_area
+        );
 
-        if !self.config.hidden.contains(&"buttons".to_string()) {
-            self.render_buttons(frame, buttons_area, &meta);
-        }
+        self.render_buttons(frame, buttons_area, &meta);
 
         self.render_progress(frame, progress_area, &meta);
     }
@@ -203,64 +197,60 @@ impl<'a> Ui<'a> {
             .flex(Flex::SpaceBetween)
             .areas(progress_text_area);
 
-        if !self.config.hidden.contains(&"progress-bar".to_string()) {
-            if meta.length.as_secs() > 0 {
-                let ratio = meta.position.as_secs() as f64 / meta.length.as_secs() as f64;
-                let filled = (ratio * progress_area.width as f64).round();
-                let empty = progress_area.width.saturating_sub(filled as u16);
-                let filled_bar = self.config.progress.to_string().repeat(filled as usize);
-                let empty_bar = self.config.empty.to_string().repeat(empty.into());
+        if meta.length.as_secs() > 0 {
+            let ratio = meta.position.as_secs() as f64 / meta.length.as_secs() as f64;
+            let filled = (ratio * progress_area.width as f64).round();
+            let empty = progress_area.width.saturating_sub(filled as u16);
+            let filled_bar = self.config.progress.to_string().repeat(filled as usize);
+            let empty_bar = self.config.empty.to_string().repeat(empty.into());
 
-                frame.render_widget(Text::from(format!("{filled_bar}{empty_bar}")), progress_area);
-            } else {
-                frame.render_widget(Text::from(self.config.empty.to_string().repeat(progress_area.width.into())), progress_area);
-            }
+            frame.render_widget(Text::from(format!("{filled_bar}{empty_bar}")), progress_area);
+        } else {
+            frame.render_widget(Text::from(self.config.empty.to_string().repeat(progress_area.width.into())), progress_area);
         }
 
-        if !self.config.hidden.contains(&"progress-text".to_string()) {
-            frame.render_widget(
-                Text::from(format!(
-                    "{}",
-                    if meta.position.as_secs() >= 3600 {
-                        format!(
-                            "{}:{:02}:{:02}",
-                            meta.position.as_secs() / 3600,
-                            (meta.position.as_secs() % 3600) / 60,
-                            meta.position.as_secs() % 60
-                        )
-                    } else {
-                        format!(
-                            "{}:{:02}",
-                            meta.position.as_secs() / 60,
-                            meta.position.as_secs() % 60
-                        )
-                    }
-                ))
-                    .left_aligned(),
-                current_pos_area,
-            );
+        frame.render_widget(
+            Text::from(format!(
+                "{}",
+                if meta.position.as_secs() >= 3600 {
+                    format!(
+                        "{}:{:02}:{:02}",
+                        meta.position.as_secs() / 3600,
+                        (meta.position.as_secs() % 3600) / 60,
+                        meta.position.as_secs() % 60
+                    )
+                } else {
+                    format!(
+                        "{}:{:02}",
+                        meta.position.as_secs() / 60,
+                        meta.position.as_secs() % 60
+                    )
+                }
+            ))
+                .left_aligned(),
+            current_pos_area,
+        );
 
-            frame.render_widget(
-                Text::from(format!(
-                    "{}",
-                    if meta.length.as_secs() >= 3600 {
-                        format!(
-                            "{}:{:02}:{:02}",
-                            meta.length.as_secs() / 3600,
-                            (meta.length.as_secs() % 3600) / 60,
-                            meta.length.as_secs() % 60
-                        )
-                    } else {
-                        format!(
-                            "{}:{:02}",
-                            meta.length.as_secs() / 60,
-                            meta.length.as_secs() % 60
-                        )
-                    }
-                ))
-                    .right_aligned(),
-                length_area,
-            );
-        }
+        frame.render_widget(
+            Text::from(format!(
+                "{}",
+                if meta.length.as_secs() >= 3600 {
+                    format!(
+                        "{}:{:02}:{:02}",
+                        meta.length.as_secs() / 3600,
+                        (meta.length.as_secs() % 3600) / 60,
+                        meta.length.as_secs() % 60
+                    )
+                } else {
+                    format!(
+                        "{}:{:02}",
+                        meta.length.as_secs() / 60,
+                        meta.length.as_secs() % 60
+                    )
+                }
+            ))
+                .right_aligned(),
+            length_area,
+        );
     }
 }

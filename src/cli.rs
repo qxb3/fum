@@ -20,9 +20,6 @@ struct FumCli {
     #[arg(short, long, value_name = "top-to-bottom,left-to-right,bottom-to-top,right-to-left")]
     layout: Option<String>,
 
-    #[arg(long, value_name = "string[]", value_delimiter = ',')]
-    hidden: Option<Vec<String>>,
-
     #[arg(long, value_name = "char")]
     progress: Option<char>,
 
@@ -54,10 +51,6 @@ pub fn run() -> Result<Config, String> {
         config.layout = layout.to_string();
     }
 
-    if let Some(hidden) = fum_cli.hidden.as_ref() {
-        config.hidden = hidden.to_owned();
-    }
-
     if let Some(progress) = fum_cli.progress.as_ref() {
         config.progress = progress.to_owned();
     }
@@ -81,16 +74,6 @@ pub fn run() -> Result<Config, String> {
         "left-to-right" | "right-to-left"
     ) {
         return Err("Invalid value for 'layout'".to_string())
-    }
-
-    for hidden in &config.hidden {
-        if !matches!(
-            hidden.as_str(),
-            "title" | "artists" | "buttons" |
-            "progress-bar" | "progress-text"
-        ) {
-            return Err(format!("Invalid values for 'hidden'. value: '{hidden}' is not allowed"))
-        }
     }
 
     Ok(config)
