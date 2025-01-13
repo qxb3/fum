@@ -3,6 +3,40 @@ use serde::Deserialize;
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "lowercase")]
+pub enum Align {
+    Center,
+    Top,
+    Left,
+    Bottom,
+    Right,
+    #[serde(rename = "top-left")]
+    TopLeft,
+    #[serde(rename = "top-right")]
+    TopRight,
+    #[serde(rename = "bottom-left")]
+    BottomLeft,
+    #[serde(rename = "bottom-right")]
+    BottomRight,
+}
+
+impl Align {
+    pub fn from_str(str: &str) -> Option<Self> {
+        match str {
+            "center"        => Some(Self::Center),
+            "top"           => Some(Self::Top),
+            "left"          => Some(Self::Left),
+            "bottom"        => Some(Self::Bottom),
+            "top-left"      => Some(Self::TopLeft),
+            "top-right"     => Some(Self::TopRight),
+            "bottom-left"   => Some(Self::BottomLeft),
+            "bottom-right"  => Some(Self::BottomRight),
+            _               => None
+        }
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum Direction {
     Vertical,
     Horizontal
@@ -10,7 +44,7 @@ pub enum Direction {
 
 fn players() -> Vec<String> { vec!["spotify".to_string()] }
 fn use_active_player() -> bool { false }
-fn align() -> String { "center".to_string() }
+fn align() -> Align { Align::Center }
 fn direction() -> Direction { Direction::Vertical }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -22,7 +56,7 @@ pub struct Config {
     pub use_active_player: bool,
 
     #[serde(default = "align")]
-    pub align: String,
+    pub align: Align,
 
     #[serde(default = "direction")]
     pub direction: Direction,

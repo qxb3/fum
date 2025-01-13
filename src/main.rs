@@ -13,7 +13,7 @@ fn main() {
     let config = match cli::run() {
         Ok(config) => config,
         Err(err) => {
-            eprintln!("[CONFIG ERR] -> {}.", err);
+            eprintln!("[ERR] -> {}.", err);
             process::exit(1);
         }
     };

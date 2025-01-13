@@ -1,6 +1,7 @@
 use clap::Parser;
 use expanduser::expanduser;
-use crate::config::Config;
+
+use crate::config::{Align, Config};
 
 #[derive(Parser)]
 #[command(name = "fum", version, about)]
@@ -35,16 +36,10 @@ pub fn run() -> Result<Config, String> {
     }
 
     if let Some(align) = fum_cli.align.as_ref() {
-        config.align = align.to_string();
-    }
+        let align = Align::from_str(align.as_str())
+            .ok_or("Invalid value for 'align'".to_string())?;
 
-    if !matches!(
-        config.align.as_str(),
-        "center" | "top" | "left" |
-        "bottom" | "right" | "top-left" |
-        "top-right" | "bottom-left" | "bottom-right"
-    ) {
-        return Err("Invalid value for 'align'".to_string())
+        config.align = align;
     }
 
     Ok(config)
