@@ -40,6 +40,7 @@ pub fn restore() {
 pub mod player {
     use std::{fs, io::Cursor, str::FromStr, time::Duration};
 
+    use base64::{prelude::BASE64_STANDARD, Engine};
     use image::ImageReader;
     use mpris::{Metadata, PlaybackStatus, Player, PlayerFinder};
     use ratatui_image::picker::Picker;
@@ -135,7 +136,7 @@ pub mod player {
                 }
             }
 
-            // Handle if artUrl is on file:// scheme
+            // Handle file:// scheme
             if art_url.starts_with("file://") {
                 let art_path =  Url::from_str(&art_url)
                     .map_err(|err| format!("Failed to parse url: {art_url}: {err}"))?
@@ -155,6 +156,28 @@ pub mod player {
                     url: art_url.to_string(),
                     image: picker.new_resize_protocol(cover_art)
                 })
+            }
+
+            // Handle base64
+            if art_url.starts_with("data:") {
+                let base64_data = art_url
+                    .split_once("base64,")
+                    .ok_or("Invalid base64 url format")?
+                    .1;
+
+                let bytes = BASE64_STANDARD.decode(base64_data)
+                    .map_err(|err| format!("Failed to decode base64 data: {err}"))?;
+
+                let cover_art = ImageReader::new(Cursor::new(bytes))
+                    .with_guessed_format()
+                    .map_err(|_| "Unknown image file_type".to_string())?
+                    .decode()
+                    .map_err(|_| "Failed to decode image".to_string())?;
+
+                return Ok(CoverArt {
+                    url: art_url.to_string(),
+                    image: picker.new_resize_protocol(cover_art),
+                });
             }
 
             let client = reqwest::blocking::Client::new();

@@ -736,6 +736,7 @@ dependencies = [
 name = "fum-player"
 version = "0.3.1"
 dependencies = [
+ "base64 0.22.1",
  "clap",
  "crossterm",
  "expanduser",
