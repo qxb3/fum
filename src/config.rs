@@ -1,10 +1,17 @@
 use std::{fs, path::PathBuf};
 use serde::Deserialize;
 
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Direction {
+    Vertical,
+    Horizontal
+}
+
 fn players() -> Vec<String> { vec!["spotify".to_string()] }
 fn use_active_player() -> bool { false }
 fn align() -> String { "center".to_string() }
-fn layout() -> String { "top-to-bottom".to_string() }
+fn direction() -> Direction { Direction::Vertical }
 fn progress() -> char { '󰝤' }
 fn empty() -> char { '󰁱' }
 
@@ -19,8 +26,8 @@ pub struct Config {
     #[serde(default = "align")]
     pub align: String,
 
-    #[serde(default = "layout")]
-    pub layout: String,
+    #[serde(default = "direction")]
+    pub direction: Direction,
 
     #[serde(default = "progress")]
     pub progress: char,
@@ -35,7 +42,7 @@ impl Default for Config {
             players: players(),
             use_active_player: use_active_player(),
             align: align(),
-            layout: layout(),
+            direction: direction(),
             progress: progress(),
             empty: empty()
         }

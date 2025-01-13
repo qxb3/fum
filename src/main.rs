@@ -4,12 +4,10 @@ mod meta;
 mod ui;
 mod utils;
 mod config;
-mod term_config;
 
 use std::process;
 
 use fum::Fum;
-use term_config::TermConfig;
 
 fn main() {
     let config = match cli::run() {
@@ -20,15 +18,15 @@ fn main() {
         }
     };
 
-    let term_config = TermConfig::from_config(&config);
+    println!("{:#?}", config);
 
-    let mut fum = match Fum::new(&config, &term_config) {
-        Ok(fum) => fum,
-        Err(err) => {
-            eprintln!("[CONFIG ERR] -> {}.", err);
-            process::exit(1);
-        }
-    };
-
-    fum.run();
+    // let mut fum = match Fum::new(&config, &term_config) {
+    //     Ok(fum) => fum,
+    //     Err(err) => {
+    //         eprintln!("[CONFIG ERR] -> {}.", err);
+    //         process::exit(1);
+    //     }
+    // };
+    //
+    // fum.run();
 }
