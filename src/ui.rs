@@ -1,17 +1,15 @@
 use ratatui::Frame;
 
-use crate::{config::Config, term_config::TermConfig, meta::Meta};
+use crate::{config::Config, meta::Meta};
 
 pub struct Ui<'a> {
-    config: &'a Config,
-    term_config: &'a TermConfig
+    config: &'a Config
 }
 
 impl<'a> Ui<'a> {
-    pub fn new(config: &'a Config, term_config: &'a TermConfig) -> Self {
+    pub fn new(config: &'a Config) -> Self {
         Self {
-            config,
-            term_config
+            config
         }
     }
 

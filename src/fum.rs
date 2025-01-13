@@ -5,7 +5,7 @@ use mpris::Player;
 use ratatui::{layout::Position, prelude::CrosstermBackend, Terminal};
 use ratatui_image::picker::Picker;
 
-use crate::{config::Config, meta::Meta, term_config::TermConfig, ui::Ui, utils};
+use crate::{config::Config, meta::Meta, ui::Ui, utils};
 
 pub struct Fum<'a> {
     config: &'a Config,
@@ -19,7 +19,7 @@ pub struct Fum<'a> {
 }
 
 impl<'a> Fum<'a> {
-    pub fn new(config: &'a Config, term_config: &'a TermConfig) -> Result<Self, String> {
+    pub fn new(config: &'a Config) -> Result<Self, String> {
         let player = utils::player::get_player(&config).ok();
 
         let picker = Picker::from_query_stdio()
@@ -38,7 +38,7 @@ impl<'a> Fum<'a> {
         Ok(Self {
             config,
             terminal: ratatui::init(),
-            ui: Ui::new(config, term_config),
+            ui: Ui::new(config),
             picker,
             player,
             meta,
@@ -82,9 +82,9 @@ impl<'a> Fum<'a> {
                 },
                 Event::Mouse(mouse) if mouse.kind == MouseEventKind::Down(MouseButton::Left) => {
                     match (mouse.column, mouse.row) {
-                        (x, y) if self.ui.playback_buttons.prev.contains(Position::new(x, y)) => self.prev(),
-                        (x, y) if self.ui.playback_buttons.play_pause.contains(Position::new(x, y)) => self.play_pause(),
-                        (x, y) if self.ui.playback_buttons.next.contains(Position::new(x, y)) => self.next(),
+                        // (x, y) if self.ui.playback_buttons.prev.contains(Position::new(x, y)) => self.prev(),
+                        // (x, y) if self.ui.playback_buttons.play_pause.contains(Position::new(x, y)) => self.play_pause(),
+                        // (x, y) if self.ui.playback_buttons.next.contains(Position::new(x, y)) => self.next(),
                         _ => {}
                     }
                 },
