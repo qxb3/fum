@@ -50,6 +50,9 @@ yay -S fum
 
 ### Cargo (From Source)
 
+> [!CAUTION]
+> Installing from source is typically not recommended as it will probably have breaking stuff.
+
 ```bash
 git clone https://github.com/qxb3/fum.git
 cd fum
