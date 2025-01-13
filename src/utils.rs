@@ -40,9 +40,9 @@ pub fn restore() {
 pub mod player {
     use std::{io::Cursor, time::Duration};
 
-    use image::{DynamicImage, ImageReader};
+    use image::ImageReader;
     use mpris::{Metadata, PlaybackStatus, Player, PlayerFinder};
-    use ratatui_image::{picker::Picker, protocol::StatefulProtocol};
+    use ratatui_image::picker::Picker;
     use reqwest::header::RANGE;
 
     use crate::{config::Config, meta::{CoverArt, Meta}};

@@ -1,17 +1,15 @@
-use std::{io::Stdout, time::Duration};
+use std::{io::{stdout, Stdout}, time::Duration};
 
-use crossterm::event::{Event, KeyCode, KeyEventKind};
+use crossterm::{event::{EnableMouseCapture, Event, KeyCode, KeyEventKind, MouseButton, MouseEventKind}, execute};
 use mpris::Player;
-use ratatui::{prelude::CrosstermBackend, Terminal};
+use ratatui::{layout::Position, prelude::CrosstermBackend, Terminal};
 use ratatui_image::picker::Picker;
 
 use crate::{config::Config, meta::Meta, term_config::TermConfig, ui::Ui, utils};
 
 pub struct Fum<'a> {
-    config: &'a Config,
-    term_config: &'a TermConfig,
-
     terminal: Terminal<CrosstermBackend<Stdout>>,
+    ui: Ui<'a>,
     picker: Picker,
     player: Option<Player>,
     meta: Meta,
@@ -32,11 +30,13 @@ impl<'a> Fum<'a> {
             None => Meta::default()
         };
 
-        Ok(Self {
-            config,
-            term_config,
+        // Enable mouse capture
+        execute!(stdout(), EnableMouseCapture)
+            .expect("Failed to enable mouse capture");
 
+        Ok(Self {
             terminal: ratatui::init(),
+            ui: Ui::new(config, term_config),
             picker,
             player,
             meta,
@@ -46,12 +46,10 @@ impl<'a> Fum<'a> {
     }
 
     pub fn run(&mut self) {
-        let mut ui = Ui::new(&self.config, &self.term_config);
-
         while !self.exit {
             if self.redraw {
                 self.terminal.draw(|frame| {
-                    ui.draw(frame, &mut self.meta);
+                    self.ui.draw(frame, &mut self.meta);
                     self.redraw = false;
                 }).expect("Failed to draw frame");
             }
@@ -60,7 +58,7 @@ impl<'a> Fum<'a> {
             self.update_meta();
         }
 
-        ratatui::restore();
+        utils::restore();
     }
 
     fn term_events(&mut self) {
@@ -74,6 +72,17 @@ impl<'a> Fum<'a> {
                         KeyCode::Char('q') => {
                             self.exit = true;
                         },
+                        KeyCode::Char('p') => self.prev(),
+                        KeyCode::Char(' ') => self.play_pause(),
+                        KeyCode::Char('n') => self.next(),
+                        _ => {}
+                    }
+                },
+                Event::Mouse(mouse) if mouse.kind == MouseEventKind::Down(MouseButton::Left) => {
+                    match (mouse.column, mouse.row) {
+                        (x, y) if self.ui.playback_buttons.prev.contains(Position::new(x, y)) => self.prev(),
+                        (x, y) if self.ui.playback_buttons.play_pause.contains(Position::new(x, y)) => self.play_pause(),
+                        (x, y) if self.ui.playback_buttons.next.contains(Position::new(x, y)) => self.next(),
                         _ => {}
                     }
                 },
@@ -97,5 +106,23 @@ impl<'a> Fum<'a> {
         }
 
         self.meta = Meta::default();
+    }
+
+    fn prev(&self) {
+        if let Some(player) = &self.player {
+            player.previous().expect("Failed to prev player");
+        }
+    }
+
+    fn play_pause(&self) {
+        if let Some(player) = &self.player {
+            player.play_pause().expect("Failed to play/pause player");
+        }
+    }
+
+    fn next(&self) {
+        if let Some(player) = &self.player {
+            player.next().expect("Failed to next player");
+        }
     }
 }

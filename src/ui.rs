@@ -4,7 +4,7 @@ use crate::{config::Config, term_config::TermConfig, utils, meta::Meta};
 
 pub struct PlaybackButtons {
     pub prev: Rect,
-    pub toggle: Rect,
+    pub play_pause: Rect,
     pub next: Rect
 }
 
@@ -12,7 +12,7 @@ impl Default for PlaybackButtons {
     fn default() -> Self {
         Self {
             prev: Rect::default(),
-            toggle: Rect::default(),
+            play_pause: Rect::default(),
             next:Rect::default()
         }
     }
@@ -149,7 +149,7 @@ impl<'a> Ui<'a> {
             .areas(area);
 
         self.playback_buttons.prev = prev;
-        self.playback_buttons.toggle = toggle;
+        self.playback_buttons.play_pause = toggle;
         self.playback_buttons.next = next;
 
         frame.render_widget(
