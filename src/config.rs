@@ -42,11 +42,6 @@ pub enum Direction {
     Horizontal
 }
 
-fn players() -> Vec<String> { vec!["spotify".to_string()] }
-fn use_active_player() -> bool { false }
-fn align() -> Align { Align::Center }
-fn direction() -> Direction { Direction::Vertical }
-
 #[derive(Debug, Clone, Deserialize)]
 pub struct Config {
     #[serde(default = "players")]
@@ -60,6 +55,28 @@ pub struct Config {
 
     #[serde(default = "direction")]
     pub direction: Direction,
+
+    #[serde(default = "layout")]
+    pub layout: Vec<LayoutItem>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(tag = "type")]
+#[serde(rename_all = "lowercase")]
+pub enum LayoutItem {
+    Container {
+        width: u16,
+        height: u16,
+        direction: Direction,
+        children: Vec<LayoutItem>
+    },
+    Image {
+        width: u16,
+        height: u16
+    },
+    Label {
+        text: String
+    }
 }
 
 impl Default for Config {
@@ -69,6 +86,7 @@ impl Default for Config {
             use_active_player: use_active_player(),
             align: align(),
             direction: direction(),
+            layout: layout()
         }
     }
 }
@@ -85,4 +103,26 @@ impl Config {
             Err(_) => Ok(Config::default())
         }
     }
+}
+
+fn players() -> Vec<String> { vec!["spotify".to_string()] }
+fn use_active_player() -> bool { false }
+fn align() -> Align { Align::Center }
+fn direction() -> Direction { Direction::Vertical }
+fn layout() -> Vec<LayoutItem> {
+    Vec::from([
+        LayoutItem::Image {
+            width: 10,
+            height: 10
+        },
+        LayoutItem::Container {
+            width: 10,
+            height: 10,
+            direction: Direction::Vertical,
+            children: Vec::from([
+                LayoutItem::Label { text: "$title".to_string() },
+                LayoutItem::Label { text: "$artists".to_string() }
+            ])
+        }
+    ])
 }

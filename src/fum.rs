@@ -2,7 +2,7 @@ use std::{io::{stdout, Stdout}, time::Duration};
 
 use crossterm::{event::{EnableMouseCapture, Event, KeyCode, KeyEventKind, MouseButton, MouseEventKind}, execute};
 use mpris::Player;
-use ratatui::{layout::Position, prelude::CrosstermBackend, Terminal};
+use ratatui::{prelude::CrosstermBackend, Terminal};
 use ratatui_image::picker::Picker;
 
 use crate::{config::Config, meta::Meta, ui::Ui, utils};

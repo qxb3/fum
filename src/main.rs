@@ -18,15 +18,13 @@ fn main() {
         }
     };
 
-    println!("{:#?}", config);
+    let mut fum = match Fum::new(&config) {
+        Ok(fum) => fum,
+        Err(err) => {
+            eprintln!("[ERR] -> {}.", err);
+            process::exit(1);
+        }
+    };
 
-    // let mut fum = match Fum::new(&config, &term_config) {
-    //     Ok(fum) => fum,
-    //     Err(err) => {
-    //         eprintln!("[CONFIG ERR] -> {}.", err);
-    //         process::exit(1);
-    //     }
-    // };
-    //
-    // fum.run();
+    fum.run();
 }
