@@ -12,8 +12,6 @@ fn players() -> Vec<String> { vec!["spotify".to_string()] }
 fn use_active_player() -> bool { false }
 fn align() -> String { "center".to_string() }
 fn direction() -> Direction { Direction::Vertical }
-fn progress() -> char { '󰝤' }
-fn empty() -> char { '󰁱' }
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Config {
@@ -28,12 +26,6 @@ pub struct Config {
 
     #[serde(default = "direction")]
     pub direction: Direction,
-
-    #[serde(default = "progress")]
-    pub progress: char,
-
-    #[serde(default = "empty")]
-    pub empty: char
 }
 
 impl Default for Config {
@@ -43,8 +35,6 @@ impl Default for Config {
             use_active_player: use_active_player(),
             align: align(),
             direction: direction(),
-            progress: progress(),
-            empty: empty()
         }
     }
 }

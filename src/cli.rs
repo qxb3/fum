@@ -15,13 +15,7 @@ struct FumCli {
     use_active_player: Option<bool>,
 
     #[arg(short, long, value_name = "center,top,left,bottom,right,top-left,top-right,bottom-left,bottom-right")]
-    align: Option<String>,
-
-    #[arg(long, value_name = "char")]
-    progress: Option<char>,
-
-    #[arg(long, value_name = "char")]
-    empty: Option<char>,
+    align: Option<String>
 }
 
 pub fn run() -> Result<Config, String> {
@@ -42,14 +36,6 @@ pub fn run() -> Result<Config, String> {
 
     if let Some(align) = fum_cli.align.as_ref() {
         config.align = align.to_string();
-    }
-
-    if let Some(progress) = fum_cli.progress.as_ref() {
-        config.progress = progress.to_owned();
-    }
-
-    if let Some(empty) = fum_cli.empty.as_ref() {
-        config.empty = empty.to_owned();
     }
 
     if !matches!(
