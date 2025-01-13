@@ -737,6 +737,7 @@ name = "fum-player"
 version = "0.2.1"
 dependencies = [
  "clap",
+ "crossterm",
  "expanduser",
  "image",
  "mpris",

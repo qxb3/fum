@@ -44,7 +44,7 @@ pub mod player {
     use mpris::{Metadata, PlaybackStatus, Player, PlayerFinder};
     use reqwest::header::RANGE;
 
-    use crate::{config::Config, Meta};
+    use crate::{config::Config, meta::Meta};
 
     pub fn get_player(config: &Config) -> Result<Player, String> {
         let players = PlayerFinder::new()
@@ -67,9 +67,9 @@ pub mod player {
         // Find the most likely player to be used
         if config.use_active_player {
             return PlayerFinder::new()
-                .map_err(|err| format!("Failed to connect to D-Bus: {:?}.", err))?
+                .map_err(|err| format!("Failed to connect to D-Bus: {:?}", err))?
                 .find_active()
-                .map_err(|err| format!("'use-active-player' is set to true but failed to get active player: {:?}", err));
+                .map_err(|err| format!("'use-active-player' is set to true but failed to get active player: {err}"));
         }
 
         Err("Failed to find any specified players.".to_string())
@@ -78,7 +78,7 @@ pub mod player {
     pub fn get_metadata(player: &Player) -> Result<Metadata, String> {
         player
             .get_metadata()
-            .map_err(|err| format!("Failed to get the player's metadata: {err}."))
+            .map_err(|err| format!("Failed to get the player's metadata: {err}"))
     }
 
     pub fn get_title(metadata: &Metadata) -> Result<String, String> {
@@ -98,7 +98,7 @@ pub mod player {
     pub fn get_status(player: &Player) -> Result<PlaybackStatus, String> {
         player
             .get_playback_status()
-            .map_err(|err| format!("Failed to get player playback_status: {:?}.", err))
+            .map_err(|err| format!("Failed to get player playback_status: {err}"))
     }
 
     pub fn get_status_icon<'a>(status: &PlaybackStatus) -> &'a str {
@@ -109,14 +109,20 @@ pub mod player {
         }
     }
 
+    pub fn get_position(player: &Player) -> Result<Duration, String> {
+        player.get_position()
+            .map_err(|err| format!("Failed to get player position: {err}"))
+    }
+
     pub fn get_length(metadata: &Metadata) -> Result<Duration, String> {
         metadata
             .length()
-            .ok_or("Failed to get mpris:length.".to_string())
+            .ok_or("Failed to get mpris:length".to_string())
     }
 
     pub fn get_cover_art(metadata: &Metadata) -> Result<DynamicImage, String> {
-        let art_url = metadata.get("mpris:artUrl")
+        let art_url = metadata
+            .get("mpris:artUrl")
             .ok_or("Failed to get mpris:artUrl")?;
 
         if let mpris::MetadataValue::String(art_url) = art_url {
@@ -125,16 +131,16 @@ pub mod player {
                 .get(art_url)
                 .header(RANGE, "bytes=0-1048576")
                 .send()
-                .map_err(|_| "Failed to fetch art url.".to_string())?;
+                .map_err(|_| "Failed to fetch art url".to_string())?;
 
             let bytes = resp.bytes()
-                .map_err(|_| "Failed to get art image bytes.".to_string())?;
+                .map_err(|_| "Failed to get art image bytes".to_string())?;
 
             let cover_art = ImageReader::new(Cursor::new(bytes))
                 .with_guessed_format()
-                .map_err(|_| "Unknown image file_type.".to_string())?
+                .map_err(|_| "Unknown image file_type".to_string())?
                 .decode()
-                .map_err(|_| "Failed to decode image.".to_string())?;
+                .map_err(|_| "Failed to decode image".to_string())?;
 
             return Ok(cover_art)
         }
@@ -142,21 +148,42 @@ pub mod player {
         Err("mpris:artUrl is not a string.".to_string())
     }
 
-    pub fn get_meta(player: &Player) -> Result<Meta, String> {
+    pub fn get_meta(player: &Player, current: Option<&Meta>) -> Result<(Meta, bool), String> {
         let metadata = get_metadata(player)?;
         let title = get_title(&metadata)?;
         let artists = get_artists(&metadata)?;
         let status = get_status(player)?;
+        let position = get_position(player)?;
         let length = get_length(&metadata)?;
-        let cover_art = get_cover_art(&metadata)?;
+        let mut changed = false;
 
-        Ok(Meta {
+        let cover_art = match current {
+            Some(current) => {
+                let mut cover_art = current.cover_art.clone();
+
+                if current.title != title ||
+                    current.artists != artists ||
+                    current.status != status ||
+                    position.as_secs() > current.position.as_secs() ||
+                    current.length != length
+                {
+                    cover_art = get_cover_art(&metadata)?;
+                    changed = true;
+                }
+
+                cover_art
+            },
+            None => get_cover_art(&metadata)?
+        };
+
+        Ok((Meta {
             title,
             artists,
             status,
+            position,
             length,
             cover_art
-        })
+        }, changed))
     }
 }
 

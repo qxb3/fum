@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use ratatui::{layout::{Constraint, Flex, Layout, Rect}, text::Text, widgets::{Block, Borders, Paragraph, Wrap}, Frame};
 use ratatui_image::{picker::Picker, StatefulImage};
-use crate::{config::Config, term_config::TermConfig, utils, Meta};
+use crate::{config::Config, term_config::TermConfig, utils, meta::Meta};
 
 pub struct PlaybackButtons {
     pub prev: Rect,
@@ -28,25 +28,24 @@ pub struct Ui<'a> {
 }
 
 impl<'a> Ui<'a> {
-    pub fn new(config: &'a Config, term_config: &'a TermConfig) -> Result<Self, &'a str> {
+    pub fn new(config: &'a Config, term_config: &'a TermConfig) -> Self {
         let picker = Picker::from_query_stdio()
-            .map_err(|_| "Failed to query font size. This terminal might not be supported.")?;
+            .expect("Failed to query font size. This terminal might not be supported.");
 
         let playback_buttons = PlaybackButtons::default();
 
-        Ok(Self {
+        Self {
             picker,
             playback_buttons,
             config,
             term_config
-        })
+        }
     }
 
     pub fn draw(
         &mut self,
         frame: &mut Frame<'_>,
-        meta: &Meta,
-        current_progress: &Duration
+        meta: &Meta
     ) {
         let area = utils::align::get_align(
             &self.config.align,
@@ -135,7 +134,7 @@ impl<'a> Ui<'a> {
             self.render_buttons(frame, buttons_area, &meta);
         }
 
-        self.render_progress(frame, progress_area, &meta, &current_progress);
+        self.render_progress(frame, progress_area, &meta);
     }
 
     fn render_buttons(
@@ -178,8 +177,7 @@ impl<'a> Ui<'a> {
         &mut self,
         frame: &mut Frame<'_>,
         area: Rect,
-        meta: &Meta,
-        current_progress: &Duration
+        meta: &Meta
     ) {
         let (
             progress_area,
@@ -212,7 +210,7 @@ impl<'a> Ui<'a> {
 
         if !self.config.hidden.contains(&"progress-bar".to_string()) {
             if meta.length.as_secs() > 0 {
-                let ratio = current_progress.as_secs() as f64 / meta.length.as_secs() as f64;
+                let ratio = meta.position.as_secs() as f64 / meta.length.as_secs() as f64;
                 let filled = (ratio * progress_area.width as f64).round();
                 let empty = progress_area.width.saturating_sub(filled as u16);
                 let filled_bar = self.config.progress.to_string().repeat(filled as usize);
@@ -228,18 +226,18 @@ impl<'a> Ui<'a> {
             frame.render_widget(
                 Text::from(format!(
                     "{}",
-                    if current_progress.as_secs() >= 3600 {
+                    if meta.position.as_secs() >= 3600 {
                         format!(
                             "{}:{:02}:{:02}",
-                            current_progress.as_secs() / 3600,
-                            (current_progress.as_secs() % 3600) / 60,
-                            current_progress.as_secs() % 60
+                            meta.position.as_secs() / 3600,
+                            (meta.position.as_secs() % 3600) / 60,
+                            meta.position.as_secs() % 60
                         )
                     } else {
                         format!(
                             "{}:{:02}",
-                            current_progress.as_secs() / 60,
-                            current_progress.as_secs() % 60
+                            meta.position.as_secs() / 60,
+                            meta.position.as_secs() % 60
                         )
                     }
                 ))
