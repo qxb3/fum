@@ -77,6 +77,9 @@ impl<'a> Fum<'a> {
                         _ => {}
                     }
                 },
+                Event::Resize(_, _) => {
+                    self.redraw = true;
+                }
                 _ => {}
             }
         }
