@@ -56,6 +56,12 @@ pub struct Config {
     #[serde(default = "direction")]
     pub direction: Direction,
 
+    #[serde(default = "width")]
+    pub width: u16,
+
+    #[serde(default = "height")]
+    pub height: u16,
+
     #[serde(default = "layout")]
     pub layout: Vec<LayoutItem>,
 }
@@ -86,6 +92,8 @@ impl Default for Config {
             use_active_player: use_active_player(),
             align: align(),
             direction: direction(),
+            width: width(),
+            height: height(),
             layout: layout()
         }
     }
@@ -109,6 +117,8 @@ fn players() -> Vec<String> { vec!["spotify".to_string()] }
 fn use_active_player() -> bool { false }
 fn align() -> Align { Align::Center }
 fn direction() -> Direction { Direction::Vertical }
+fn width() -> u16 { 10 }
+fn height() -> u16 { 20 }
 fn layout() -> Vec<LayoutItem> {
     Vec::from([
         LayoutItem::Image {
