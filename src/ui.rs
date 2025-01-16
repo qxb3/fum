@@ -3,7 +3,7 @@ use std::rc::Rc;
 use ratatui::{layout::{Constraint, Layout, Rect}, widgets::Paragraph, Frame};
 use ratatui_image::StatefulImage;
 
-use crate::{config::{self, Config, ContainerFlex, FumWidget, LabelAlignment}, config_debug, debug_widget, meta::Meta, utils};
+use crate::{config::{self, Config}, config_debug, debug_widget, meta::Meta, utils, widget::{self, ContainerFlex, FumWidget, LabelAlignment}};
 
 pub struct Ui<'a> {
     config: &'a Config
@@ -27,17 +27,17 @@ impl<'a> Ui<'a> {
             main_area
         );
 
-        for (i, item) in self.config.layout.iter().enumerate() {
+        for (i, widget) in self.config.layout.iter().enumerate() {
             if let Some(area) = areas.get(i) {
                 config_debug!(self.config.debug, frame, *area);
-                self.render_layout(frame, item, area, meta);
+                self.render_layout(frame, widget, area, meta);
             }
         }
     }
 
-    fn render_layout(&self, frame: &mut Frame<'_>, item: &FumWidget, parent_area: &Rect, meta: &mut Meta) {
-        match &item {
-            &FumWidget::Container { width, height, direction, flex, children } => {
+    fn render_layout(&self, frame: &mut Frame<'_>, widget: &FumWidget, parent_area: &Rect, meta: &mut Meta) {
+        match &widget {
+            FumWidget::Container { width, height, direction, flex, children } => {
                 let [area] = Layout::horizontal([Constraint::Length(*width)]).areas(*parent_area);
                 let [area] = Layout::vertical([Constraint::Length(*height)]).areas(area);
 
@@ -60,7 +60,7 @@ impl<'a> Ui<'a> {
                     }
                 }
             },
-            &FumWidget::CoverArt { width, height } => {
+            FumWidget::CoverArt { width, height } => {
                 let [area] = Layout::horizontal([Constraint::Length(*width)]).areas(*parent_area);
                 let [area] = Layout::vertical([Constraint::Length(*height)]).areas(area);
 
@@ -72,7 +72,7 @@ impl<'a> Ui<'a> {
                     );
                 }
             },
-            &FumWidget::Label { text, align } => {
+            FumWidget::Label { text, align } => {
                 let text = self.replace_text(text, meta).to_string();
 
                 let widget = match align {
@@ -89,7 +89,7 @@ impl<'a> Ui<'a> {
                     *parent_area
                 );
             }
-            &FumWidget::Button { text, action, exec } => {
+            FumWidget::Button { text, action, exec } => {
                 let text = self.replace_text(text, meta).to_string();
 
                 frame.render_widget(
@@ -109,25 +109,25 @@ impl<'a> Ui<'a> {
         }
     }
 
-    fn get_areas(&self, items: &Vec<FumWidget>, direction: &config::Direction, flex: &ContainerFlex, parent_area: Rect) -> Rc<[Rect]> {
+    fn get_areas(&self, widgets: &Vec<FumWidget>, direction: &widget::Direction, flex: &ContainerFlex, parent_area: Rect) -> Rc<[Rect]> {
         Layout::default()
             .direction(direction.to_dir())
             .flex(flex.to_flex())
             .constraints(
-                items
+                widgets
                     .iter()
                     .map(|child| match child {
                         FumWidget::Container { width, height, .. } |
                         FumWidget::CoverArt { width, height } => {
                             match direction {
-                                config::Direction::Horizontal => Constraint::Length(*width),
-                                config::Direction::Vertical => Constraint::Length(*height)
+                                widget::Direction::Horizontal => Constraint::Length(*width),
+                                widget::Direction::Vertical => Constraint::Length(*height)
                             }
                         },
                         FumWidget::Label { .. } => {
                             match direction {
-                                config::Direction::Horizontal => Constraint::Min(0),
-                                config::Direction::Vertical => Constraint::Length(1)
+                                widget::Direction::Horizontal => Constraint::Min(0),
+                                widget::Direction::Vertical => Constraint::Length(1)
                             }
                         },
                         FumWidget::Button { .. } => {

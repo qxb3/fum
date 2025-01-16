@@ -3,6 +3,7 @@ mod fum;
 mod meta;
 mod ui;
 mod utils;
+mod widget;
 mod config;
 
 use std::process;
