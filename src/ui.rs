@@ -59,7 +59,7 @@ impl<'a> Ui<'a> {
             },
             &LayoutItem::Label { text } => {
                 let text = match text {
-                    text if text.contains("$title") => &text.replace("title", &meta.title),
+                    text if text.contains("$title") => &text.replace("$title", &meta.title),
                     text if text.contains("$artists") => &text.replace("$artists", &meta.artists.join(", ")),
                     _ => text
                 };
