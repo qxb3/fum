@@ -262,6 +262,8 @@ pub mod player {
 pub mod align {
     use ratatui::{layout::{Constraint, Flex, Layout, Rect}, Frame};
 
+    use crate::config::Align;
+
     pub fn center(frame: &mut Frame<'_>, width: u16, height: u16) -> Rect {
         let [area] = Layout::horizontal([Constraint::Length(width)])
             .flex(Flex::Center)
@@ -358,18 +360,17 @@ pub mod align {
         area
     }
 
-    pub fn get_align(align: &String, frame: &mut Frame<'_>, width: u16, height: u16) -> Rect {
-        match align.as_str() {
-            "center" => center(frame, width, height),
-            "top" => top(frame, width, height),
-            "left" => left(frame, width, height),
-            "bottom" => bottom(frame, width, height),
-            "right" => right(frame, width, height),
-            "top-left" => top_left(frame, width, height),
-            "top-right" => top_right(frame, width, height),
-            "bottom-left" => bottom_left(frame, width, height),
-            "bottom-right" => bottom_right(frame, width, height),
-            _ => unreachable!()
+    pub fn get_align(align: &Align, frame: &mut Frame<'_>, width: u16, height: u16) -> Rect {
+        match align {
+            Align::Center           => center(frame, width, height),
+            Align::Top              => top(frame, width, height),
+            Align::Left             => left(frame, width, height),
+            Align::Bottom           => bottom(frame, width, height),
+            Align::Right            => right(frame, width, height),
+            Align::TopLeft          => top_left(frame, width, height),
+            Align::TopRight         => top_right(frame, width, height),
+            Align::BottomLeft       => bottom_left(frame, width, height),
+            Align::BottomRight      => bottom_right(frame, width, height)
         }
     }
 }
