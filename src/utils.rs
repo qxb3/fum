@@ -360,7 +360,7 @@ pub mod align {
         area
     }
 
-    pub fn get_align(align: &Align, frame: &mut Frame<'_>, width: u16, height: u16) -> Rect {
+    pub fn get_align(frame: &mut Frame<'_>, align: &Align, width: u16, height: u16) -> Rect {
         match align {
             Align::Center           => center(frame, width, height),
             Align::Top              => top(frame, width, height),

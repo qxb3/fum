@@ -17,7 +17,7 @@ impl<'a> Ui<'a> {
     }
 
     pub fn draw(&mut self, frame: &mut Frame<'_>, meta: &mut Meta) {
-        let main_area = utils::align::get_align(&self.config.align, frame, self.config.width, self.config.height);
+        let main_area = utils::align::get_align(frame, &self.config.align, self.config.width, self.config.height);
         config_debug!(self.config.debug, frame, main_area);
 
         let areas = self.get_areas(&self.config.layout, &self.config.direction, main_area);
