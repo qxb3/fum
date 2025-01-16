@@ -1,9 +1,9 @@
 use std::rc::Rc;
 
-use ratatui::{layout::{Constraint, Direction, Layout, Rect}, text::ToSpan, widgets::{Block, Borders, Paragraph}, Frame};
+use ratatui::{layout::{Constraint, Layout, Rect}, widgets::Paragraph, Frame};
 use ratatui_image::StatefulImage;
 
-use crate::{config::{self, Config, LayoutItem}, debug_widget, meta::Meta, utils};
+use crate::{config::{self, Config, LayoutItem}, meta::Meta, utils};
 
 pub struct Ui<'a> {
     config: &'a Config
