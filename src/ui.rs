@@ -3,7 +3,7 @@ use std::rc::Rc;
 use ratatui::{layout::{Constraint, Layout, Rect}, widgets::Paragraph, Frame};
 use ratatui_image::StatefulImage;
 
-use crate::{config::{self, Config, FumWidget}, config_debug, debug_widget, meta::Meta, utils};
+use crate::{config::{self, Config, FumWidget, LabelAlignment}, config_debug, debug_widget, meta::Meta, utils};
 
 pub struct Ui<'a> {
     config: &'a Config
@@ -57,15 +57,24 @@ impl<'a> Ui<'a> {
                     );
                 }
             },
-            &FumWidget::Label { text } => {
+            &FumWidget::Label { text, align } => {
                 let text = match text {
                     text if text.contains("$title") => &text.replace("$title", &meta.title),
                     text if text.contains("$artists") => &text.replace("$artists", &meta.artists.join(", ")),
                     _ => text
                 };
 
+                let widget = match align {
+                    Some(align) => match align {
+                        LabelAlignment::Left => Paragraph::new(text.to_string()).left_aligned(),
+                        LabelAlignment::Center => Paragraph::new(text.to_string()).centered(),
+                        LabelAlignment::Right => Paragraph::new(text.to_string()).right_aligned(),
+                    },
+                    None => Paragraph::new(text.to_string())
+                };
+
                 frame.render_widget(
-                    Paragraph::new(text.to_string()),
+                    widget,
                     *parent_area
                 );
             }
@@ -86,9 +95,9 @@ impl<'a> Ui<'a> {
                                 config::Direction::Vertical => Constraint::Length(*height)
                             }
                         },
-                        FumWidget::Label { text } => {
+                        FumWidget::Label { .. } => {
                             match direction {
-                                config::Direction::Horizontal => Constraint::Length(text.len() as u16),
+                                config::Direction::Horizontal => Constraint::Min(0),
                                 config::Direction::Vertical => Constraint::Length(1)
                             }
                         }

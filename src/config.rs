@@ -52,6 +52,14 @@ impl Direction {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum LabelAlignment {
+    Left,
+    Center,
+    Right
+}
+
+#[derive(Debug, Clone, Deserialize)]
 pub struct Config {
     #[serde(default = "players")]
     pub players: Vec<String>,
@@ -94,7 +102,8 @@ pub enum FumWidget {
         height: u16
     },
     Label {
-        text: String
+        text: String,
+        align: Option<LabelAlignment>
     }
 }
 
@@ -131,22 +140,28 @@ fn players() -> Vec<String> { vec!["spotify".to_string()] }
 fn use_active_player() -> bool { false }
 fn align() -> Align { Align::Center }
 fn direction() -> Direction { Direction::Vertical }
-fn width() -> u16 { 10 }
-fn height() -> u16 { 20 }
+fn width() -> u16 { 20 }
+fn height() -> u16 { 18 }
 fn debug() -> Option<bool> { None }
 fn layout() -> Vec<FumWidget> {
     Vec::from([
         FumWidget::CoverArt {
-            width: 10,
+            width: 20,
             height: 10
         },
         FumWidget::Container {
-            width: 10,
+            width: 20,
             height: 10,
             direction: Direction::Vertical,
             children: Vec::from([
-                FumWidget::Label { text: "$title".to_string() },
-                FumWidget::Label { text: "$artists".to_string() }
+                FumWidget::Label {
+                    text: "$title".to_string(),
+                    align: Some(LabelAlignment::Center)
+                },
+                FumWidget::Label {
+                    text: "$artists".to_string(),
+                    align: Some(LabelAlignment::Center)
+                }
             ])
         }
     ])
