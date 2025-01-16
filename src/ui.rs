@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use ratatui::{layout::{Constraint, Flex, Layout, Rect}, widgets::Paragraph, Frame};
+use ratatui::{layout::{Constraint, Layout, Rect}, widgets::Paragraph, Frame};
 use ratatui_image::StatefulImage;
 
 use crate::{config::{self, Config, ContainerFlex, FumWidget, LabelAlignment}, config_debug, debug_widget, meta::Meta, utils};
