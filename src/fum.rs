@@ -13,7 +13,7 @@ pub struct Fum<'a> {
     ui: Ui<'a>,
     picker: Picker,
     player: Option<Player>,
-    meta: Meta,
+    meta: Meta<'a>,
     redraw: bool,
     exit: bool
 }

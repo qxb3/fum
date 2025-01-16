@@ -58,19 +58,15 @@ impl<'a> Ui<'a> {
                 }
             },
             &FumWidget::Label { text, align } => {
-                let text = match text {
-                    text if text.contains("$title") => &text.replace("$title", &meta.title),
-                    text if text.contains("$artists") => &text.replace("$artists", &meta.artists.join(", ")),
-                    _ => text
-                };
+                let text = self.replace_text(text, meta).to_string();
 
                 let widget = match align {
                     Some(align) => match align {
-                        LabelAlignment::Left => Paragraph::new(text.to_string()).left_aligned(),
-                        LabelAlignment::Center => Paragraph::new(text.to_string()).centered(),
-                        LabelAlignment::Right => Paragraph::new(text.to_string()).right_aligned(),
+                        LabelAlignment::Left => Paragraph::new(text).left_aligned(),
+                        LabelAlignment::Center => Paragraph::new(text).centered(),
+                        LabelAlignment::Right => Paragraph::new(text).right_aligned(),
                     },
-                    None => Paragraph::new(text.to_string())
+                    None => Paragraph::new(text)
                 };
 
                 frame.render_widget(
@@ -78,6 +74,23 @@ impl<'a> Ui<'a> {
                     *parent_area
                 );
             }
+            &FumWidget::Button { text, action, exec } => {
+                let text = self.replace_text(text, meta).to_string();
+
+                frame.render_widget(
+                    Paragraph::new(text),
+                    *parent_area
+                );
+            }
+        }
+    }
+
+    fn replace_text(&self, text: &String, meta: &mut Meta) -> String {
+        match text {
+            text if text.contains("$title") => text.replace("$title", &meta.title),
+            text if text.contains("$artists") => text.replace("$artists", &meta.artists.join(", ")),
+            text if text.contains("$status_icon") => text.replace("$status_icon", &meta.status_icon),
+            _ => text.to_string()
         }
     }
 
@@ -100,6 +113,9 @@ impl<'a> Ui<'a> {
                                 config::Direction::Horizontal => Constraint::Min(0),
                                 config::Direction::Vertical => Constraint::Length(1)
                             }
+                        },
+                        FumWidget::Button { .. } => {
+                            Constraint::Length(1)
                         }
                     })
                     .collect::<Vec<Constraint>>()

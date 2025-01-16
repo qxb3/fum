@@ -104,6 +104,11 @@ pub enum FumWidget {
     Label {
         text: String,
         align: Option<LabelAlignment>
+    },
+    Button {
+        text: String,
+        action: String,
+        exec: Option<String>
     }
 }
 
@@ -144,7 +149,7 @@ fn width() -> u16 { 20 }
 fn height() -> u16 { 18 }
 fn debug() -> Option<bool> { None }
 fn layout() -> Vec<FumWidget> {
-    Vec::from([
+    vec![
         FumWidget::CoverArt {
             width: 20,
             height: 10
@@ -161,8 +166,30 @@ fn layout() -> Vec<FumWidget> {
                 FumWidget::Label {
                     text: "$artists".to_string(),
                     align: Some(LabelAlignment::Center)
+                },
+                FumWidget::Container {
+                    width: 20,
+                    height: 1,
+                    direction: Direction::Horizontal,
+                    children: vec![
+                        FumWidget::Button {
+                            text: "󰒮".to_string(),
+                            action: "prev_music()".to_string(),
+                            exec: None
+                        },
+                        FumWidget::Button {
+                            text: "$status_icon".to_string(),
+                            action: "play_pause()".to_string(),
+                            exec: None
+                        },
+                        FumWidget::Button {
+                            text: "󰒭".to_string(),
+                            action: "next()".to_string(),
+                            exec: None
+                        }
+                    ]
                 }
             ])
         }
-    ])
+    ]
 }

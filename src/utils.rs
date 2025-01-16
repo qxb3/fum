@@ -227,11 +227,12 @@ pub mod player {
         Err("mpris:artUrl is not a string.".to_string())
     }
 
-    pub fn get_meta(player: &Player, picker: &Picker, current: Option<&Meta>) -> Result<(Meta, bool), String> {
+    pub fn get_meta<'a>(player: &Player, picker: &Picker, current: Option<&Meta>) -> Result<(Meta<'a>, bool), String> {
         let metadata = get_metadata(player)?;
         let title = get_title(&metadata)?;
         let artists = get_artists(&metadata)?;
         let status = get_status(player)?;
+        let status_icon = get_status_icon(&status);
         let position = get_position(player)?;
         let length = get_length(&metadata)?;
         let cover_art = get_cover_art(&metadata, picker, current)?;
@@ -252,6 +253,7 @@ pub mod player {
             title,
             artists,
             status,
+            status_icon,
             position,
             length,
             cover_art: Some(cover_art)
