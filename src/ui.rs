@@ -1,6 +1,9 @@
-use ratatui::Frame;
+use std::rc::Rc;
 
-use crate::{config::Config, meta::Meta};
+use ratatui::{layout::{Constraint, Direction, Layout, Rect}, text::ToSpan, widgets::{Block, Borders, Paragraph}, Frame};
+use ratatui_image::StatefulImage;
+
+use crate::{config::{self, Config, LayoutItem}, debug_widget, meta::Meta, utils};
 
 pub struct Ui<'a> {
     config: &'a Config
@@ -13,5 +16,78 @@ impl<'a> Ui<'a> {
         }
     }
 
-    pub fn draw(&mut self, frame: &mut Frame<'_>, meta: &mut Meta) {}
+    pub fn draw(&mut self, frame: &mut Frame<'_>, meta: &mut Meta) {
+        let main_area = utils::align::center(frame, self.config.width, self.config.height);
+
+        let areas = self.get_areas(&self.config.layout, &self.config.direction, main_area);
+
+        for (i, item) in self.config.layout.iter().enumerate() {
+            if let Some(area) = areas.get(i) {
+                self.render_layout(frame, item, area, meta);
+            }
+        }
+    }
+
+    fn render_layout(&self, frame: &mut Frame<'_>, item: &LayoutItem, parent_area: &Rect, meta: &mut Meta) {
+        match &item {
+            &LayoutItem::Container { width, height, direction, children } => {
+                let [area] = Layout::horizontal([Constraint::Length(*width)]).areas(*parent_area);
+                let [area] = Layout::vertical([Constraint::Length(*height)]).areas(area);
+
+                let areas = self.get_areas(children, &direction, area);
+
+                for (i, child) in children.iter().enumerate() {
+                    if let Some(area) = areas.get(i) {
+                        self.render_layout(frame, child, area, meta);
+                    }
+                }
+            },
+            &LayoutItem::CoverArt { width, height } => {
+                let [area] = Layout::horizontal([Constraint::Length(*width)]).areas(*parent_area);
+                let [area] = Layout::vertical([Constraint::Length(*height)]).areas(area);
+
+                if let Some(cover_art) = meta.cover_art.as_mut() {
+                    frame.render_stateful_widget(
+                        StatefulImage::default(),
+                        area,
+                        &mut cover_art.image
+                    );
+                }
+            },
+            &LayoutItem::Label { text } => {
+                let [area] = Layout::horizontal([Constraint::Length(text.len() as u16)]).areas(*parent_area);
+
+                frame.render_widget(
+                    Paragraph::new(text.to_string()),
+                    area
+                );
+            }
+        }
+    }
+
+    fn get_areas(&self, items: &Vec<LayoutItem>, direction: &config::Direction, parent_area: Rect) -> Rc<[Rect]> {
+        Layout::default()
+            .direction(direction.to_dir())
+            .constraints(
+                items
+                    .iter()
+                    .map(|child| match child {
+                        LayoutItem::Container { width, height, .. } |
+                        LayoutItem::CoverArt { width, height } => {
+                            match direction {
+                                config::Direction::Horizontal => Constraint::Length(*width),
+                                config::Direction::Vertical => Constraint::Length(*height)
+                            }
+                        },
+                        LayoutItem::Label { text } => {
+                            match direction {
+                                config::Direction::Horizontal => Constraint::Length(text.len() as u16),
+                                config::Direction::Vertical => Constraint::Length(1)
+                            }
+                        }
+                    })
+                    .collect::<Vec<Constraint>>()
+            )
+            .split(parent_area)
+    }
 }

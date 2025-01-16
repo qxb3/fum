@@ -42,6 +42,15 @@ pub enum Direction {
     Horizontal
 }
 
+impl Direction {
+    pub fn to_dir(&self) -> ratatui::layout::Direction {
+        match self {
+            Self::Horizontal => ratatui::layout::Direction::Horizontal,
+            Self::Vertical => ratatui::layout::Direction::Vertical
+        }
+    }
+}
+
 #[derive(Debug, Clone, Deserialize)]
 pub struct Config {
     #[serde(default = "players")]
@@ -76,7 +85,8 @@ pub enum LayoutItem {
         direction: Direction,
         children: Vec<LayoutItem>
     },
-    Image {
+    #[serde(rename = "cover-art")]
+    CoverArt {
         width: u16,
         height: u16
     },
@@ -121,7 +131,7 @@ fn width() -> u16 { 10 }
 fn height() -> u16 { 20 }
 fn layout() -> Vec<LayoutItem> {
     Vec::from([
-        LayoutItem::Image {
+        LayoutItem::CoverArt {
             width: 10,
             height: 10
         },
