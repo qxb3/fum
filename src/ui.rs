@@ -57,6 +57,12 @@ impl<'a> Ui<'a> {
             &LayoutItem::Label { text } => {
                 let [area] = Layout::horizontal([Constraint::Length(text.len() as u16)]).areas(*parent_area);
 
+                let text = match text {
+                    text if text.contains("$title") => &text.replace("title", &meta.title),
+                    text if text.contains("$artists") => &text.replace("$artists", &meta.artists.join(", ")),
+                    _ => text
+                };
+
                 frame.render_widget(
                     Paragraph::new(text.to_string()),
                     area
