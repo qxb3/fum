@@ -75,18 +75,18 @@ pub struct Config {
     pub debug: Option<bool>,
 
     #[serde(default = "layout")]
-    pub layout: Vec<LayoutItem>,
+    pub layout: Vec<FumWidget>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(tag = "type")]
 #[serde(rename_all = "lowercase")]
-pub enum LayoutItem {
+pub enum FumWidget {
     Container {
         width: u16,
         height: u16,
         direction: Direction,
-        children: Vec<LayoutItem>
+        children: Vec<FumWidget>
     },
     #[serde(rename = "cover-art")]
     CoverArt {
@@ -134,19 +134,19 @@ fn direction() -> Direction { Direction::Vertical }
 fn width() -> u16 { 10 }
 fn height() -> u16 { 20 }
 fn debug() -> Option<bool> { None }
-fn layout() -> Vec<LayoutItem> {
+fn layout() -> Vec<FumWidget> {
     Vec::from([
-        LayoutItem::CoverArt {
+        FumWidget::CoverArt {
             width: 10,
             height: 10
         },
-        LayoutItem::Container {
+        FumWidget::Container {
             width: 10,
             height: 10,
             direction: Direction::Vertical,
             children: Vec::from([
-                LayoutItem::Label { text: "$title".to_string() },
-                LayoutItem::Label { text: "$artists".to_string() }
+                FumWidget::Label { text: "$title".to_string() },
+                FumWidget::Label { text: "$artists".to_string() }
             ])
         }
     ])

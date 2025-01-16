@@ -3,7 +3,7 @@ use std::rc::Rc;
 use ratatui::{layout::{Constraint, Layout, Rect}, widgets::Paragraph, Frame};
 use ratatui_image::StatefulImage;
 
-use crate::{config::{self, Config, LayoutItem}, config_debug, debug_widget, meta::Meta, utils};
+use crate::{config::{self, Config, FumWidget}, config_debug, debug_widget, meta::Meta, utils};
 
 pub struct Ui<'a> {
     config: &'a Config
@@ -30,9 +30,9 @@ impl<'a> Ui<'a> {
         }
     }
 
-    fn render_layout(&self, frame: &mut Frame<'_>, item: &LayoutItem, parent_area: &Rect, meta: &mut Meta) {
+    fn render_layout(&self, frame: &mut Frame<'_>, item: &FumWidget, parent_area: &Rect, meta: &mut Meta) {
         match &item {
-            &LayoutItem::Container { width, height, direction, children } => {
+            &FumWidget::Container { width, height, direction, children } => {
                 let [area] = Layout::horizontal([Constraint::Length(*width)]).areas(*parent_area);
                 let [area] = Layout::vertical([Constraint::Length(*height)]).areas(area);
 
@@ -45,7 +45,7 @@ impl<'a> Ui<'a> {
                     }
                 }
             },
-            &LayoutItem::CoverArt { width, height } => {
+            &FumWidget::CoverArt { width, height } => {
                 let [area] = Layout::horizontal([Constraint::Length(*width)]).areas(*parent_area);
                 let [area] = Layout::vertical([Constraint::Length(*height)]).areas(area);
 
@@ -57,7 +57,7 @@ impl<'a> Ui<'a> {
                     );
                 }
             },
-            &LayoutItem::Label { text } => {
+            &FumWidget::Label { text } => {
                 let text = match text {
                     text if text.contains("$title") => &text.replace("$title", &meta.title),
                     text if text.contains("$artists") => &text.replace("$artists", &meta.artists.join(", ")),
@@ -72,21 +72,21 @@ impl<'a> Ui<'a> {
         }
     }
 
-    fn get_areas(&self, items: &Vec<LayoutItem>, direction: &config::Direction, parent_area: Rect) -> Rc<[Rect]> {
+    fn get_areas(&self, items: &Vec<FumWidget>, direction: &config::Direction, parent_area: Rect) -> Rc<[Rect]> {
         Layout::default()
             .direction(direction.to_dir())
             .constraints(
                 items
                     .iter()
                     .map(|child| match child {
-                        LayoutItem::Container { width, height, .. } |
-                        LayoutItem::CoverArt { width, height } => {
+                        FumWidget::Container { width, height, .. } |
+                        FumWidget::CoverArt { width, height } => {
                             match direction {
                                 config::Direction::Horizontal => Constraint::Length(*width),
                                 config::Direction::Vertical => Constraint::Length(*height)
                             }
                         },
-                        LayoutItem::Label { text } => {
+                        FumWidget::Label { text } => {
                             match direction {
                                 config::Direction::Horizontal => Constraint::Length(text.len() as u16),
                                 config::Direction::Vertical => Constraint::Length(1)
