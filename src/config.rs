@@ -1,4 +1,5 @@
 use std::{fs, path::PathBuf};
+use ratatui::layout::Flex;
 use serde::Deserialize;
 
 #[derive(Debug, Clone, Deserialize)]
@@ -60,6 +61,30 @@ pub enum LabelAlignment {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ContainerFlex {
+    Start,
+    Center,
+    End,
+    #[serde(rename = "space-around")]
+    SpaceAround,
+    #[serde(rename = "space-between")]
+    SpaceBetween
+}
+
+impl ContainerFlex {
+    pub fn to_flex(&self) -> Flex {
+        match self {
+            Self::Start         => Flex::Start,
+            Self::Center        => Flex::Center,
+            Self::End           => Flex::End,
+            Self::SpaceAround   => Flex::SpaceAround,
+            Self::SpaceBetween  => Flex::SpaceBetween
+        }
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
 pub struct Config {
     #[serde(default = "players")]
     pub players: Vec<String>,
@@ -72,6 +97,9 @@ pub struct Config {
 
     #[serde(default = "direction")]
     pub direction: Direction,
+
+    #[serde(default = "flex")]
+    pub flex: ContainerFlex,
 
     #[serde(default = "width")]
     pub width: u16,
@@ -94,7 +122,8 @@ pub enum FumWidget {
         width: u16,
         height: u16,
         direction: Direction,
-        children: Vec<FumWidget>
+        children: Vec<FumWidget>,
+        flex: Option<ContainerFlex>,
     },
     #[serde(rename = "cover-art")]
     CoverArt {
@@ -119,6 +148,7 @@ impl Default for Config {
             use_active_player: use_active_player(),
             align: align(),
             direction: direction(),
+            flex: flex(),
             width: width(),
             height: height(),
             debug: debug(),
@@ -145,11 +175,12 @@ fn players() -> Vec<String> { vec!["spotify".to_string()] }
 fn use_active_player() -> bool { false }
 fn align() -> Align { Align::Center }
 fn direction() -> Direction { Direction::Vertical }
+fn flex() -> ContainerFlex { ContainerFlex::Start }
 fn width() -> u16 { 20 }
 fn height() -> u16 { 18 }
 fn debug() -> Option<bool> { None }
 fn layout() -> Vec<FumWidget> {
-    vec![
+    Vec::from([
         FumWidget::CoverArt {
             width: 20,
             height: 10
@@ -158,6 +189,7 @@ fn layout() -> Vec<FumWidget> {
             width: 20,
             height: 10,
             direction: Direction::Vertical,
+            flex: None,
             children: Vec::from([
                 FumWidget::Label {
                     text: "$title".to_string(),
@@ -171,6 +203,7 @@ fn layout() -> Vec<FumWidget> {
                     width: 20,
                     height: 1,
                     direction: Direction::Horizontal,
+                    flex: Some(ContainerFlex::SpaceAround),
                     children: vec![
                         FumWidget::Button {
                             text: "󰒮".to_string(),
@@ -191,5 +224,5 @@ fn layout() -> Vec<FumWidget> {
                 }
             ])
         }
-    ]
+    ])
 }

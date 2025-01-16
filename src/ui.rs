@@ -1,9 +1,9 @@
 use std::rc::Rc;
 
-use ratatui::{layout::{Constraint, Layout, Rect}, widgets::Paragraph, Frame};
+use ratatui::{layout::{Constraint, Flex, Layout, Rect}, widgets::Paragraph, Frame};
 use ratatui_image::StatefulImage;
 
-use crate::{config::{self, Config, FumWidget, LabelAlignment}, config_debug, debug_widget, meta::Meta, utils};
+use crate::{config::{self, Config, ContainerFlex, FumWidget, LabelAlignment}, config_debug, debug_widget, meta::Meta, utils};
 
 pub struct Ui<'a> {
     config: &'a Config
@@ -20,7 +20,12 @@ impl<'a> Ui<'a> {
         let main_area = utils::align::get_align(frame, &self.config.align, self.config.width, self.config.height);
         config_debug!(self.config.debug, frame, main_area);
 
-        let areas = self.get_areas(&self.config.layout, &self.config.direction, main_area);
+        let areas = self.get_areas(
+            &self.config.layout,
+            &self.config.direction,
+            &self.config.flex,
+            main_area
+        );
 
         for (i, item) in self.config.layout.iter().enumerate() {
             if let Some(area) = areas.get(i) {
@@ -32,11 +37,21 @@ impl<'a> Ui<'a> {
 
     fn render_layout(&self, frame: &mut Frame<'_>, item: &FumWidget, parent_area: &Rect, meta: &mut Meta) {
         match &item {
-            &FumWidget::Container { width, height, direction, children } => {
+            &FumWidget::Container { width, height, direction, flex, children } => {
                 let [area] = Layout::horizontal([Constraint::Length(*width)]).areas(*parent_area);
                 let [area] = Layout::vertical([Constraint::Length(*height)]).areas(area);
 
-                let areas = self.get_areas(children, &direction, area);
+                let flex = match flex {
+                    Some(flex) => flex,
+                    None => &ContainerFlex::Start
+                };
+
+                let areas = self.get_areas(
+                    children,
+                    &direction,
+                    flex,
+                    area
+                );
 
                 for (i, child) in children.iter().enumerate() {
                     if let Some(area) = areas.get(i) {
@@ -94,9 +109,10 @@ impl<'a> Ui<'a> {
         }
     }
 
-    fn get_areas(&self, items: &Vec<FumWidget>, direction: &config::Direction, parent_area: Rect) -> Rc<[Rect]> {
+    fn get_areas(&self, items: &Vec<FumWidget>, direction: &config::Direction, flex: &ContainerFlex, parent_area: Rect) -> Rc<[Rect]> {
         Layout::default()
             .direction(direction.to_dir())
+            .flex(flex.to_flex())
             .constraints(
                 items
                     .iter()
