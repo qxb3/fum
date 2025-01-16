@@ -3,7 +3,7 @@ use std::rc::Rc;
 use ratatui::{layout::{Constraint, Layout, Rect}, widgets::Paragraph, Frame};
 use ratatui_image::StatefulImage;
 
-use crate::{config::{self, Config, LayoutItem}, meta::Meta, utils};
+use crate::{config::{self, Config, LayoutItem}, config_debug, debug_widget, meta::Meta, utils};
 
 pub struct Ui<'a> {
     config: &'a Config
@@ -18,11 +18,13 @@ impl<'a> Ui<'a> {
 
     pub fn draw(&mut self, frame: &mut Frame<'_>, meta: &mut Meta) {
         let main_area = utils::align::center(frame, self.config.width, self.config.height);
+        config_debug!(self.config.debug, frame, main_area);
 
         let areas = self.get_areas(&self.config.layout, &self.config.direction, main_area);
 
         for (i, item) in self.config.layout.iter().enumerate() {
             if let Some(area) = areas.get(i) {
+                config_debug!(self.config.debug, frame, *area);
                 self.render_layout(frame, item, area, meta);
             }
         }
@@ -38,6 +40,7 @@ impl<'a> Ui<'a> {
 
                 for (i, child) in children.iter().enumerate() {
                     if let Some(area) = areas.get(i) {
+                        config_debug!(self.config.debug, frame, *area);
                         self.render_layout(frame, child, area, meta);
                     }
                 }

@@ -13,6 +13,17 @@ macro_rules! debug_widget {
 }
 
 #[macro_export]
+macro_rules! config_debug {
+    ($debug:expr, $frame:expr, $area:expr) => {
+        if let Some(debug) = $debug {
+            if debug {
+                debug_widget!($frame, $area);
+            }
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! send_message {
     ($tx:expr, $msg:expr) => {
         $tx.send($msg).unwrap()

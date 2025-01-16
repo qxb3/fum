@@ -71,6 +71,9 @@ pub struct Config {
     #[serde(default = "height")]
     pub height: u16,
 
+    #[serde(default = "debug")]
+    pub debug: Option<bool>,
+
     #[serde(default = "layout")]
     pub layout: Vec<LayoutItem>,
 }
@@ -104,6 +107,7 @@ impl Default for Config {
             direction: direction(),
             width: width(),
             height: height(),
+            debug: debug(),
             layout: layout()
         }
     }
@@ -129,6 +133,7 @@ fn align() -> Align { Align::Center }
 fn direction() -> Direction { Direction::Vertical }
 fn width() -> u16 { 10 }
 fn height() -> u16 { 20 }
+fn debug() -> Option<bool> { None }
 fn layout() -> Vec<LayoutItem> {
     Vec::from([
         LayoutItem::CoverArt {
