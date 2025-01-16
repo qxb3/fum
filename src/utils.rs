@@ -2,6 +2,17 @@ use ratatui::crossterm::{event::DisableMouseCapture, execute};
 use std::io::stdout;
 
 #[macro_export]
+macro_rules! debug_widget {
+    ($frame:expr, $area:expr) => {
+        $frame.render_widget(
+            ratatui::widgets::Block::new()
+                .borders(ratatui::widgets::Borders::ALL),
+            $area
+        )
+    };
+}
+
+#[macro_export]
 macro_rules! send_message {
     ($tx:expr, $msg:expr) => {
         $tx.send($msg).unwrap()
