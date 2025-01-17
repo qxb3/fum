@@ -89,6 +89,10 @@ impl<'a> Fum<'a> {
                                     "prev()" => self.prev(),
                                     "play_pause()" => self.play_pause(),
                                     "next()" => self.next(),
+
+                                    "shuffle_off()" => self.shuffle("off"),
+                                    "shuffle_toggle()" => self.shuffle("toggle"),
+                                    "shuffle_on()" => self.shuffle("on"),
                                     _ => {}
                                 }
                             }
@@ -145,6 +149,19 @@ impl<'a> Fum<'a> {
     fn next(&self) {
         if let Some(player) = &self.player {
             player.next().expect("Failed to next player");
+        }
+    }
+
+    fn shuffle(&self, shuffle: &str) {
+        if let Some(player) = &self.player {
+            if player.can_shuffle().expect("Failed to get if player can shuffle") {
+                match shuffle {
+                    "off" => player.set_shuffle(false).expect("Failed to set off on shuffle"),
+                    "toggle" => player.set_shuffle(!player.get_shuffle().expect("Failed to get shuffle state")).expect("Failed to toggle on shuffle"),
+                    "on" => player.set_shuffle(true).expect("Failed to set on on shuffle"),
+                    _ => unreachable!()
+                }
+            }
         }
     }
 }
