@@ -130,23 +130,26 @@ fn layout() -> Vec<FumWidget> {
                     height: 1,
                     direction: Direction::Horizontal,
                     flex: Some(ContainerFlex::SpaceAround),
-                    children: vec![
+                    children: Vec::from([
                         FumWidget::Button {
+                            id: "prev".to_string(),
                             text: "󰒮".to_string(),
                             action: "prev_music()".to_string(),
                             exec: None
                         },
                         FumWidget::Button {
+                            id: "play_pause".to_string(),
                             text: "$status_icon".to_string(),
                             action: "play_pause()".to_string(),
                             exec: None
                         },
                         FumWidget::Button {
+                            id: "next".to_string(),
                             text: "󰒭".to_string(),
                             action: "next()".to_string(),
                             exec: None
                         }
-                    ]
+                    ])
                 }
             ])
         }

@@ -1,11 +1,11 @@
-use std::{io::{stdout, Stdout}, time::Duration};
+use std::{io::{stdout, Stdout}, process::Command, time::Duration};
 
 use crossterm::{event::{EnableMouseCapture, Event, KeyCode, KeyEventKind, MouseButton, MouseEventKind}, execute};
 use mpris::Player;
-use ratatui::{prelude::CrosstermBackend, Terminal};
+use ratatui::{layout::Position, prelude::CrosstermBackend, Terminal};
 use ratatui_image::picker::Picker;
 
-use crate::{config::Config, meta::Meta, ui::Ui, utils};
+use crate::{config::Config, meta::Meta, ui::Ui, utils, widget::FumWidget};
 
 pub struct Fum<'a> {
     config: &'a Config,
@@ -81,11 +81,28 @@ impl<'a> Fum<'a> {
                     }
                 },
                 Event::Mouse(mouse) if mouse.kind == MouseEventKind::Down(MouseButton::Left) => {
-                    match (mouse.column, mouse.row) {
-                        // (x, y) if self.ui.playback_buttons.prev.contains(Position::new(x, y)) => self.prev(),
-                        // (x, y) if self.ui.playback_buttons.play_pause.contains(Position::new(x, y)) => self.play_pause(),
-                        // (x, y) if self.ui.playback_buttons.next.contains(Position::new(x, y)) => self.next(),
-                        _ => {}
+                    for (rect, action, exec) in self.ui.buttons.values() {
+                        if rect.contains(Position::new(mouse.column, mouse.row)) {
+                            // Execute action
+                            match action.as_str() {
+                                "prev()" => self.prev(),
+                                "play_pause()" => self.play_pause(),
+                                "next()" => self.next(),
+                                _ => {}
+                            }
+
+                            // Spawn a new command process based on exec
+                            if let Some(exec) = exec {
+                                let parts: Vec<&str> = exec.split_whitespace().collect();
+                                if let Some(command) = parts.get(0) {
+                                    let _ = Command::new(command)
+                                        .args(&parts[1..])
+                                        .stdout(std::process::Stdio::null())
+                                        .stderr(std::process::Stdio::null())
+                                        .spawn();
+                                }
+                            }
+                        }
                     }
                 },
                 Event::Resize(_, _) => {

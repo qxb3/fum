@@ -1,18 +1,20 @@
-use std::rc::Rc;
+use std::{collections::HashMap, rc::Rc};
 
 use ratatui::{layout::{Constraint, Layout, Rect}, widgets::Paragraph, Frame};
 use ratatui_image::StatefulImage;
 
-use crate::{config::{self, Config}, config_debug, debug_widget, meta::Meta, utils, widget::{self, ContainerFlex, FumWidget, LabelAlignment}};
+use crate::{config::Config, config_debug, debug_widget, meta::Meta, utils, widget::{self, ContainerFlex, FumWidget, LabelAlignment}};
 
 pub struct Ui<'a> {
-    config: &'a Config
+    config: &'a Config,
+    pub buttons: HashMap<String, (Rect, String, Option<String>)>
 }
 
 impl<'a> Ui<'a> {
     pub fn new(config: &'a Config) -> Self {
         Self {
-            config
+            config,
+            buttons: HashMap::new()
         }
     }
 
@@ -35,7 +37,7 @@ impl<'a> Ui<'a> {
         }
     }
 
-    fn render_layout(&self, frame: &mut Frame<'_>, widget: &FumWidget, parent_area: &Rect, meta: &mut Meta) {
+    fn render_layout(&mut self, frame: &mut Frame<'_>, widget: &FumWidget, parent_area: &Rect, meta: &mut Meta) {
         match &widget {
             FumWidget::Container { width, height, direction, flex, children } => {
                 let [area] = Layout::horizontal([Constraint::Length(*width)]).areas(*parent_area);
@@ -89,8 +91,13 @@ impl<'a> Ui<'a> {
                     *parent_area
                 );
             }
-            FumWidget::Button { text, action, exec } => {
+            FumWidget::Button { id, text, action, exec } => {
                 let text = self.replace_text(text, meta).to_string();
+
+                self.buttons.insert(
+                    id.to_string(),
+                    (*parent_area, action.to_string(), exec.to_owned())
+                );
 
                 frame.render_widget(
                     Paragraph::new(text),

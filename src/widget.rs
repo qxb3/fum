@@ -69,6 +69,7 @@ pub enum FumWidget {
         align: Option<LabelAlignment>
     },
     Button {
+        id: String,
         text: String,
         action: String,
         exec: Option<String>
