@@ -84,11 +84,13 @@ impl<'a> Fum<'a> {
                     for (rect, action, exec) in self.ui.buttons.values() {
                         if rect.contains(Position::new(mouse.column, mouse.row)) {
                             // Execute action
-                            match action.as_str() {
-                                "prev()" => self.prev(),
-                                "play_pause()" => self.play_pause(),
-                                "next()" => self.next(),
-                                _ => {}
+                            if let Some(action) = action {
+                                match action.as_str() {
+                                    "prev()" => self.prev(),
+                                    "play_pause()" => self.play_pause(),
+                                    "next()" => self.next(),
+                                    _ => {}
+                                }
                             }
 
                             // Spawn a new command process based on exec

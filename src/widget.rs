@@ -98,7 +98,7 @@ pub enum FumWidget {
         #[serde(default = "generate_btn_id")]
         id: String,
         text: String,
-        action: String,
+        action: Option<String>,
         exec: Option<String>
     },
     Progress {

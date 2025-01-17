@@ -8,7 +8,7 @@ use crate::{config::Config, config_debug, debug_widget, meta::Meta, utils, widge
 
 pub struct Ui<'a> {
     config: &'a Config,
-    pub buttons: HashMap<String, (Rect, String, Option<String>)>
+    pub buttons: HashMap<String, (Rect, Option<String>, Option<String>)>
 }
 
 impl<'a> Ui<'a> {
@@ -110,7 +110,7 @@ impl<'a> Ui<'a> {
 
                 self.buttons.insert(
                     id.to_string(),
-                    (*parent_area, action.to_string(), exec.to_owned())
+                    (*parent_area, action.to_owned(), exec.to_owned())
                 );
 
                 frame.render_widget(
