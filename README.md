@@ -3,7 +3,7 @@
 </h3>
 
 <h2 align="center">
-  fum: a tui-based mpris music client.
+  fum: A fully ricable tui-based music client.
 </h2>
 
 <p align="center">
