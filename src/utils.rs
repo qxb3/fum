@@ -50,6 +50,8 @@ pub fn generate_btn_id() -> String {
 }
 
 pub fn truncate(string: &str, width: usize) -> String {
+    let width = width - 3; // minus 3 since the dots (...)
+
     if string.chars().count() < width {
         string.to_string()
     } else {

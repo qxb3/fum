@@ -119,11 +119,13 @@ fn layout() -> Vec<FumWidget> {
             children: Vec::from([
                 FumWidget::Label {
                     text: "$title".to_string(),
-                    align: LabelAlignment::Center
+                    align: LabelAlignment::Center,
+                    truncate: true
                 },
                 FumWidget::Label {
                     text: "$artists".to_string(),
-                    align: LabelAlignment::Center
+                    align: LabelAlignment::Center,
+                    truncate: true
                 },
                 FumWidget::Container {
                     width: 20,
@@ -164,11 +166,13 @@ fn layout() -> Vec<FumWidget> {
                     children: Vec::from([
                         FumWidget::Label {
                             text: "$position".to_string(),
-                            align: LabelAlignment::Left
+                            align: LabelAlignment::Left,
+                            truncate: false
                         },
                         FumWidget::Label {
                             text: "$length".to_string(),
-                            align: LabelAlignment::Right
+                            align: LabelAlignment::Right,
+                            truncate: false
                         }
                     ])
                 }

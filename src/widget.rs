@@ -1,6 +1,8 @@
 use serde::Deserialize;
 use crate::utils::generate_btn_id;
 
+fn default_truncate() -> bool { true }
+
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Direction {
@@ -88,7 +90,9 @@ pub enum FumWidget {
     Label {
         text: String,
         #[serde(default = "LabelAlignment::default")]
-        align: LabelAlignment
+        align: LabelAlignment,
+        #[serde(default = "default_truncate")]
+        truncate: bool
     },
     Button {
         #[serde(default = "generate_btn_id")]

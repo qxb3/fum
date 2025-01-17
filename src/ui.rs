@@ -70,8 +70,11 @@ impl<'a> Ui<'a> {
                     );
                 }
             },
-            FumWidget::Label { text, align } => {
-                let text = self.replace_text(text, meta).to_string();
+            FumWidget::Label { text, align, truncate } => {
+                let text = match truncate {
+                    true => utils::truncate(&self.replace_text(text, meta), parent_area.width as usize),
+                    false => self.replace_text(text, meta)
+                };
 
                 let widget = match align {
                     LabelAlignment::Left => Paragraph::new(text).left_aligned(),
