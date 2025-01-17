@@ -86,6 +86,10 @@ impl<'a> Fum<'a> {
                             // Execute action
                             if let Some(action) = action {
                                 match action.as_str() {
+                                    "stop()" => self.stop(),
+                                    "play()" => self.play(),
+                                    "pause()" => self.pause(),
+
                                     "prev()" => self.prev(),
                                     "play_pause()" => self.play_pause(),
                                     "next()" => self.next(),
@@ -136,6 +140,24 @@ impl<'a> Fum<'a> {
 
         self.player = utils::player::get_player(&self.config).ok();
         self.meta = Meta::default();
+    }
+
+    fn stop(&self) {
+        if let Some(player) = &self.player {
+            player.stop().expect("Failed to stop player");
+        }
+    }
+
+    fn play(&self) {
+        if let Some(player) = &self.player {
+            player.play().expect("Failed to play player");
+        }
+    }
+
+    fn pause(&self) {
+        if let Some(player) = &self.player {
+            player.pause().expect("Failed to pause player");
+        }
     }
 
     fn prev(&self) {
