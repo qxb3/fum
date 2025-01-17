@@ -1,7 +1,7 @@
 use std::{io::{stdout, Stdout}, process::Command, time::Duration};
 
 use crossterm::{event::{EnableMouseCapture, Event, KeyCode, KeyEventKind, MouseButton, MouseEventKind}, execute};
-use mpris::Player;
+use mpris::{LoopStatus, Player};
 use ratatui::{layout::Position, prelude::CrosstermBackend, Terminal};
 use ratatui_image::picker::Picker;
 
@@ -93,6 +93,10 @@ impl<'a> Fum<'a> {
                                     "shuffle_off()" => self.shuffle("off"),
                                     "shuffle_toggle()" => self.shuffle("toggle"),
                                     "shuffle_on()" => self.shuffle("on"),
+
+                                    "loop_none()" => self.r#loop("none"),
+                                    "loop_track()" => self.r#loop("track"),
+                                    "loop_playlist()" => self.r#loop("playlist"),
                                     _ => {}
                                 }
                             }
@@ -156,9 +160,22 @@ impl<'a> Fum<'a> {
         if let Some(player) = &self.player {
             if player.can_shuffle().expect("Failed to get if player can shuffle") {
                 match shuffle {
-                    "off" => player.set_shuffle(false).expect("Failed to set off on shuffle"),
-                    "toggle" => player.set_shuffle(!player.get_shuffle().expect("Failed to get shuffle state")).expect("Failed to toggle on shuffle"),
-                    "on" => player.set_shuffle(true).expect("Failed to set on on shuffle"),
+                    "off" => player.set_shuffle(false).expect("Failed to set off shuffle"),
+                    "toggle" => player.set_shuffle(!player.get_shuffle().expect("Failed to get shuffle state")).expect("Failed to toggle shuffle"),
+                    "on" => player.set_shuffle(true).expect("Failed to set on shuffle"),
+                    _ => unreachable!()
+                }
+            }
+        }
+    }
+
+    fn r#loop(&self, r#loop: &str) {
+        if let Some(player) = &self.player {
+            if player.can_loop().expect("Failed to get if player can loop") {
+                match r#loop {
+                    "none" => player.set_loop_status(LoopStatus::None).expect("Failed to set loop to none"),
+                    "track" => player.set_loop_status(LoopStatus::Track).expect("Failed to set loop to track"),
+                    "playlist" => player.set_loop_status(LoopStatus::Playlist).expect("Failed to set loop to playlist"),
                     _ => unreachable!()
                 }
             }
