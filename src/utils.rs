@@ -1,4 +1,5 @@
 use ratatui::crossterm::{event::DisableMouseCapture, execute};
+use uuid::Uuid;
 use std::io::stdout;
 
 #[macro_export]
@@ -42,6 +43,10 @@ macro_rules! send_dbg {
     ($tx:expr, $msg:expr) => {
         $tx.send(Message::Dbg($msg)).unwrap()
     };
+}
+
+pub fn generate_btn_id() -> String {
+    Uuid::new_v4().to_string()
 }
 
 pub fn truncate(string: &str, width: usize) -> String {

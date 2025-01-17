@@ -1,4 +1,5 @@
 use serde::Deserialize;
+use crate::utils::generate_btn_id;
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -69,6 +70,7 @@ pub enum FumWidget {
         align: Option<LabelAlignment>
     },
     Button {
+        #[serde(default = "generate_btn_id")]
         id: String,
         text: String,
         action: String,

@@ -1,7 +1,7 @@
 use std::{fs, path::PathBuf};
 use serde::Deserialize;
 
-use crate::widget::{ContainerFlex, Direction, FumWidget, LabelAlignment};
+use crate::{utils::generate_btn_id, widget::{ContainerFlex, Direction, FumWidget, LabelAlignment}};
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -132,19 +132,19 @@ fn layout() -> Vec<FumWidget> {
                     flex: Some(ContainerFlex::SpaceAround),
                     children: Vec::from([
                         FumWidget::Button {
-                            id: "prev".to_string(),
+                            id: generate_btn_id(),
                             text: "󰒮".to_string(),
                             action: "prev_music()".to_string(),
                             exec: None
                         },
                         FumWidget::Button {
-                            id: "play_pause".to_string(),
+                            id: generate_btn_id(),
                             text: "$status_icon".to_string(),
                             action: "play_pause()".to_string(),
                             exec: None
                         },
                         FumWidget::Button {
-                            id: "next".to_string(),
+                            id: generate_btn_id(),
                             text: "󰒭".to_string(),
                             action: "next()".to_string(),
                             exec: None
