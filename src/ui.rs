@@ -1,7 +1,7 @@
 use core::f64;
 use std::{collections::HashMap, rc::Rc};
 
-use ratatui::{layout::{Constraint, Layout, Rect}, text::Text, widgets::Paragraph, Frame};
+use ratatui::{layout::{Constraint, Layout, Rect}, text::Text, widgets::{Block, Borders, Paragraph, Wrap}, Frame};
 use ratatui_image::StatefulImage;
 
 use crate::{config::Config, config_debug, debug_widget, meta::Meta, utils, widget::{self, ContainerFlex, FumWidget, LabelAlignment}};
@@ -21,6 +21,24 @@ impl<'a> Ui<'a> {
 
     pub fn draw(&mut self, frame: &mut Frame<'_>, meta: &mut Meta) {
         let main_area = utils::align::get_align(frame, &self.config.align, self.config.width, self.config.height);
+
+        // Terminal window is too small
+        if frame.area().width < self.config.width ||
+            frame.area().height < self.config.height {
+            frame.render_widget(
+                Paragraph::new(format!(
+                    "Terminal window is too small. Must have atleast ({}x{}).",
+                    self.config.width, self.config.height
+                ))
+                    .centered()
+                    .wrap(Wrap::default())
+                    .block(Block::new().borders(Borders::ALL)),
+                main_area
+            );
+
+            return;
+        }
+
         config_debug!(self.config.debug, frame, main_area);
 
         let areas = self.get_areas(
