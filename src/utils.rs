@@ -25,27 +25,6 @@ macro_rules! config_debug {
 }
 
 #[macro_export]
-macro_rules! send_message {
-    ($tx:expr, $msg:expr) => {
-        $tx.send($msg).unwrap()
-    };
-}
-
-#[macro_export]
-macro_rules! send_err {
-    ($tx:expr, $err:expr) => {
-        $tx.send(Message::Err($err)).unwrap()
-    };
-}
-
-#[macro_export]
-macro_rules! send_dbg {
-    ($tx:expr, $msg:expr) => {
-        $tx.send(Message::Dbg($msg)).unwrap()
-    };
-}
-
-#[macro_export]
 macro_rules! get_size {
     ($orientation:expr, $size:expr, $area:expr) => {{
         let [area] = match $size {
