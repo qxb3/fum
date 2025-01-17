@@ -115,21 +115,21 @@ fn layout() -> Vec<FumWidget> {
             width: 20,
             height: 10,
             direction: Direction::Vertical,
-            flex: None,
+            flex: ContainerFlex::default(),
             children: Vec::from([
                 FumWidget::Label {
                     text: "$title".to_string(),
-                    align: Some(LabelAlignment::Center)
+                    align: LabelAlignment::Center
                 },
                 FumWidget::Label {
                     text: "$artists".to_string(),
-                    align: Some(LabelAlignment::Center)
+                    align: LabelAlignment::Center
                 },
                 FumWidget::Container {
                     width: 20,
                     height: 1,
                     direction: Direction::Horizontal,
-                    flex: Some(ContainerFlex::SpaceAround),
+                    flex: ContainerFlex::SpaceAround,
                     children: Vec::from([
                         FumWidget::Button {
                             id: generate_btn_id(),

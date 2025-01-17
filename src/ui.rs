@@ -43,11 +43,6 @@ impl<'a> Ui<'a> {
                 let [area] = Layout::horizontal([Constraint::Length(*width)]).areas(*parent_area);
                 let [area] = Layout::vertical([Constraint::Length(*height)]).areas(area);
 
-                let flex = match flex {
-                    Some(flex) => flex,
-                    None => &ContainerFlex::Start
-                };
-
                 let areas = self.get_areas(
                     children,
                     &direction,
@@ -78,12 +73,9 @@ impl<'a> Ui<'a> {
                 let text = self.replace_text(text, meta).to_string();
 
                 let widget = match align {
-                    Some(align) => match align {
-                        LabelAlignment::Left => Paragraph::new(text).left_aligned(),
-                        LabelAlignment::Center => Paragraph::new(text).centered(),
-                        LabelAlignment::Right => Paragraph::new(text).right_aligned(),
-                    },
-                    None => Paragraph::new(text)
+                    LabelAlignment::Left => Paragraph::new(text).left_aligned(),
+                    LabelAlignment::Center => Paragraph::new(text).centered(),
+                    LabelAlignment::Right => Paragraph::new(text).right_aligned(),
                 };
 
                 frame.render_widget(

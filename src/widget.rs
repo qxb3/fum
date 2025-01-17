@@ -8,6 +8,12 @@ pub enum Direction {
     Horizontal
 }
 
+impl Default for Direction {
+    fn default() -> Self {
+        Self::Horizontal
+    }
+}
+
 impl Direction {
     pub fn to_dir(&self) -> ratatui::layout::Direction {
         match self {
@@ -25,6 +31,12 @@ pub enum LabelAlignment {
     Right
 }
 
+impl Default for LabelAlignment {
+    fn default() -> Self {
+        Self::Left
+    }
+}
+
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum ContainerFlex {
@@ -35,6 +47,12 @@ pub enum ContainerFlex {
     SpaceAround,
     #[serde(rename = "space-between")]
     SpaceBetween
+}
+
+impl Default for ContainerFlex {
+    fn default() -> Self {
+        ContainerFlex::Start
+    }
 }
 
 impl ContainerFlex {
@@ -56,9 +74,11 @@ pub enum FumWidget {
     Container {
         width: u16,
         height: u16,
+        #[serde(default = "Direction::default")]
         direction: Direction,
         children: Vec<FumWidget>,
-        flex: Option<ContainerFlex>,
+        #[serde(default = "ContainerFlex::default")]
+        flex: ContainerFlex,
     },
     #[serde(rename = "cover-art")]
     CoverArt {
@@ -67,7 +87,8 @@ pub enum FumWidget {
     },
     Label {
         text: String,
-        align: Option<LabelAlignment>
+        #[serde(default = "LabelAlignment::default")]
+        align: LabelAlignment
     },
     Button {
         #[serde(default = "generate_btn_id")]
