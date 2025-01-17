@@ -1,6 +1,6 @@
 use ratatui::crossterm::{event::DisableMouseCapture, execute};
 use uuid::Uuid;
-use std::io::stdout;
+use std::{io::stdout, time::Duration};
 
 #[macro_export]
 macro_rules! debug_widget {
@@ -55,6 +55,23 @@ pub fn truncate(string: &str, width: usize) -> String {
     } else {
         let truncated: String = string.chars().take(width).collect();
         format!("{}...", truncated)
+    }
+}
+
+pub fn format_duration(duration: Duration) -> String {
+    if duration.as_secs() >= 3600 {
+        format!(
+            "{}:{:02}:{:02}",
+            duration.as_secs() / 3600,
+            (duration.as_secs() % 3600) / 60,
+            duration.as_secs() % 60
+        )
+    } else {
+        format!(
+            "{}:{:02}",
+            duration.as_secs() / 60,
+            duration.as_secs() % 60
+        )
     }
 }
 

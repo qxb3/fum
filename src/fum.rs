@@ -5,7 +5,7 @@ use mpris::Player;
 use ratatui::{layout::Position, prelude::CrosstermBackend, Terminal};
 use ratatui_image::picker::Picker;
 
-use crate::{config::Config, meta::Meta, ui::Ui, utils, widget::FumWidget};
+use crate::{config::Config, meta::Meta, ui::Ui, utils};
 
 pub struct Fum<'a> {
     config: &'a Config,

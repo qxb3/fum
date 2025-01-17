@@ -120,6 +120,8 @@ impl<'a> Ui<'a> {
             text if text.contains("$title") => text.replace("$title", &meta.title),
             text if text.contains("$artists") => text.replace("$artists", &meta.artists.join(", ")),
             text if text.contains("$status_icon") => text.replace("$status_icon", &meta.status_icon),
+            text if text.contains("$position") => text.replace("$position", &utils::format_duration(meta.position)),
+            text if text.contains("$length") => text.replace("$length", &utils::format_duration(meta.length)),
             _ => text.to_string()
         }
     }
@@ -149,7 +151,10 @@ impl<'a> Ui<'a> {
                             Constraint::Length(1)
                         },
                         FumWidget::Progress { size, .. } => {
-                            Constraint::Length(*size)
+                            match direction {
+                                widget::Direction::Horizontal => Constraint::Length(*size),
+                                widget::Direction::Vertical => Constraint::Length(1)
+                            }
                         }
                     })
                     .collect::<Vec<Constraint>>()

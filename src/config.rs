@@ -134,7 +134,7 @@ fn layout() -> Vec<FumWidget> {
                         FumWidget::Button {
                             id: generate_btn_id(),
                             text: "󰒮".to_string(),
-                            action: "prev_music()".to_string(),
+                            action: "prev()".to_string(),
                             exec: None
                         },
                         FumWidget::Button {
@@ -155,6 +155,22 @@ fn layout() -> Vec<FumWidget> {
                     size: 20,
                     progress: "󰝤".to_string(),
                     empty: "󰁱".to_string()
+                },
+                FumWidget::Container {
+                    width: 20,
+                    height: 1,
+                    direction: Direction::Horizontal,
+                    flex: ContainerFlex::SpaceBetween,
+                    children: Vec::from([
+                        FumWidget::Label {
+                            text: "$position".to_string(),
+                            align: LabelAlignment::Left
+                        },
+                        FumWidget::Label {
+                            text: "$length".to_string(),
+                            align: LabelAlignment::Right
+                        }
+                    ])
                 }
             ])
         }
