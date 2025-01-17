@@ -4,7 +4,7 @@ use std::{collections::HashMap, rc::Rc};
 use ratatui::{layout::{Constraint, Layout, Rect}, text::Text, widgets::{Block, Borders, Paragraph, Wrap}, Frame};
 use ratatui_image::StatefulImage;
 
-use crate::{config::Config, config_debug, debug_widget, meta::Meta, utils, widget::{self, ContainerFlex, FumWidget, LabelAlignment}};
+use crate::{config::Config, config_debug, debug_widget, get_size, meta::Meta, utils, widget::{self, ContainerFlex, FumWidget, LabelAlignment}};
 
 pub struct Ui<'a> {
     config: &'a Config,
@@ -59,8 +59,11 @@ impl<'a> Ui<'a> {
     fn render_layout(&mut self, frame: &mut Frame<'_>, widget: &FumWidget, parent_area: &Rect, meta: &mut Meta) {
         match &widget {
             FumWidget::Container { width, height, direction, flex, children } => {
-                let [area] = Layout::horizontal([Constraint::Length(*width)]).areas(*parent_area);
-                let [area] = Layout::vertical([Constraint::Length(*height)]).areas(area);
+                let area = get_size!(
+                    Layout::vertical,
+                    height,
+                    get_size!(Layout::horizontal, width, *parent_area)
+                );
 
                 let areas = self.get_areas(
                     children,
@@ -77,8 +80,11 @@ impl<'a> Ui<'a> {
                 }
             },
             FumWidget::CoverArt { width, height } => {
-                let [area] = Layout::horizontal([Constraint::Length(*width)]).areas(*parent_area);
-                let [area] = Layout::vertical([Constraint::Length(*height)]).areas(area);
+                let area = get_size!(
+                    Layout::vertical,
+                    height,
+                    get_size!(Layout::horizontal, width, *parent_area)
+                );
 
                 if let Some(cover_art) = meta.cover_art.as_mut() {
                     frame.render_stateful_widget(
@@ -159,8 +165,8 @@ impl<'a> Ui<'a> {
                         FumWidget::Container { width, height, .. } |
                         FumWidget::CoverArt { width, height } => {
                             match direction {
-                                widget::Direction::Horizontal => Constraint::Length(*width),
-                                widget::Direction::Vertical => Constraint::Length(*height)
+                                widget::Direction::Horizontal => width.map(|w| Constraint::Length(w)).unwrap_or(Constraint::Min(0)),
+                                widget::Direction::Vertical => height.map(|h| Constraint::Length(h)).unwrap_or(Constraint::Min(0))
                             }
                         },
                         FumWidget::Label { .. } => {
@@ -174,7 +180,7 @@ impl<'a> Ui<'a> {
                         },
                         FumWidget::Progress { size, .. } => {
                             match direction {
-                                widget::Direction::Horizontal => Constraint::Length(*size),
+                                widget::Direction::Horizontal => size.map(|s| Constraint::Length(s)).unwrap_or(Constraint::Min(0)),
                                 widget::Direction::Vertical => Constraint::Length(1)
                             }
                         },

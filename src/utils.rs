@@ -45,6 +45,18 @@ macro_rules! send_dbg {
     };
 }
 
+#[macro_export]
+macro_rules! get_size {
+    ($orientation:expr, $size:expr, $area:expr) => {{
+        let [area] = match $size {
+            Some(width) => $orientation([Constraint::Length(*width)]).areas($area),
+            None => $orientation([Constraint::Min(0)]).areas($area),
+        };
+
+        area
+    }};
+}
+
 pub fn generate_btn_id() -> String {
     Uuid::new_v4().to_string()
 }

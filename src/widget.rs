@@ -74,8 +74,8 @@ impl ContainerFlex {
 #[serde(rename_all = "lowercase")]
 pub enum FumWidget {
     Container {
-        width: u16,
-        height: u16,
+        width: Option<u16>,
+        height: Option<u16>,
         #[serde(default = "Direction::default")]
         direction: Direction,
         children: Vec<FumWidget>,
@@ -84,8 +84,8 @@ pub enum FumWidget {
     },
     #[serde(rename = "cover-art")]
     CoverArt {
-        width: u16,
-        height: u16
+        width: Option<u16>,
+        height: Option<u16>
     },
     Label {
         text: String,
@@ -102,7 +102,7 @@ pub enum FumWidget {
         exec: Option<String>
     },
     Progress {
-        size: u16,
+        size: Option<u16>,
         progress: String,
         empty: String
     },

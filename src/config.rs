@@ -108,12 +108,12 @@ fn debug() -> Option<bool> { None }
 fn layout() -> Vec<FumWidget> {
     Vec::from([
         FumWidget::CoverArt {
-            width: 20,
-            height: 10
+            width: None,
+            height: Some(10)
         },
         FumWidget::Container {
-            width: 20,
-            height: 10,
+            width: None,
+            height: Some(10),
             direction: Direction::Vertical,
             flex: ContainerFlex::default(),
             children: Vec::from([
@@ -128,8 +128,8 @@ fn layout() -> Vec<FumWidget> {
                     truncate: true
                 },
                 FumWidget::Container {
-                    width: 20,
-                    height: 1,
+                    width: None,
+                    height: Some(1),
                     direction: Direction::Horizontal,
                     flex: ContainerFlex::SpaceAround,
                     children: Vec::from([
@@ -154,13 +154,13 @@ fn layout() -> Vec<FumWidget> {
                     ])
                 },
                 FumWidget::Progress {
-                    size: 20,
+                    size: None,
                     progress: "󰝤".to_string(),
                     empty: "󰁱".to_string()
                 },
                 FumWidget::Container {
-                    width: 20,
-                    height: 1,
+                    width: None,
+                    height: Some(1),
                     direction: Direction::Horizontal,
                     flex: ContainerFlex::SpaceBetween,
                     children: Vec::from([
