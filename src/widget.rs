@@ -96,5 +96,10 @@ pub enum FumWidget {
         text: String,
         action: String,
         exec: Option<String>
+    },
+    Progress {
+        size: u16,
+        progress: String,
+        empty: String
     }
 }

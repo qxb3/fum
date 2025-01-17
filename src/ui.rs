@@ -1,6 +1,7 @@
+use core::f64;
 use std::{collections::HashMap, rc::Rc};
 
-use ratatui::{layout::{Constraint, Layout, Rect}, widgets::Paragraph, Frame};
+use ratatui::{layout::{Constraint, Layout, Rect}, text::Text, widgets::Paragraph, Frame};
 use ratatui_image::StatefulImage;
 
 use crate::{config::Config, config_debug, debug_widget, meta::Meta, utils, widget::{self, ContainerFlex, FumWidget, LabelAlignment}};
@@ -95,6 +96,21 @@ impl<'a> Ui<'a> {
                     Paragraph::new(text),
                     *parent_area
                 );
+            },
+            FumWidget::Progress { progress: progress_char, empty: empty_char, .. } => {
+                if meta.length.as_secs() > 0 {
+                    let ratio = meta.position.as_secs() as f64 / meta.length.as_secs() as f64;
+
+                    let filled = (ratio * parent_area.width as f64).round();
+                    let empty = parent_area.width.saturating_sub(filled as u16);
+
+                    let filled_bar = progress_char.repeat(filled as usize);
+                    let empty_bar = empty_char.repeat(empty.into());
+
+                    frame.render_widget(Text::from(format!("{filled_bar}{empty_bar}")), *parent_area);
+                } else {
+                    frame.render_widget(Text::from(empty_char.repeat(parent_area.width.into())), *parent_area);
+                }
             }
         }
     }
@@ -131,6 +147,9 @@ impl<'a> Ui<'a> {
                         },
                         FumWidget::Button { .. } => {
                             Constraint::Length(1)
+                        },
+                        FumWidget::Progress { size, .. } => {
+                            Constraint::Length(*size)
                         }
                     })
                     .collect::<Vec<Constraint>>()

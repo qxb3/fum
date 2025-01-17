@@ -150,6 +150,11 @@ fn layout() -> Vec<FumWidget> {
                             exec: None
                         }
                     ])
+                },
+                FumWidget::Progress {
+                    size: 20,
+                    progress: "󰝤".to_string(),
+                    empty: "󰁱".to_string()
                 }
             ])
         }
