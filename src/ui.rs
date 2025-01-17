@@ -4,7 +4,7 @@ use std::{collections::HashMap, rc::Rc};
 use ratatui::{layout::{Constraint, Layout, Rect}, text::Text, widgets::{Block, Borders, Paragraph, Wrap}, Frame};
 use ratatui_image::StatefulImage;
 
-use crate::{config::Config, config_debug, debug_widget, get_size, meta::Meta, utils, widget::{self, ContainerFlex, FumWidget, LabelAlignment}};
+use crate::{config::Config, config_debug, debug_widget, get_size, meta::Meta, utils::{self, etc::format_duration}, widget::{self, ContainerFlex, FumWidget, LabelAlignment}};
 
 pub struct Ui<'a> {
     config: &'a Config,
@@ -96,7 +96,7 @@ impl<'a> Ui<'a> {
             },
             FumWidget::Label { text, align, truncate } => {
                 let text = match truncate {
-                    true => utils::truncate(&self.replace_text(text, meta), parent_area.width as usize),
+                    true => utils::etc::truncate(&self.replace_text(text, meta), parent_area.width as usize),
                     false => self.replace_text(text, meta)
                 };
 
@@ -148,8 +148,8 @@ impl<'a> Ui<'a> {
             text if text.contains("$title") => text.replace("$title", &meta.title),
             text if text.contains("$artists") => text.replace("$artists", &meta.artists.join(", ")),
             text if text.contains("$status_icon") => text.replace("$status_icon", &meta.status_icon),
-            text if text.contains("$position") => text.replace("$position", &utils::format_duration(meta.position)),
-            text if text.contains("$length") => text.replace("$length", &utils::format_duration(meta.length)),
+            text if text.contains("$position") => text.replace("$position", &format_duration(meta.position)),
+            text if text.contains("$length") => text.replace("$length", &format_duration(meta.length)),
             _ => text.to_string()
         }
     }

@@ -1,111 +1,16 @@
-use std::{fs, path::PathBuf};
-use serde::Deserialize;
+use crate::{utils::etc::generate_btn_id, widget::{ContainerFlex, FumWidget, LabelAlignment, Direction}};
 
-use crate::{utils::generate_btn_id, widget::{ContainerFlex, Direction, FumWidget, LabelAlignment}};
+use super::Align;
 
-#[derive(Debug, Clone, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum Align {
-    Center,
-    Top,
-    Left,
-    Bottom,
-    Right,
-    #[serde(rename = "top-left")]
-    TopLeft,
-    #[serde(rename = "top-right")]
-    TopRight,
-    #[serde(rename = "bottom-left")]
-    BottomLeft,
-    #[serde(rename = "bottom-right")]
-    BottomRight,
-}
-
-impl Align {
-    pub fn from_str(str: &str) -> Option<Self> {
-        match str {
-            "center"        => Some(Self::Center),
-            "top"           => Some(Self::Top),
-            "left"          => Some(Self::Left),
-            "bottom"        => Some(Self::Bottom),
-            "top-left"      => Some(Self::TopLeft),
-            "top-right"     => Some(Self::TopRight),
-            "bottom-left"   => Some(Self::BottomLeft),
-            "bottom-right"  => Some(Self::BottomRight),
-            _               => None
-        }
-    }
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct Config {
-    #[serde(default = "players")]
-    pub players: Vec<String>,
-
-    #[serde(default = "use_active_player")]
-    pub use_active_player: bool,
-
-    #[serde(default = "align")]
-    pub align: Align,
-
-    #[serde(default = "direction")]
-    pub direction: Direction,
-
-    #[serde(default = "flex")]
-    pub flex: ContainerFlex,
-
-    #[serde(default = "width")]
-    pub width: u16,
-
-    #[serde(default = "height")]
-    pub height: u16,
-
-    #[serde(default = "debug")]
-    pub debug: Option<bool>,
-
-    #[serde(default = "layout")]
-    pub layout: Vec<FumWidget>,
-}
-
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            players: players(),
-            use_active_player: use_active_player(),
-            align: align(),
-            direction: direction(),
-            flex: flex(),
-            width: width(),
-            height: height(),
-            debug: debug(),
-            layout: layout()
-        }
-    }
-}
-
-impl Config {
-    pub fn load(path: &PathBuf) -> Result<Self, String> {
-        match fs::read_to_string(path) {
-            Ok(config_file) => {
-                let config: Config = serde_json::from_str(&config_file)
-                    .map_err(|err| format!("Failed to parse config: {err}"))?;
-
-                Ok(config)
-            },
-            Err(_) => Ok(Config::default())
-        }
-    }
-}
-
-fn players() -> Vec<String> { vec!["spotify".to_string()] }
-fn use_active_player() -> bool { false }
-fn align() -> Align { Align::Center }
-fn direction() -> Direction { Direction::Vertical }
-fn flex() -> ContainerFlex { ContainerFlex::Start }
-fn width() -> u16 { 20 }
-fn height() -> u16 { 18 }
-fn debug() -> Option<bool> { None }
-fn layout() -> Vec<FumWidget> {
+pub fn players() -> Vec<String> { vec!["spotify".to_string()] }
+pub fn use_active_player() -> bool { false }
+pub fn align() -> Align { Align::Center }
+pub fn direction() -> Direction { Direction::Vertical }
+pub fn flex() -> ContainerFlex { ContainerFlex::Start }
+pub fn width() -> u16 { 20 }
+pub fn height() -> u16 { 18 }
+pub fn debug() -> Option<bool> { None }
+pub fn layout() -> Vec<FumWidget> {
     Vec::from([
         FumWidget::CoverArt {
             width: None,

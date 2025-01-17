@@ -1,5 +1,5 @@
 use serde::Deserialize;
-use crate::utils::generate_btn_id;
+use crate::utils::etc::generate_btn_id;
 
 fn default_truncate() -> bool { true }
 

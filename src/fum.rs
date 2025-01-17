@@ -60,7 +60,7 @@ impl<'a> Fum<'a> {
             self.update_meta();
         }
 
-        utils::restore();
+        utils::terminal::restore();
     }
 
     fn term_events(&mut self) {
