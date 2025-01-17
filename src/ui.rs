@@ -3,6 +3,7 @@ use std::{collections::HashMap, rc::Rc};
 
 use ratatui::{layout::{Constraint, Layout, Rect}, text::Text, widgets::{Block, Borders, Paragraph, Wrap}, Frame};
 use ratatui_image::StatefulImage;
+use regex::{Captures, Regex};
 
 use crate::{config::Config, config_debug, debug_widget, get_size, meta::Meta, utils::{self, etc::format_duration}, widget::{self, ContainerFlex, FumWidget, LabelAlignment}};
 
@@ -144,6 +145,8 @@ impl<'a> Ui<'a> {
     }
 
     fn replace_text(&self, text: &String, meta: &mut Meta) -> String {
+        let re = Regex::new(r"get_meta\((.*?)\)").unwrap();
+
         match text {
             text if text.contains("$title") => text.replace("$title", &meta.title),
             text if text.contains("$artists") => text.replace("$artists", &meta.artists.join(", ")),
@@ -151,6 +154,12 @@ impl<'a> Ui<'a> {
             text if text.contains("$status_icon") => text.replace("$status_icon", &meta.status_icon),
             text if text.contains("$position") => text.replace("$position", &format_duration(meta.position)),
             text if text.contains("$length") => text.replace("$length", &format_duration(meta.length)),
+            text if re.is_match(text) => {
+                re.replace_all(text, |c: &Captures| {
+                    let key = c[1].to_string();
+                    utils::player::get_custom_meta(&meta.metadata, key)
+                }).to_string()
+            },
             _ => text.to_string()
         }
     }

@@ -2,7 +2,7 @@ use std::{fs, io::Cursor, str::FromStr, time::Duration};
 
 use base64::{prelude::BASE64_STANDARD, Engine};
 use image::ImageReader;
-use mpris::{Metadata, PlaybackStatus, Player, PlayerFinder};
+use mpris::{Metadata, MetadataValue, PlaybackStatus, Player, PlayerFinder};
 use ratatui_image::picker::Picker;
 use reqwest::{header::RANGE, Url};
 
@@ -87,6 +87,31 @@ pub fn get_album(metadata: &Metadata) -> Result<String, String> {
         .album_name()
         .map(|a| a.to_string())
         .ok_or("Failed to get xesam:album".to_string())
+}
+
+pub fn get_custom_meta(metadata: &Metadata, key: String) -> String {
+    let value = metadata.get(&key);
+
+    match value {
+        Some(value) => match value {
+            MetadataValue::String(str) => str.to_string(),
+            MetadataValue::Bool(bool) => bool.to_string(),
+
+            MetadataValue::U8(u8) => u8.to_string(),
+            MetadataValue::U16(u16) => u16.to_string(),
+            MetadataValue::U32(u32) => u32.to_string(),
+            MetadataValue::U64(u64) => u64.to_string(),
+
+            MetadataValue::I16(i16) => i16.to_string(),
+            MetadataValue::I32(i32) => i32.to_string(),
+            MetadataValue::I64(i64) => i64.to_string(),
+
+            MetadataValue::F64(f64) => f64.to_string(),
+
+            MetadataValue::Unsupported | _ => "!Unsupported".to_string()
+        },
+        None => "!NotFound".to_string()
+    }
 }
 
 pub fn get_cover_art(metadata: &Metadata, picker: &Picker, current: Option<&Meta>) -> Result<CoverArt, String> {
@@ -196,6 +221,7 @@ pub fn get_meta<'a>(player: &Player, picker: &Picker, current: Option<&Meta>) ->
     }
 
     Ok((Meta {
+        metadata,
         title,
         artists,
         album,
