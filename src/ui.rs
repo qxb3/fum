@@ -111,7 +111,8 @@ impl<'a> Ui<'a> {
                 } else {
                     frame.render_widget(Text::from(empty_char.repeat(parent_area.width.into())), *parent_area);
                 }
-            }
+            },
+            FumWidget::Empty { .. } => {}
         }
     }
 
@@ -155,6 +156,9 @@ impl<'a> Ui<'a> {
                                 widget::Direction::Horizontal => Constraint::Length(*size),
                                 widget::Direction::Vertical => Constraint::Length(1)
                             }
+                        },
+                        FumWidget::Empty { size } => {
+                            Constraint::Length(*size)
                         }
                     })
                     .collect::<Vec<Constraint>>()

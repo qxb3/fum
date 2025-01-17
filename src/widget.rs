@@ -101,5 +101,8 @@ pub enum FumWidget {
         size: u16,
         progress: String,
         empty: String
+    },
+    Empty {
+        size: u16
     }
 }
