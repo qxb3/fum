@@ -147,6 +147,7 @@ impl<'a> Ui<'a> {
         match text {
             text if text.contains("$title") => text.replace("$title", &meta.title),
             text if text.contains("$artists") => text.replace("$artists", &meta.artists.join(", ")),
+            text if text.contains("$album") => text.replace("$album", &meta.album),
             text if text.contains("$status_icon") => text.replace("$status_icon", &meta.status_icon),
             text if text.contains("$position") => text.replace("$position", &format_duration(meta.position)),
             text if text.contains("$length") => text.replace("$length", &format_duration(meta.length)),

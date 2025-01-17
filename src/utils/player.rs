@@ -82,6 +82,13 @@ pub fn get_length(metadata: &Metadata) -> Result<Duration, String> {
         .ok_or("Failed to get mpris:length".to_string())
 }
 
+pub fn get_album(metadata: &Metadata) -> Result<String, String> {
+    metadata
+        .album_name()
+        .map(|a| a.to_string())
+        .ok_or("Failed to get xesam:album".to_string())
+}
+
 pub fn get_cover_art(metadata: &Metadata, picker: &Picker, current: Option<&Meta>) -> Result<CoverArt, String> {
     let art_url = metadata
         .get("mpris:artUrl")
@@ -169,6 +176,7 @@ pub fn get_meta<'a>(player: &Player, picker: &Picker, current: Option<&Meta>) ->
     let metadata = get_metadata(player)?;
     let title = get_title(&metadata)?;
     let artists = get_artists(&metadata)?;
+    let album = get_album(&metadata)?;
     let status = get_status(player)?;
     let status_icon = get_status_icon(&status);
     let position = get_position(player)?;
@@ -190,6 +198,7 @@ pub fn get_meta<'a>(player: &Player, picker: &Picker, current: Option<&Meta>) ->
     Ok((Meta {
         title,
         artists,
+        album,
         status,
         status_icon,
         position,

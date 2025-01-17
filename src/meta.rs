@@ -15,6 +15,7 @@ pub struct CoverArt {
 pub struct Meta<'a> {
     pub title: String,
     pub artists: Vec<String>,
+    pub album: String,
     pub status: PlaybackStatus,
     pub status_icon: &'a str,
     pub position: Duration,
@@ -27,6 +28,7 @@ impl<'a> Default for Meta<'a> {
         Self {
             title: "No Music".to_string(),
             artists: vec!["Artist".to_string()],
+            album: "Album".to_string(),
             status: PlaybackStatus::Stopped,
             status_icon: utils::player::get_status_icon(&PlaybackStatus::Stopped),
             position: Duration::from_secs(0),
