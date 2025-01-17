@@ -1,266 +1,195 @@
-use ratatui::{layout::{Constraint, Flex, Layout, Rect}, text::Text, widgets::{Block, Borders, Paragraph, Wrap}, Frame};
+use core::f64;
+use std::{collections::HashMap, rc::Rc};
+
+use ratatui::{layout::{Constraint, Layout, Rect}, text::Text, widgets::{Block, Borders, Paragraph, Wrap}, Frame};
 use ratatui_image::StatefulImage;
-use crate::{config::Config, term_config::TermConfig, utils, meta::Meta};
 
-pub struct PlaybackButtons {
-    pub prev: Rect,
-    pub play_pause: Rect,
-    pub next: Rect
-}
-
-impl Default for PlaybackButtons {
-    fn default() -> Self {
-        Self {
-            prev: Rect::default(),
-            play_pause: Rect::default(),
-            next:Rect::default()
-        }
-    }
-}
+use crate::{config::Config, config_debug, debug_widget, get_size, meta::Meta, utils::{self, etc::format_duration}, widget::{self, ContainerFlex, FumWidget, LabelAlignment}};
 
 pub struct Ui<'a> {
-    pub playback_buttons: PlaybackButtons,
     config: &'a Config,
-    term_config: &'a TermConfig
+    pub buttons: HashMap<String, (Rect, Option<String>, Option<String>)>
 }
 
 impl<'a> Ui<'a> {
-    pub fn new(config: &'a Config, term_config: &'a TermConfig) -> Self {
-        let playback_buttons = PlaybackButtons::default();
-
+    pub fn new(config: &'a Config) -> Self {
         Self {
-            playback_buttons,
             config,
-            term_config
+            buttons: HashMap::new()
         }
     }
 
-    pub fn draw(
-        &mut self,
-        frame: &mut Frame<'_>,
-        meta: &mut Meta
-    ) {
-        let area = utils::align::get_align(
-            &self.config.align,
-            frame,
-            self.term_config.width,
-            self.term_config.height
-        );
+    pub fn draw(&mut self, frame: &mut Frame<'_>, meta: &mut Meta) {
+        let main_area = utils::align::get_align(frame, &self.config.align, self.config.width, self.config.height);
 
         // Terminal window is too small
-        if frame.area().width < self.term_config.width ||
-            frame.area().height < self.term_config.height {
+        if frame.area().width < self.config.width ||
+            frame.area().height < self.config.height {
             frame.render_widget(
                 Paragraph::new(format!(
                     "Terminal window is too small. Must have atleast ({}x{}).",
-                    self.term_config.width, self.term_config.height
+                    self.config.width, self.config.height
                 ))
                     .centered()
                     .wrap(Wrap::default())
                     .block(Block::new().borders(Borders::ALL)),
-                area
+                main_area
             );
 
             return;
         }
 
-        let (image_area, meta_area) = utils::layout::get_layout(
+        config_debug!(self.config.debug, frame, main_area);
+
+        let areas = self.get_areas(
             &self.config.layout,
-            area
+            &self.config.direction,
+            &self.config.flex,
+            main_area
         );
 
-        let (
-            title_area,
-            artists_area,
-            buttons_area,
-            progress_area
-        ) = match self.config.layout.as_str() {
-            "bottom-to-top" => {
-                let [progress_area, _, buttons_area, _, artists_area, title_area] = Layout::vertical([
-                    Constraint::Length(2),
-                    Constraint::Length(1),
-                    Constraint::Length(1),
-                    Constraint::Length(1),
-                    Constraint::Length(1),
-                    Constraint::Length(1),
-                ]).areas(meta_area);
-
-                (title_area, artists_area, buttons_area, progress_area)
-            },
-            _ => {
-                let [title_area, artists_area, _, buttons_area, _, progress_area] = Layout::vertical([
-                    Constraint::Length(1),
-                    Constraint::Length(1),
-                    Constraint::Length(1),
-                    Constraint::Length(1),
-                    Constraint::Length(1),
-                    Constraint::Length(2),
-                ]).areas(meta_area);
-
-                (title_area, artists_area, buttons_area, progress_area)
+        for (i, widget) in self.config.layout.iter().enumerate() {
+            if let Some(area) = areas.get(i) {
+                config_debug!(self.config.debug, frame, *area);
+                self.render_layout(frame, widget, area, meta);
             }
-        };
-
-        if let Some(cover_art) = meta.cover_art.as_mut() {
-            frame.render_stateful_widget(
-                StatefulImage::default(),
-                image_area,
-                &mut cover_art.image
-            );
         }
-
-        if !self.config.hidden.contains(&"title".to_string()) {
-            frame.render_widget(
-                Text::from(utils::truncate(&meta.title, 14).as_str())
-                    .centered(),
-                title_area
-            );
-        }
-
-        if !self.config.hidden.contains(&"artists".to_string()) {
-            frame.render_widget(
-                Text::from(utils::truncate(&meta.artists.join(", "), 14).as_str())
-                    .centered(),
-                artists_area
-            );
-        }
-
-        if !self.config.hidden.contains(&"buttons".to_string()) {
-            self.render_buttons(frame, buttons_area, &meta);
-        }
-
-        self.render_progress(frame, progress_area, &meta);
     }
 
-    fn render_buttons(
-        &mut self,
-        frame: &mut Frame<'_>,
-        area: Rect,
-        meta: &Meta
-    ) {
-        let [prev, _, toggle, _, next] = Layout::horizontal([
-            Constraint::Length(1),
-            Constraint::Length(5),
-            Constraint::Length(1),
-            Constraint::Length(5),
-            Constraint::Length(1)
-        ])
-            .flex(Flex::Center)
-            .areas(area);
+    fn render_layout(&mut self, frame: &mut Frame<'_>, widget: &FumWidget, parent_area: &Rect, meta: &mut Meta) {
+        match &widget {
+            FumWidget::Container { width, height, direction, flex, children } => {
+                let area = get_size!(
+                    Layout::vertical,
+                    height,
+                    get_size!(Layout::horizontal, width, *parent_area)
+                );
 
-        self.playback_buttons.prev = prev;
-        self.playback_buttons.play_pause = toggle;
-        self.playback_buttons.next = next;
+                let areas = self.get_areas(
+                    children,
+                    &direction,
+                    flex,
+                    area
+                );
 
-        frame.render_widget(
-            Text::from("󰒮"),
-            prev
-        );
+                for (i, child) in children.iter().enumerate() {
+                    if let Some(area) = areas.get(i) {
+                        config_debug!(self.config.debug, frame, *area);
+                        self.render_layout(frame, child, area, meta);
+                    }
+                }
+            },
+            FumWidget::CoverArt { width, height } => {
+                let area = get_size!(
+                    Layout::vertical,
+                    height,
+                    get_size!(Layout::horizontal, width, *parent_area)
+                );
 
-        frame.render_widget(
-            Text::from(utils::player::get_status_icon(&meta.status)),
-            toggle
-        );
+                if let Some(cover_art) = meta.cover_art.as_mut() {
+                    frame.render_stateful_widget(
+                        StatefulImage::default(),
+                        area,
+                        &mut cover_art.image
+                    );
+                }
+            },
+            FumWidget::Label { text, align, truncate } => {
+                let text = match truncate {
+                    true => utils::etc::truncate(&self.replace_text(text, meta), parent_area.width as usize),
+                    false => self.replace_text(text, meta)
+                };
 
-        frame.render_widget(
-            Text::from("󰒭"),
-            next
-        );
+                let widget = match align {
+                    LabelAlignment::Left => Paragraph::new(text).left_aligned(),
+                    LabelAlignment::Center => Paragraph::new(text).centered(),
+                    LabelAlignment::Right => Paragraph::new(text).right_aligned(),
+                };
+
+                frame.render_widget(
+                    widget,
+                    *parent_area
+                );
+            }
+            FumWidget::Button { id, text, action, exec } => {
+                let text = self.replace_text(text, meta).to_string();
+
+                self.buttons.insert(
+                    id.to_string(),
+                    (*parent_area, action.to_owned(), exec.to_owned())
+                );
+
+                frame.render_widget(
+                    Paragraph::new(text),
+                    *parent_area
+                );
+            },
+            FumWidget::Progress { progress: progress_char, empty: empty_char, .. } => {
+                if meta.length.as_secs() > 0 {
+                    let ratio = meta.position.as_secs() as f64 / meta.length.as_secs() as f64;
+
+                    let filled = (ratio * parent_area.width as f64).round();
+                    let empty = parent_area.width.saturating_sub(filled as u16);
+
+                    let filled_bar = progress_char.repeat(filled as usize);
+                    let empty_bar = empty_char.repeat(empty.into());
+
+                    frame.render_widget(Text::from(format!("{filled_bar}{empty_bar}")), *parent_area);
+                } else {
+                    frame.render_widget(Text::from(empty_char.repeat(parent_area.width.into())), *parent_area);
+                }
+            },
+            FumWidget::Empty { .. } => {}
+        }
     }
 
-    fn render_progress(
-        &mut self,
-        frame: &mut Frame<'_>,
-        area: Rect,
-        meta: &Meta
-    ) {
-        let (
-            progress_area,
-            progress_text_area
-        ) = match self.config.layout.as_str() {
-            "bottom-to-top" => {
-                let [progress_text_area, progress_area] = Layout::vertical([
-                    Constraint::Length(1),
-                    Constraint::Length(1)
-                ]).areas(area);
-
-                (progress_area, progress_text_area)
-            },
-            _ => {
-                let [progress_area, progress_text_area] = Layout::vertical([
-                    Constraint::Length(1),
-                    Constraint::Length(1)
-                ]).areas(area);
-
-                (progress_area, progress_text_area)
-            }
-        };
-
-        let [current_pos_area, length_area] = Layout::horizontal([
-            Constraint::Min(0),
-            Constraint::Min(0)
-        ])
-            .flex(Flex::SpaceBetween)
-            .areas(progress_text_area);
-
-        if !self.config.hidden.contains(&"progress-bar".to_string()) {
-            if meta.length.as_secs() > 0 {
-                let ratio = meta.position.as_secs() as f64 / meta.length.as_secs() as f64;
-                let filled = (ratio * progress_area.width as f64).round();
-                let empty = progress_area.width.saturating_sub(filled as u16);
-                let filled_bar = self.config.progress.to_string().repeat(filled as usize);
-                let empty_bar = self.config.empty.to_string().repeat(empty.into());
-
-                frame.render_widget(Text::from(format!("{filled_bar}{empty_bar}")), progress_area);
-            } else {
-                frame.render_widget(Text::from(self.config.empty.to_string().repeat(progress_area.width.into())), progress_area);
-            }
+    fn replace_text(&self, text: &String, meta: &mut Meta) -> String {
+        match text {
+            text if text.contains("$title") => text.replace("$title", &meta.title),
+            text if text.contains("$artists") => text.replace("$artists", &meta.artists.join(", ")),
+            text if text.contains("$status_icon") => text.replace("$status_icon", &meta.status_icon),
+            text if text.contains("$position") => text.replace("$position", &format_duration(meta.position)),
+            text if text.contains("$length") => text.replace("$length", &format_duration(meta.length)),
+            _ => text.to_string()
         }
+    }
 
-        if !self.config.hidden.contains(&"progress-text".to_string()) {
-            frame.render_widget(
-                Text::from(format!(
-                    "{}",
-                    if meta.position.as_secs() >= 3600 {
-                        format!(
-                            "{}:{:02}:{:02}",
-                            meta.position.as_secs() / 3600,
-                            (meta.position.as_secs() % 3600) / 60,
-                            meta.position.as_secs() % 60
-                        )
-                    } else {
-                        format!(
-                            "{}:{:02}",
-                            meta.position.as_secs() / 60,
-                            meta.position.as_secs() % 60
-                        )
-                    }
-                ))
-                    .left_aligned(),
-                current_pos_area,
-            );
-
-            frame.render_widget(
-                Text::from(format!(
-                    "{}",
-                    if meta.length.as_secs() >= 3600 {
-                        format!(
-                            "{}:{:02}:{:02}",
-                            meta.length.as_secs() / 3600,
-                            (meta.length.as_secs() % 3600) / 60,
-                            meta.length.as_secs() % 60
-                        )
-                    } else {
-                        format!(
-                            "{}:{:02}",
-                            meta.length.as_secs() / 60,
-                            meta.length.as_secs() % 60
-                        )
-                    }
-                ))
-                    .right_aligned(),
-                length_area,
-            );
-        }
+    fn get_areas(&self, widgets: &Vec<FumWidget>, direction: &widget::Direction, flex: &ContainerFlex, parent_area: Rect) -> Rc<[Rect]> {
+        Layout::default()
+            .direction(direction.to_dir())
+            .flex(flex.to_flex())
+            .constraints(
+                widgets
+                    .iter()
+                    .map(|child| match child {
+                        FumWidget::Container { width, height, .. } |
+                        FumWidget::CoverArt { width, height } => {
+                            match direction {
+                                widget::Direction::Horizontal => width.map(|w| Constraint::Length(w)).unwrap_or(Constraint::Min(0)),
+                                widget::Direction::Vertical => height.map(|h| Constraint::Length(h)).unwrap_or(Constraint::Min(0))
+                            }
+                        },
+                        FumWidget::Label { .. } => {
+                            match direction {
+                                widget::Direction::Horizontal => Constraint::Min(0),
+                                widget::Direction::Vertical => Constraint::Length(1)
+                            }
+                        },
+                        FumWidget::Button { .. } => {
+                            Constraint::Length(1)
+                        },
+                        FumWidget::Progress { size, .. } => {
+                            match direction {
+                                widget::Direction::Horizontal => size.map(|s| Constraint::Length(s)).unwrap_or(Constraint::Min(0)),
+                                widget::Direction::Vertical => Constraint::Length(1)
+                            }
+                        },
+                        FumWidget::Empty { size } => {
+                            Constraint::Length(*size)
+                        }
+                    })
+                    .collect::<Vec<Constraint>>()
+            )
+            .split(parent_area)
     }
 }

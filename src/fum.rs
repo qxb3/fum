@@ -1,11 +1,11 @@
-use std::{io::{stdout, Stdout}, time::Duration};
+use std::{io::{stdout, Stdout}, process::Command, time::Duration};
 
 use crossterm::{event::{EnableMouseCapture, Event, KeyCode, KeyEventKind, MouseButton, MouseEventKind}, execute};
 use mpris::Player;
 use ratatui::{layout::Position, prelude::CrosstermBackend, Terminal};
 use ratatui_image::picker::Picker;
 
-use crate::{config::Config, meta::Meta, term_config::TermConfig, ui::Ui, utils};
+use crate::{config::Config, meta::Meta, ui::Ui, utils};
 
 pub struct Fum<'a> {
     config: &'a Config,
@@ -13,13 +13,13 @@ pub struct Fum<'a> {
     ui: Ui<'a>,
     picker: Picker,
     player: Option<Player>,
-    meta: Meta,
+    meta: Meta<'a>,
     redraw: bool,
     exit: bool
 }
 
 impl<'a> Fum<'a> {
-    pub fn new(config: &'a Config, term_config: &'a TermConfig) -> Result<Self, String> {
+    pub fn new(config: &'a Config) -> Result<Self, String> {
         let player = utils::player::get_player(&config).ok();
 
         let picker = Picker::from_query_stdio()
@@ -38,7 +38,7 @@ impl<'a> Fum<'a> {
         Ok(Self {
             config,
             terminal: ratatui::init(),
-            ui: Ui::new(config, term_config),
+            ui: Ui::new(config),
             picker,
             player,
             meta,
@@ -60,7 +60,7 @@ impl<'a> Fum<'a> {
             self.update_meta();
         }
 
-        utils::restore();
+        utils::terminal::restore();
     }
 
     fn term_events(&mut self) {
@@ -81,11 +81,30 @@ impl<'a> Fum<'a> {
                     }
                 },
                 Event::Mouse(mouse) if mouse.kind == MouseEventKind::Down(MouseButton::Left) => {
-                    match (mouse.column, mouse.row) {
-                        (x, y) if self.ui.playback_buttons.prev.contains(Position::new(x, y)) => self.prev(),
-                        (x, y) if self.ui.playback_buttons.play_pause.contains(Position::new(x, y)) => self.play_pause(),
-                        (x, y) if self.ui.playback_buttons.next.contains(Position::new(x, y)) => self.next(),
-                        _ => {}
+                    for (rect, action, exec) in self.ui.buttons.values() {
+                        if rect.contains(Position::new(mouse.column, mouse.row)) {
+                            // Execute action
+                            if let Some(action) = action {
+                                match action.as_str() {
+                                    "prev()" => self.prev(),
+                                    "play_pause()" => self.play_pause(),
+                                    "next()" => self.next(),
+                                    _ => {}
+                                }
+                            }
+
+                            // Spawn a new command process based on exec
+                            if let Some(exec) = exec {
+                                let parts: Vec<&str> = exec.split_whitespace().collect();
+                                if let Some(command) = parts.get(0) {
+                                    let _ = Command::new(command)
+                                        .args(&parts[1..])
+                                        .stdout(std::process::Stdio::null())
+                                        .stderr(std::process::Stdio::null())
+                                        .spawn();
+                                }
+                            }
+                        }
                     }
                 },
                 Event::Resize(_, _) => {
