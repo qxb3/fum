@@ -19,12 +19,11 @@ pub fn generate_btn_id() -> String {
 }
 
 pub fn truncate(string: &str, width: usize) -> String {
-    let width = width - 3; // minus 3 since the dots (...)
-
-    if string.chars().count() < width {
+    if string.chars().count() <= width {
         string.to_string()
     } else {
-        let truncated: String = string.chars().take(width).collect();
+        // minus 3 since the dots (...)
+        let truncated: String = string.chars().take(width - 3).collect();
         format!("{}...", truncated)
     }
 }
@@ -38,10 +37,6 @@ pub fn format_duration(duration: Duration) -> String {
             duration.as_secs() % 60
         )
     } else {
-        format!(
-            "{}:{:02}",
-            duration.as_secs() / 60,
-            duration.as_secs() % 60
-        )
+        format!("{}:{:02}", duration.as_secs() / 60, duration.as_secs() % 60)
     }
 }
