@@ -36,7 +36,7 @@
 
 <img
   width="800px"
-  src="https://github.com/user-attachments/assets/97aa278e-432c-4ea5-961a-840eac1cefe7"
+  src="https://github.com/user-attachments/assets/930283d8-6299-4ef9-865b-26960dcee866"
 />
 
 ## Installation
