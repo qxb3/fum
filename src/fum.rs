@@ -56,8 +56,8 @@ impl<'a> Fum<'a> {
                 }).expect("Failed to draw frame");
             }
 
-            self.term_events();
             self.update_meta();
+            self.term_events();
         }
 
         utils::terminal::restore();
