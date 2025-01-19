@@ -2,7 +2,7 @@ use core::error;
 use std::{io::{stdout, Stdout}, process::{Command, Stdio}, time::Duration};
 
 use crossterm::{event::{self, EnableMouseCapture, Event, KeyCode, KeyEventKind, MouseButton, MouseEventKind}, execute};
-use mpris::Player;
+use mpris::{LoopStatus, Player};
 use ratatui::{layout::Position, prelude::CrosstermBackend, Terminal};
 use ratatui_image::picker::Picker;
 
