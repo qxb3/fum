@@ -1,7 +1,7 @@
-use std::{io::{stdout, Stdout}, process::Command, time::Duration};
+use std::{io::{stdout, Stdout}, process::{Command, Stdio}, time::Duration};
 
-use crossterm::{event::{EnableMouseCapture, Event, KeyCode, KeyEventKind, MouseButton, MouseEventKind}, execute};
-use mpris::{LoopStatus, Player};
+use crossterm::{event::{self, EnableMouseCapture, Event, KeyCode, KeyEventKind, MouseButton, MouseEventKind}, execute};
+use mpris::Player;
 use ratatui::{layout::Position, prelude::CrosstermBackend, Terminal};
 use ratatui_image::picker::Picker;
 
@@ -26,8 +26,7 @@ impl<'a> Fum<'a> {
             .expect("Failed to query font size. This terminal might not be supported.");
 
         let meta = match &player {
-            Some(player) => Meta::fetch(player, &picker, None)
-                .unwrap_or(Meta::default()),
+            Some(player) => Meta::fetch(player, &picker, None).unwrap_or(Meta::default()),
             None => Meta::default()
         };
 
@@ -64,8 +63,8 @@ impl<'a> Fum<'a> {
     }
 
     fn term_events(&mut self) {
-        if crossterm::event::poll(Duration::from_millis(100)).expect("Failed to poll event") {
-            let event = crossterm::event::read().expect("Failed to read event");
+        if event::poll(Duration::from_millis(100)).expect("Failed to poll event") {
+            let event = event::read().expect("Failed to read event");
 
             match event {
                 Event::Key(key) if key.kind == KeyEventKind::Press => {
@@ -92,10 +91,10 @@ impl<'a> Fum<'a> {
                             if let Some(exec) = exec {
                                 let parts: Vec<&str> = exec.split_whitespace().collect();
                                 if let Some(command) = parts.get(0) {
-                                    let _ = Command::new(command)
+                                    let _ = Command::new(command) // Ignore result
                                         .args(&parts[1..])
-                                        .stdout(std::process::Stdio::null())
-                                        .stderr(std::process::Stdio::null())
+                                        .stdout(Stdio::null())
+                                        .stderr(Stdio::null())
                                         .spawn();
                                 }
                             }
