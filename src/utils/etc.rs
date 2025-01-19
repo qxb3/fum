@@ -1,5 +1,4 @@
 use std::time::Duration;
-
 use uuid::Uuid;
 
 #[macro_export]

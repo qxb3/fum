@@ -20,14 +20,14 @@ pub struct Fum<'a> {
 
 impl<'a> Fum<'a> {
     pub fn new(config: &'a Config) -> Result<Self, String> {
-        let player = utils::player::get_player(&config).ok();
+        let player = Meta::get_player(&config).ok();
 
         let picker = Picker::from_query_stdio()
             .expect("Failed to query font size. This terminal might not be supported.");
 
         let meta = match &player {
-            Some(player) => utils::player::get_meta(player, &picker, None)
-                .unwrap_or((Meta::default(), false)).0,
+            Some(player) => Meta::fetch(player, &picker, None)
+                .unwrap_or(Meta::default()),
             None => Meta::default()
         };
 
@@ -129,16 +129,16 @@ impl<'a> Fum<'a> {
 
     fn update_meta(&mut self) {
         if let Some(player) = &self.player {
-            let (new_meta, changed) = utils::player::get_meta(player, &self.picker, Some(&self.meta))
-                .unwrap_or((Meta::default(), true));
+            let meta = Meta::fetch(player, &self.picker, Some(&self.meta))
+                .unwrap_or(Meta::default());
 
-            self.meta = new_meta;
-            self.redraw = changed;
+            self.redraw = meta.changed;
+            self.meta = meta;
 
             return;
         }
 
-        self.player = utils::player::get_player(&self.config).ok();
+        self.player = Meta::get_player(&self.config).ok();
         self.meta = Meta::default();
     }
 

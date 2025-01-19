@@ -157,7 +157,7 @@ impl<'a> Ui<'a> {
             text if re.is_match(text) => {
                 re.replace_all(text, |c: &Captures| {
                     let key = c[1].to_string();
-                    utils::player::get_custom_meta(&meta.metadata, key)
+                    Meta::get_custom_meta(&meta.metadata, key)
                 }).to_string()
             },
             _ => text.to_string()
