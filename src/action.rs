@@ -15,7 +15,8 @@ pub enum Action {
 
     LoopNone,
     LoopTrack,
-    LoopPlaylist
+    LoopPlaylist,
+    LoopCycle
 }
 
 impl Action {
@@ -36,29 +37,39 @@ impl Action {
             "loop_none()"       => Action::run(Action::LoopNone, player),
             "loop_track()"      => Action::run(Action::LoopTrack, player),
             "loop_playlist()"   => Action::run(Action::LoopPlaylist, player),
+            "loop_cycle()"   => Action::run(Action::LoopCycle, player),
 
             _ => {}
         }
     }
 
     pub fn run(action: Action, player: &Option<Player>) {
-        if let Some(player) = player {
+        if let Some(_player) = player {
             match action {
-                Action::Stop => player.stop().expect("Failed to stop player"),
-                Action::Play => player.play().expect("Failed to play player"),
-                Action::Pause => player.pause().expect("Failed to pause player"),
+                Action::Stop => _player.stop().expect("Failed to stop player"),
+                Action::Play => _player.play().expect("Failed to play player"),
+                Action::Pause => _player.pause().expect("Failed to pause player"),
 
-                Action::Prev => player.previous().expect("Failed to prev player"),
-                Action::PlayPause => player.play_pause().expect("Failed to play/pause player"),
-                Action::Next => player.next().expect("Failed to next player"),
+                Action::Prev => _player.previous().expect("Failed to prev player"),
+                Action::PlayPause => _player.play_pause().expect("Failed to play/pause player"),
+                Action::Next => _player.next().expect("Failed to next player"),
 
-                Action::ShuffleOff => player.set_shuffle(false).expect("Failed to unshuffle"),
-                Action::ShuffleToggle => player.set_shuffle(!player.get_shuffle().expect("Failed to get shuffle state")).expect("Failed to toggle shuffle"),
-                Action::ShuffleOn => player.set_shuffle(true).expect("Failed to shuffle"),
+                Action::ShuffleOff => _player.set_shuffle(false).expect("Failed to unshuffle"),
+                Action::ShuffleToggle => _player.set_shuffle(!_player.get_shuffle().expect("Failed to get shuffle state")).expect("Failed to toggle shuffle"),
+                Action::ShuffleOn => _player.set_shuffle(true).expect("Failed to shuffle"),
 
-                Action::LoopNone => player.set_loop_status(LoopStatus::None).expect("Failed to set loop to none"),
-                Action::LoopTrack => player.set_loop_status(LoopStatus::Track).expect("Failed to set loop to track"),
-                Action::LoopPlaylist => player.set_loop_status(LoopStatus::Playlist).expect("Failed to set loop to playlist"),
+                Action::LoopNone => _player.set_loop_status(LoopStatus::None).expect("Failed to set loop to none"),
+                Action::LoopPlaylist => _player.set_loop_status(LoopStatus::Playlist).expect("Failed to set loop to playlist"),
+                Action::LoopTrack => _player.set_loop_status(LoopStatus::Track).expect("Failed to set loop to track"),
+                Action::LoopCycle => {
+                    let loop_state = _player.get_loop_status().expect("Failed to get loop state");
+
+                    match loop_state {
+                        LoopStatus::None => Action::run(Action::LoopPlaylist, player),
+                        LoopStatus::Playlist => Action::run(Action::LoopTrack, player),
+                        LoopStatus::Track => Action::run(Action::LoopNone, player),
+                    }
+                },
             }
         }
     }
