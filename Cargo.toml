@@ -1,7 +1,7 @@
 [package]
 name = "fum-player"
 description = "A tui-based mpris music client."
-version = "0.4.2"
+version = "0.4.3"
 repository = "https://github.com/qxb3/fum"
 homepage = "https://github.com/qxb3/fum"
 license = "MIT"
