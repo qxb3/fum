@@ -1,7 +1,7 @@
 use std::{fs, path::PathBuf};
 use serde::Deserialize;
 
-use crate::widget::{ContainerFlex, Direction, FumWidget};
+use crate::{fum::FumResult, widget::{ContainerFlex, Direction, FumWidget}};
 
 use super::defaults::{align, debug, direction, flex, height, layout, players, use_active_player, width};
 
@@ -86,7 +86,7 @@ impl Default for Config {
 }
 
 impl Config {
-    pub fn load(path: &PathBuf) -> Result<Self, String> {
+    pub fn load(path: &PathBuf) -> FumResult<Self> {
         match fs::read_to_string(path) {
             Ok(config_file) => {
                 let config: Config = serde_json::from_str(&config_file)

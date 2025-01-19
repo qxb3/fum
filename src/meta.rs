@@ -1,4 +1,4 @@
-use std::{fs, io::Cursor, str::FromStr, time::Duration};
+use std::{fs, io::{self, Cursor}, str::FromStr, time::Duration};
 
 use base64::{prelude::BASE64_STANDARD, Engine};
 use image::ImageReader;
@@ -6,7 +6,7 @@ use mpris::{Metadata, MetadataValue, PlaybackStatus, Player, PlayerFinder};
 use ratatui_image::{picker::Picker, protocol::StatefulProtocol};
 use reqwest::{header::RANGE, Url};
 
-use crate::config::Config;
+use crate::{config::Config, fum::FumResult};
 
 #[derive(Clone)]
 pub struct CoverArt {
@@ -46,7 +46,7 @@ impl<'a> Default for Meta<'a> {
 }
 
 impl<'a> Meta<'a> {
-    pub fn fetch(player: &Player, picker: &Picker, current: Option<&Self>) -> Result<Self, String> {
+    pub fn fetch(player: &Player, picker: &Picker, current: Option<&Self>) -> FumResult<Self> {
         let metadata = Meta::get_metadata(player)?;
         let title = Meta::get_title(&metadata)?;
         let artists = Meta::get_artists(&metadata)?;
@@ -83,9 +83,11 @@ impl<'a> Meta<'a> {
         })
     }
 
-    pub fn get_player(config: &Config) -> Result<Player, String> {
-        let players = PlayerFinder::new()
-            .map_err(|err| format!("Failed to connect to D-Bus: {:?}.", err))?
+    pub fn get_player(config: &Config) -> FumResult<Player> {
+        let finder = PlayerFinder::new()
+            .map_err(|err| format!("Failed to connect to D-Bus: {:?}.", err))?;
+
+        let players = finder
             .find_all()
             .map_err(|err| format!("There is no any active players: {:?}.", err))?;
 
@@ -103,39 +105,49 @@ impl<'a> Meta<'a> {
 
         // Find the most likely player to be used
         if config.use_active_player {
-            return PlayerFinder::new()
-                .map_err(|err| format!("Failed to connect to D-Bus: {:?}", err))?
-                .find_active()
-                .map_err(|err| format!("'use-active-player' is set to true but failed to get active player: {err}"));
+            let active = finder.find_active()
+                .map_err(|err| format!("'use-active-player' is set to true but failed to get active player: {err}"))?;
+
+            return Ok(active);
         }
 
-        Err("Failed to find any specified players.".to_string())
+        Err(Box::new(
+            io::Error::new(
+                io::ErrorKind::Other,
+                "Failed to find any specified players"
+            )
+        ))
     }
 
-    pub fn get_metadata(player: &Player) -> Result<Metadata, String> {
-        player
-            .get_metadata()
-            .map_err(|err| format!("Failed to get the player's metadata: {err}"))
+    pub fn get_metadata(player: &Player) -> FumResult<Metadata> {
+        let metadata = player.get_metadata()?;
+        Ok(metadata)
     }
 
-    pub fn get_title(metadata: &Metadata) -> Result<String, String> {
-        metadata
+    pub fn get_title(metadata: &Metadata) -> FumResult<String> {
+        let title = metadata
             .title()
             .map(|t| t.to_string())
-            .ok_or("Failed to get xesam:title".to_string())
+            .ok_or("Failed to get xesam:title")?;
+
+        Ok(title)
     }
 
-    pub fn get_artists(metadata: &Metadata) -> Result<Vec<String>, String> {
-        metadata
+    pub fn get_artists(metadata: &Metadata) -> FumResult<Vec<String>> {
+        let metadata = metadata
             .artists()
             .map(|a| a.iter().map(|a| a.to_string()).collect())
-            .ok_or("Failed to get xesam:title.".to_string())
+            .ok_or("Failed to get xesam:title.".to_string())?;
+
+        Ok(metadata)
     }
 
-    pub fn get_status(player: &Player) -> Result<PlaybackStatus, String> {
-        player
+    pub fn get_status(player: &Player) -> FumResult<PlaybackStatus> {
+        let status = player
             .get_playback_status()
-            .map_err(|err| format!("Failed to get player playback_status: {err}"))
+            .map_err(|err| format!("Failed to get player playback_status: {err}"))?;
+
+        Ok(status)
     }
 
     pub fn get_status_icon(status: &PlaybackStatus) -> &'a str {
@@ -146,22 +158,28 @@ impl<'a> Meta<'a> {
         }
     }
 
-    pub fn get_position(player: &Player) -> Result<Duration, String> {
-        player.get_position()
-            .map_err(|err| format!("Failed to get player position: {err}"))
+    pub fn get_position(player: &Player) -> FumResult<Duration> {
+        let position = player.get_position()
+            .map_err(|err| format!("Failed to get player position: {err}"))?;
+
+        Ok(position)
     }
 
-    pub fn get_length(metadata: &Metadata) -> Result<Duration, String> {
-        metadata
+    pub fn get_length(metadata: &Metadata) -> FumResult<Duration> {
+        let length = metadata
             .length()
-            .ok_or("Failed to get mpris:length".to_string())
+            .ok_or("Failed to get mpris:length".to_string())?;
+
+        Ok(length)
     }
 
-    pub fn get_album(metadata: &Metadata) -> Result<String, String> {
-        metadata
+    pub fn get_album(metadata: &Metadata) -> FumResult<String> {
+        let album = metadata
             .album_name()
             .map(|a| a.to_string())
-            .ok_or("Failed to get xesam:album".to_string())
+            .ok_or("Failed to get xesam:album".to_string())?;
+
+        Ok(album)
     }
 
     pub fn get_custom_meta(metadata: &Metadata, key: String) -> String {
@@ -189,7 +207,7 @@ impl<'a> Meta<'a> {
         }
     }
 
-    pub fn get_cover_art(metadata: &Metadata, picker: &Picker, current: Option<&Meta>) -> Result<CoverArt, String> {
+    pub fn get_cover_art(metadata: &Metadata, picker: &Picker, current: Option<&Meta>) -> FumResult<CoverArt> {
         let art_url = metadata
             .get("mpris:artUrl")
             .ok_or("Failed to get mpris:artUrl")?;
@@ -269,6 +287,11 @@ impl<'a> Meta<'a> {
             })
         }
 
-        Err("mpris:artUrl is not a string.".to_string())
+        Err(Box::new(
+            io::Error::new(
+                io::ErrorKind::Other,
+                "mpris:artUrl is not a string."
+            )
+        ))
     }
 }

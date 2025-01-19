@@ -1,3 +1,4 @@
+use core::error;
 use std::{io::{stdout, Stdout}, process::{Command, Stdio}, time::Duration};
 
 use crossterm::{event::{self, EnableMouseCapture, Event, KeyCode, KeyEventKind, MouseButton, MouseEventKind}, execute};
@@ -6,6 +7,8 @@ use ratatui::{layout::Position, prelude::CrosstermBackend, Terminal};
 use ratatui_image::picker::Picker;
 
 use crate::{action::Action, config::Config, meta::Meta, ui::Ui, utils};
+
+pub type FumResult<T> = std::result::Result<T, Box<dyn error::Error>>;
 
 pub struct Fum<'a> {
     config: &'a Config,
@@ -19,11 +22,10 @@ pub struct Fum<'a> {
 }
 
 impl<'a> Fum<'a> {
-    pub fn new(config: &'a Config) -> Result<Self, String> {
+    pub fn new(config: &'a Config) -> FumResult<Self> {
         let player = Meta::get_player(&config).ok();
 
-        let picker = Picker::from_query_stdio()
-            .expect("Failed to query font size. This terminal might not be supported.");
+        let picker = Picker::from_query_stdio()?;
 
         let meta = match &player {
             Some(player) => Meta::fetch(player, &picker, None).unwrap_or(Meta::default()),
@@ -31,8 +33,7 @@ impl<'a> Fum<'a> {
         };
 
         // Enable mouse capture
-        execute!(stdout(), EnableMouseCapture)
-            .expect("Failed to enable mouse capture");
+        execute!(stdout(), EnableMouseCapture)?;
 
         Ok(Self {
             config,
@@ -46,25 +47,27 @@ impl<'a> Fum<'a> {
         })
     }
 
-    pub fn run(&mut self) {
+    pub fn run(&mut self) -> FumResult<()> {
         while !self.exit {
             if self.redraw {
                 self.terminal.draw(|frame| {
                     self.ui.draw(frame, &mut self.meta);
                     self.redraw = false;
-                }).expect("Failed to draw frame");
+                })?;
             }
 
             self.update_meta();
-            self.term_events();
+            self.term_events()?;
         }
 
         utils::terminal::restore();
+
+        Ok(())
     }
 
-    fn term_events(&mut self) {
-        if event::poll(Duration::from_millis(100)).expect("Failed to poll event") {
-            let event = event::read().expect("Failed to read event");
+    fn term_events(&mut self) -> FumResult<()> {
+        if event::poll(Duration::from_millis(100))? {
+            let event = event::read()?;
 
             match event {
                 Event::Key(key) if key.kind == KeyEventKind::Press => {
@@ -107,6 +110,8 @@ impl<'a> Fum<'a> {
                 _ => {}
             }
         }
+
+        Ok(())
     }
 
     fn update_meta(&mut self) {
