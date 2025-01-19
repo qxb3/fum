@@ -48,6 +48,73 @@ yay -S fum
 # paru -S fum
 ```
 
+### Nix Flakes
+
+To install `fum` using Nix Flakes and configure it with `configuration.nix`, follow these steps:
+
+1. Add `fum` as an input in your `flake.nix`:
+
+    ```nix
+    {
+      inputs = {
+        nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+        flake-utils.url = "github:numtide/flake-utils";
+        fum.url = "github:qxb3/fum";
+      };
+
+      outputs = { self, nixpkgs, flake-utils, fum }:
+        flake-utils.lib.eachDefaultSystem (system: let
+          pkgs = import nixpkgs { inherit system; };
+        in {
+          nixosConfigurations = {
+            hostname = pkgs.lib.nixosSystem {
+              system = system;
+              modules = [
+                ./configuration.nix
+                fum.nixosModules.fum
+                {
+                  services.fum = {
+                    enable = true;
+                    players = ["spotify"];
+                    use_active_player = true;
+                    align = "center";
+                    direction = "vertical";
+                    flex = "start";
+                    width = 20;
+                    height = 18;
+                    debug = false;
+                    layout = [];
+                  };
+                }
+              ];
+            };
+          };
+        });
+    }
+    ```
+
+2. Apply the NixOS configuration:
+
+    ```bash
+    sudo nixos-rebuild switch
+    ```
+
+### Nix Profile
+
+To install `fum` using Nix profile, run the following command:
+
+```bash
+nix profile install github:qxb3/fum
+```
+
+### Nix Run
+
+To run `fum` directly using `nix run`, use the following command:
+
+```bash
+nix run github:qxb3/fum
+```
+
 ### Cargo (From Source)
 
 > [!CAUTION]
