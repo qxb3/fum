@@ -5,6 +5,7 @@ mod ui;
 mod utils;
 mod widget;
 mod config;
+mod action;
 
 use std::process;
 
