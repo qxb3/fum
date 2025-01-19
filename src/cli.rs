@@ -1,7 +1,7 @@
 use clap::Parser;
 use expanduser::expanduser;
 
-use crate::config::{Align, Config};
+use crate::{config::{Align, Config}, fum::FumResult};
 
 #[derive(Parser)]
 #[command(name = "fum", version, about)]
@@ -19,7 +19,7 @@ struct FumCli {
     align: Option<String>
 }
 
-pub fn run() -> Result<Config, String> {
+pub fn run() -> FumResult<Config> {
     let fum_cli = FumCli::parse();
 
     let config_path = expanduser(&fum_cli.config.unwrap())

@@ -5,27 +5,15 @@ mod ui;
 mod utils;
 mod widget;
 mod config;
+mod action;
 
-use std::process;
+use fum::{Fum, FumResult};
 
-use fum::Fum;
+fn main() -> FumResult<()> {
+    let config = cli::run()?;
+    let mut fum = Fum::new(&config)?;
 
-fn main() {
-    let config = match cli::run() {
-        Ok(config) => config,
-        Err(err) => {
-            eprintln!("[ERR] -> {}.", err);
-            process::exit(1);
-        }
-    };
+    fum.run()?;
 
-    let mut fum = match Fum::new(&config) {
-        Ok(fum) => fum,
-        Err(err) => {
-            eprintln!("[ERR] -> {}.", err);
-            process::exit(1);
-        }
-    };
-
-    fum.run();
+    Ok(())
 }
