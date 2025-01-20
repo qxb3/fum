@@ -1,4 +1,4 @@
-name: Update Nix Flake Lock
+name: Bump Nix
 
 on:
   push:
