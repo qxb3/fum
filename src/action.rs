@@ -1,5 +1,8 @@
+use std::time::Duration;
+
 use mpris::{LoopStatus, Player};
-use serde::Deserialize;
+use regex::Regex;
+use serde::{de, Deserialize};
 
 use crate::{fum::Fum, FumResult};
 
@@ -30,7 +33,10 @@ pub enum Action {
     LoopNone,
     LoopPlaylist,
     LoopTrack,
-    LoopCycle
+    LoopCycle,
+
+    Forward(u64),
+    Backward(u64),
 }
 
 impl<'de> Deserialize<'de> for Action {
@@ -39,6 +45,9 @@ impl<'de> Deserialize<'de> for Action {
         D: serde::Deserializer<'de>
     {
         let action_str: &str = Deserialize::deserialize(deserializer)?;
+
+        let forward_re = Regex::new(r"forward\((\d+)\)").unwrap();
+        let backward_re = Regex::new(r"backward\((\d+)\)").unwrap();
 
         match action_str {
             "quit()"            => Ok(Action::Quit),
@@ -59,6 +68,28 @@ impl<'de> Deserialize<'de> for Action {
             "loop_track()"      => Ok(Action::LoopTrack),
             "loop_playlist()"   => Ok(Action::LoopPlaylist),
             "loop_cycle()"      => Ok(Action::LoopCycle),
+
+            a if forward_re.is_match(a) => {
+                if let Some(captures) = forward_re.captures(a) {
+                    match captures[1].parse::<u64>() {
+                        Ok(offset) => return Ok(Action::Forward(offset)),
+                        Err(_) => return Err(de::Error::custom("Invalid forward offset format"))
+                    }
+                }
+
+                Err(de::Error::custom("Invalid forward format"))
+            },
+
+            a if backward_re.is_match(a) => {
+                if let Some(captures) = backward_re.captures(a) {
+                    match captures[1].parse::<u64>() {
+                        Ok(offset) => return Ok(Action::Backward(offset)),
+                        Err(_) => return Err(de::Error::custom("Invalid backward offset format"))
+                    }
+                }
+
+                Err(de::Error::custom("Invalid backward format"))
+            },
 
             _ => Err(serde::de::Error::custom(format!("Unknown action: {}", action_str)))
         }
@@ -95,7 +126,10 @@ impl Action {
                         LoopStatus::Track       => player.set_loop_status(LoopStatus::None)?
                     }
                 }
-            }
+            },
+
+            Action::Forward(offset)     => if_player!(&fum.player, |player: &Player| player.seek_forwards(&Duration::from_millis(*offset))),
+            Action::Backward(offset)    => if_player!(&fum.player, |player: &Player| player.seek_backwards(&Duration::from_millis(*offset)))
         }
 
         Ok(())
