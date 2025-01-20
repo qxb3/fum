@@ -1,4 +1,6 @@
-use crate::{utils::etc::generate_btn_id, widget::{ContainerFlex, FumWidget, LabelAlignment, Direction}};
+use std::collections::HashMap;
+
+use crate::{action::Action, utils::etc::generate_btn_id, widget::{ContainerFlex, Direction, FumWidget, LabelAlignment}};
 
 use super::Align;
 
@@ -10,6 +12,14 @@ pub fn flex() -> ContainerFlex { ContainerFlex::Start }
 pub fn width() -> u16 { 20 }
 pub fn height() -> u16 { 18 }
 pub fn debug() -> Option<bool> { None }
+pub fn keybinds() -> HashMap<String, Action> {
+    HashMap::from([
+        // ("esc;q", Action::Quit),
+        ("h".to_string(), Action::Prev),
+        ("l".to_string(), Action::Next),
+        (" ".to_string(), Action::PlayPause)
+    ])
+}
 pub fn layout() -> Vec<FumWidget> {
     Vec::from([
         FumWidget::CoverArt {

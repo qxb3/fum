@@ -1,5 +1,5 @@
 use serde::Deserialize;
-use crate::utils::etc::generate_btn_id;
+use crate::{action::Action, utils::etc::generate_btn_id};
 
 fn default_truncate() -> bool { true }
 
@@ -98,7 +98,7 @@ pub enum FumWidget {
         #[serde(default = "generate_btn_id")]
         id: String,
         text: String,
-        action: Option<String>,
+        action: Option<Action>,
         exec: Option<String>
     },
     Progress {

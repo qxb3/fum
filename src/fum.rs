@@ -71,15 +71,48 @@ impl<'a> Fum<'a> {
 
             match event {
                 Event::Key(key) if key.kind == KeyEventKind::Press => {
-                    match key.code {
-                        KeyCode::Esc |
-                        KeyCode::Char('q') => {
-                            self.exit = true;
-                        },
-                        KeyCode::Char('p') => Action::run(&Action::Prev, &self.player)?,
-                        KeyCode::Char(' ') => Action::run(&Action::Pause, &self.player)?,
-                        KeyCode::Char('n') => Action::run(&Action::Next, &self.player)?,
-                        _ => {}
+                    for (keybind, action) in self.config.keybinds.iter() {
+                        let keybind = match keybind.to_lowercase().as_str() {
+                            "backspace" => KeyCode::Backspace,
+                            "enter" => KeyCode::Enter,
+                            "left" => KeyCode::Left,
+                            "up" => KeyCode::Up,
+                            "right" => KeyCode::Right,
+                            "down" => KeyCode::Down,
+                            "end" => KeyCode::End,
+                            "page_up" => KeyCode::PageUp,
+                            "page_down" => KeyCode::PageDown,
+                            "tab" => KeyCode::Tab,
+                            "back_tab" => KeyCode::BackTab,
+                            "del" | "delete" => KeyCode::Delete,
+                            "ins" | "insert" => KeyCode::Insert,
+                            "f1" => KeyCode::F(1),
+                            "f2" => KeyCode::F(2),
+                            "f3" => KeyCode::F(3),
+                            "f4" => KeyCode::F(4),
+                            "f5" => KeyCode::F(5),
+                            "f6" => KeyCode::F(6),
+                            "f7" => KeyCode::F(7),
+                            "f8" => KeyCode::F(8),
+                            "f9" => KeyCode::F(9),
+                            "f10" => KeyCode::F(10),
+                            "f11" => KeyCode::F(11),
+                            "f12" => KeyCode::F(12),
+                            "esc" => KeyCode::Esc,
+                            "caps" => KeyCode::CapsLock,
+                            keybind => {
+                                let keybind = keybind.chars().next();
+
+                                match keybind {
+                                    Some(keybind) => KeyCode::Char(keybind),
+                                    None => KeyCode::Null
+                                }
+                            }
+                        };
+
+                        if key.code == keybind {
+                            Action::run(action, &self.player)?;
+                        }
                     }
                 },
                 Event::Mouse(mouse) if mouse.kind == MouseEventKind::Down(MouseButton::Left) => {

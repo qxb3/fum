@@ -36,7 +36,7 @@ impl<'de> Deserialize<'de> for Action {
             "pause()"           => Ok(Action::Pause),
 
             "prev()"            => Ok(Action::Prev),
-            "playpause()"       => Ok(Action::PlayPause),
+            "play_pause()"       => Ok(Action::PlayPause),
             "next()"            => Ok(Action::Next),
 
             "shuffle_off()"     => Ok(Action::ShuffleOff),
