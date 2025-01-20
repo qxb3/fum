@@ -1,9 +1,9 @@
-use std::{fs, path::PathBuf};
+use std::{collections::HashMap, fs, path::PathBuf};
 use serde::Deserialize;
 
-use crate::{fum::FumResult, widget::{ContainerFlex, Direction, FumWidget}};
+use crate::{action::Action, fum::FumResult, widget::{ContainerFlex, Direction, FumWidget}};
 
-use super::defaults::{align, debug, direction, flex, height, layout, players, use_active_player, width};
+use super::{defaults::{align, debug, direction, flex, height, keybinds, layout, players, use_active_player, width}, keybind::Keybind};
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -47,6 +47,9 @@ pub struct Config {
     #[serde(default = "use_active_player")]
     pub use_active_player: bool,
 
+    #[serde(default = "keybinds")]
+    pub keybinds: HashMap<Keybind, Action>,
+
     #[serde(default = "align")]
     pub align: Align,
 
@@ -74,6 +77,7 @@ impl Default for Config {
         Self {
             players: players(),
             use_active_player: use_active_player(),
+            keybinds: keybinds(),
             align: align(),
             direction: direction(),
             flex: flex(),
