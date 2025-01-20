@@ -1,0 +1,42 @@
+name: Update Nix Flake Lock
+
+on:
+  push:
+    tags:
+      - 'v-test'
+
+jobs:
+  update-flake:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Nix
+        run: |
+          curl -L https://nixos.org/nix/install | sh
+          export PATH=$PATH:/home/runner/.nix-profile/bin
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+
+      - name: Update version
+        run: |
+          sed -i 's/version = "[^"]*";/version = "${{ env.VERSION }}";/' flake.nix
+
+      - name: Update flake.lock
+        run: |
+          nix --version
+          nix flake update
+
+      - name: Commit & Push
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@users.noreply.github.com'
+          git add flake.lock flake.nix
+          git commit -m 'bump nix to ${{ env.VERSION }}'
+          git push origin HEAD:main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
