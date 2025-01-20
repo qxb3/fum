@@ -1,10 +1,20 @@
-use mpris::LoopStatus;
+use mpris::{LoopStatus, Player};
 use serde::Deserialize;
 
-use crate::fum::{Fum, FumResult};
+use crate::{fum::Fum, FumResult};
+
+macro_rules! if_player {
+    ($player:expr, $callback:expr) => {
+        if let Some(player) = $player {
+            $callback(player)?;
+        }
+    };
+}
 
 #[derive(Debug, Clone)]
 pub enum Action {
+    Quit,
+
     Stop,
     Play,
     Pause,
@@ -18,8 +28,8 @@ pub enum Action {
     ShuffleOn,
 
     LoopNone,
-    LoopTrack,
     LoopPlaylist,
+    LoopTrack,
     LoopCycle
 }
 
@@ -31,12 +41,14 @@ impl<'de> Deserialize<'de> for Action {
         let action_str: &str = Deserialize::deserialize(deserializer)?;
 
         match action_str {
+            "quit()"            => Ok(Action::Quit),
+
             "stop()"            => Ok(Action::Stop),
             "play()"            => Ok(Action::Play),
             "pause()"           => Ok(Action::Pause),
 
             "prev()"            => Ok(Action::Prev),
-            "play_pause()"       => Ok(Action::PlayPause),
+            "play_pause()"      => Ok(Action::PlayPause),
             "next()"            => Ok(Action::Next),
 
             "shuffle_off()"     => Ok(Action::ShuffleOff),
@@ -55,32 +67,34 @@ impl<'de> Deserialize<'de> for Action {
 
 impl Action {
     pub fn run(action: &Action, fum: &mut Fum) -> FumResult<()> {
-        if let Some(player) = &fum.player {
-            match action {
-                Action::Stop            => player.stop()?,
-                Action::Play            => player.play()?,
-                Action::Pause           => player.pause()?,
+        match action {
+            Action::Quit            => fum.exit = true,
 
-                Action::Prev            => player.previous()?,
-                Action::PlayPause       => player.play_pause()?,
-                Action::Next            => player.next()?,
+            Action::Stop            => if_player!(&fum.player, |player: &Player| player.stop()),
+            Action::Play            => if_player!(&fum.player, |player: &Player| player.play()),
+            Action::Pause           => if_player!(&fum.player, |player: &Player| player.pause()),
 
-                Action::ShuffleOff      => player.set_shuffle(false)?,
-                Action::ShuffleToggle   => player.set_shuffle(!player.get_shuffle()?)?,
-                Action::ShuffleOn       => player.set_shuffle(true)?,
+            Action::Prev            => if_player!(&fum.player, |player: &Player| player.previous()),
+            Action::PlayPause       => if_player!(&fum.player, |player: &Player| player.play_pause()),
+            Action::Next            => if_player!(&fum.player, |player: &Player| player.next()),
 
-                Action::LoopNone        => player.set_loop_status(LoopStatus::None)?,
-                Action::LoopPlaylist    => player.set_loop_status(LoopStatus::Playlist)?,
-                Action::LoopTrack       => player.set_loop_status(LoopStatus::Track)?,
-                Action::LoopCycle       => {
-                    let loop_state = player.get_loop_status()?;
+            Action::ShuffleOff      => if_player!(&fum.player, |player: &Player| player.set_shuffle(true)),
+            Action::ShuffleToggle   => if_player!(&fum.player, |player: &Player| player.set_shuffle(!player.get_shuffle()?)),
+            Action::ShuffleOn       => if_player!(&fum.player, |player: &Player| player.set_shuffle(false)),
 
-                    match loop_state {
-                        LoopStatus::None        => Action::run(&Action::LoopPlaylist, fum)?,
-                        LoopStatus::Playlist    => Action::run(&Action::LoopTrack, fum)?,
-                        LoopStatus::Track       => Action::run(&Action::LoopNone, fum)?,
+            Action::LoopNone        => if_player!(&fum.player, |player: &Player| player.set_loop_status(LoopStatus::None)),
+            Action::LoopPlaylist    => if_player!(&fum.player, |player: &Player| player.set_loop_status(LoopStatus::Playlist)),
+            Action::LoopTrack       => if_player!(&fum.player, |player: &Player| player.set_loop_status(LoopStatus::Track)),
+            Action::LoopCycle       => {
+                if let Some(player) = &fum.player {
+                    let loop_status = player.get_loop_status()?;
+
+                    match loop_status {
+                        LoopStatus::None        => player.set_loop_status(LoopStatus::Playlist)?,
+                        LoopStatus::Playlist    => player.set_loop_status(LoopStatus::Track)?,
+                        LoopStatus::Track       => player.set_loop_status(LoopStatus::None)?
                     }
-                },
+                }
             }
         }
 

@@ -14,6 +14,7 @@ pub fn height() -> u16 { 18 }
 pub fn debug() -> Option<bool> { None }
 pub fn keybinds() -> HashMap<Keybind, Action> {
     HashMap::from([
+        (Keybind::Many([Keybind::Esc, Keybind::Char('q')].to_vec()), Action::Quit),
         (Keybind::Char('h'), Action::Prev),
         (Keybind::Char('l'), Action::Next),
         (Keybind::Char(' '), Action::PlayPause)
