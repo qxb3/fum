@@ -15,8 +15,8 @@ jobs:
 
       - name: Set up Nix
         run: |
-          curl -L https://nixos.org/nix/install | sh
-          export PATH=$PATH:/home/runner/.nix-profile/bin
+          sudo apt update
+          sudo apt install -y nix-env
 
       - name: Extract version from tag
         id: version
@@ -28,7 +28,6 @@ jobs:
 
       - name: Update flake.lock
         run: |
-          nix --version
           nix flake update
 
       - name: Commit & Push
