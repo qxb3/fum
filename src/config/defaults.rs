@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::{action::Action, utils::etc::generate_btn_id, widget::{ContainerFlex, Direction, FumWidget, LabelAlignment}};
 
-use super::Align;
+use super::{keybind::Keybind, Align};
 
 pub fn players() -> Vec<String> { vec!["spotify".to_string()] }
 pub fn use_active_player() -> bool { false }
@@ -12,12 +12,11 @@ pub fn flex() -> ContainerFlex { ContainerFlex::Start }
 pub fn width() -> u16 { 20 }
 pub fn height() -> u16 { 18 }
 pub fn debug() -> Option<bool> { None }
-pub fn keybinds() -> HashMap<String, Action> {
+pub fn keybinds() -> HashMap<Keybind, Action> {
     HashMap::from([
-        // ("esc;q", Action::Quit),
-        ("h".to_string(), Action::Prev),
-        ("l".to_string(), Action::Next),
-        (" ".to_string(), Action::PlayPause)
+        (Keybind::Char('h'), Action::Prev),
+        (Keybind::Char('l'), Action::Next),
+        (Keybind::Char(' '), Action::PlayPause)
     ])
 }
 pub fn layout() -> Vec<FumWidget> {

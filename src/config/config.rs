@@ -3,7 +3,7 @@ use serde::Deserialize;
 
 use crate::{action::Action, fum::FumResult, widget::{ContainerFlex, Direction, FumWidget}};
 
-use super::defaults::{align, debug, direction, flex, height, layout, players, use_active_player, width, keybinds};
+use super::{defaults::{align, debug, direction, flex, height, keybinds, layout, players, use_active_player, width}, keybind::Keybind};
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -48,7 +48,7 @@ pub struct Config {
     pub use_active_player: bool,
 
     #[serde(default = "keybinds")]
-    pub keybinds: HashMap<String, Action>,
+    pub keybinds: HashMap<Keybind, Action>,
 
     #[serde(default = "align")]
     pub align: Align,

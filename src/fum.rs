@@ -1,12 +1,12 @@
 use core::error;
 use std::{io::{stdout, Stdout}, process::{Command, Stdio}, time::Duration};
 
-use crossterm::{event::{self, EnableMouseCapture, Event, KeyCode, KeyEventKind, MouseButton, MouseEventKind}, execute};
+use crossterm::{event::{self, EnableMouseCapture, Event, KeyEventKind, MouseButton, MouseEventKind}, execute};
 use mpris::Player;
 use ratatui::{layout::Position, prelude::CrosstermBackend, Terminal};
 use ratatui_image::picker::Picker;
 
-use crate::{action::Action, config::Config, meta::Meta, ui::Ui, utils};
+use crate::{action::Action, config::{Keybind, Config}, meta::Meta, ui::Ui, utils};
 
 pub type FumResult<T> = std::result::Result<T, Box<dyn error::Error>>;
 
@@ -72,46 +72,19 @@ impl<'a> Fum<'a> {
             match event {
                 Event::Key(key) if key.kind == KeyEventKind::Press => {
                     for (keybind, action) in self.config.keybinds.iter() {
-                        let keybind = match keybind.to_lowercase().as_str() {
-                            "backspace" => KeyCode::Backspace,
-                            "enter" => KeyCode::Enter,
-                            "left" => KeyCode::Left,
-                            "up" => KeyCode::Up,
-                            "right" => KeyCode::Right,
-                            "down" => KeyCode::Down,
-                            "end" => KeyCode::End,
-                            "page_up" => KeyCode::PageUp,
-                            "page_down" => KeyCode::PageDown,
-                            "tab" => KeyCode::Tab,
-                            "back_tab" => KeyCode::BackTab,
-                            "del" | "delete" => KeyCode::Delete,
-                            "ins" | "insert" => KeyCode::Insert,
-                            "f1" => KeyCode::F(1),
-                            "f2" => KeyCode::F(2),
-                            "f3" => KeyCode::F(3),
-                            "f4" => KeyCode::F(4),
-                            "f5" => KeyCode::F(5),
-                            "f6" => KeyCode::F(6),
-                            "f7" => KeyCode::F(7),
-                            "f8" => KeyCode::F(8),
-                            "f9" => KeyCode::F(9),
-                            "f10" => KeyCode::F(10),
-                            "f11" => KeyCode::F(11),
-                            "f12" => KeyCode::F(12),
-                            "esc" => KeyCode::Esc,
-                            "caps" => KeyCode::CapsLock,
+                        match keybind {
+                            Keybind::Many(keybinds) => {
+                                for keybind in keybinds {
+                                    if key.code == keybind.into_keycode() {
+                                        Action::run(action, &self.player)?;
+                                    }
+                                }
+                            },
                             keybind => {
-                                let keybind = keybind.chars().next();
-
-                                match keybind {
-                                    Some(keybind) => KeyCode::Char(keybind),
-                                    None => KeyCode::Null
+                                if key.code == keybind.into_keycode() {
+                                    Action::run(action, &self.player)?;
                                 }
                             }
-                        };
-
-                        if key.code == keybind {
-                            Action::run(action, &self.player)?;
                         }
                     }
                 },
