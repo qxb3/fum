@@ -1,4 +1,4 @@
-use crate::{utils::etc::generate_btn_id, widget::{ContainerFlex, FumWidget, LabelAlignment, Direction}};
+use crate::{action::Action, utils::etc::generate_btn_id, widget::{ContainerFlex, Direction, FumWidget, LabelAlignment}};
 
 use super::Align;
 
