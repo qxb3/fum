@@ -41,19 +41,19 @@ pub fn layout() -> Vec<FumWidget> {
                         FumWidget::Button {
                             id: generate_btn_id(),
                             text: "󰒮".to_string(),
-                            action: Some("prev()".to_string()),
+                            action: Some(Action::Prev),
                             exec: None
                         },
                         FumWidget::Button {
                             id: generate_btn_id(),
                             text: "$status_icon".to_string(),
-                            action: Some("play_pause()".to_string()),
+                            action: Some(Action::PlayPause),
                             exec: None
                         },
                         FumWidget::Button {
                             id: generate_btn_id(),
                             text: "󰒭".to_string(),
-                            action: Some("next()".to_string()),
+                            action: Some(Action::Next),
                             exec: None
                         }
                     ])

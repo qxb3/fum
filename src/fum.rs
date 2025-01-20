@@ -76,9 +76,9 @@ impl<'a> Fum<'a> {
                         KeyCode::Char('q') => {
                             self.exit = true;
                         },
-                        KeyCode::Char('p') => Action::run(Action::Prev, &self.player)?,
-                        KeyCode::Char(' ') => Action::run(Action::Pause, &self.player)?,
-                        KeyCode::Char('n') => Action::run(Action::Next, &self.player)?,
+                        KeyCode::Char('p') => Action::run(&Action::Prev, &self.player)?,
+                        KeyCode::Char(' ') => Action::run(&Action::Pause, &self.player)?,
+                        KeyCode::Char('n') => Action::run(&Action::Next, &self.player)?,
                         _ => {}
                     }
                 },
@@ -87,7 +87,7 @@ impl<'a> Fum<'a> {
                         if rect.contains(Position::new(mouse.column, mouse.row)) {
                             // Execute action
                             if let Some(action) = action {
-                                Action::run_str(action.as_str(), &self.player)?;
+                                Action::run(action, &self.player)?;
                             }
 
                             // Spawn a new command process based on exec

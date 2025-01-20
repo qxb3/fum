@@ -5,11 +5,11 @@ use ratatui::{layout::{Constraint, Layout, Rect}, text::Text, widgets::{Block, B
 use ratatui_image::StatefulImage;
 use regex::{Captures, Regex};
 
-use crate::{config::Config, config_debug, debug_widget, get_size, meta::Meta, utils::{self, etc::format_duration}, widget::{self, ContainerFlex, FumWidget, LabelAlignment}};
+use crate::{action::Action, config::Config, config_debug, debug_widget, get_size, meta::Meta, utils::{self, etc::format_duration}, widget::{self, ContainerFlex, FumWidget, LabelAlignment}};
 
 pub struct Ui<'a> {
     config: &'a Config,
-    pub buttons: HashMap<String, (Rect, Option<String>, Option<String>)>
+    pub buttons: HashMap<String, (Rect, Option<Action>, Option<String>)>
 }
 
 impl<'a> Ui<'a> {
