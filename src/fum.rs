@@ -3,7 +3,7 @@ use std::{io::{stdout, Stdout}, process::{Command, Stdio}, time::Duration};
 
 use crossterm::{event::{self, EnableMouseCapture, Event, KeyEventKind, MouseButton, MouseEventKind}, execute};
 use mpris::Player;
-use ratatui::{layout::Position, prelude::CrosstermBackend, Terminal};
+use ratatui::{prelude::CrosstermBackend, Terminal};
 use ratatui_image::picker::Picker;
 
 use crate::{action::Action, config::{Keybind, Config}, meta::Meta, ui::Ui, utils};
@@ -76,36 +76,35 @@ impl<'a> Fum<'a> {
                             Keybind::Many(keybinds) => {
                                 for keybind in keybinds {
                                     if key.code == keybind.into_keycode() {
-                                        Action::run(action, &self.player)?;
+                                        Action::run(action, self)?;
                                     }
                                 }
                             },
                             keybind => {
                                 if key.code == keybind.into_keycode() {
-                                    Action::run(action, &self.player)?;
+                                    Action::run(action, self)?;
                                 }
                             }
                         }
                     }
                 },
                 Event::Mouse(mouse) if mouse.kind == MouseEventKind::Down(MouseButton::Left) => {
-                    for (rect, action, exec) in self.ui.buttons.values() {
-                        if rect.contains(Position::new(mouse.column, mouse.row)) {
-                            // Execute action
-                            if let Some(action) = action {
-                                Action::run(action, &self.player)?;
-                            }
+                    if let Some((action, exec)) = self.ui.click(mouse.column, mouse.row) {
+                        let action = action.to_owned();
+                        let exec = exec.to_owned();
 
-                            // Spawn a new command process based on exec
-                            if let Some(exec) = exec {
-                                let parts: Vec<&str> = exec.split_whitespace().collect();
-                                if let Some(command) = parts.get(0) {
-                                    let _ = Command::new(command) // Ignore result
-                                        .args(&parts[1..])
-                                        .stdout(Stdio::null())
-                                        .stderr(Stdio::null())
-                                        .spawn();
-                                }
+                        if let Some(action) = action {
+                            Action::run(&action, self)?;
+                        }
+
+                        if let Some(exec) = exec {
+                            let parts: Vec<&str> = exec.split_whitespace().collect();
+                            if let Some(command) = parts.get(0) {
+                                let _ = Command::new(command) // Ignore result
+                                    .args(&parts[1..])
+                                    .stdout(Stdio::null())
+                                    .stderr(Stdio::null())
+                                    .spawn();
                             }
                         }
                     }

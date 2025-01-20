@@ -1,7 +1,7 @@
 use core::f64;
 use std::{collections::HashMap, rc::Rc};
 
-use ratatui::{layout::{Constraint, Layout, Rect}, text::Text, widgets::{Block, Borders, Paragraph, Wrap}, Frame};
+use ratatui::{layout::{Constraint, Layout, Position, Rect}, text::Text, widgets::{Block, Borders, Paragraph, Wrap}, Frame};
 use ratatui_image::StatefulImage;
 use regex::{Captures, Regex};
 
@@ -9,7 +9,7 @@ use crate::{action::Action, config::Config, config_debug, debug_widget, get_size
 
 pub struct Ui<'a> {
     config: &'a Config,
-    pub buttons: HashMap<String, (Rect, Option<Action>, Option<String>)>
+    pub buttons: HashMap<String, (Rect, &'a Option<Action>, &'a Option<String>)>
 }
 
 impl<'a> Ui<'a> {
@@ -18,6 +18,19 @@ impl<'a> Ui<'a> {
             config,
             buttons: HashMap::new()
         }
+    }
+
+    pub fn click(&self, x: u16, y: u16) -> Option<(&Option<Action>, &Option<String>)> {
+        for (_, (rect, action, exec)) in self.buttons.iter() {
+            if rect.contains(Position::new(x, y)) {
+                return Some((
+                    action,
+                    exec
+                ))
+            }
+        }
+
+        None
     }
 
     pub fn draw(&mut self, frame: &mut Frame<'_>, meta: &mut Meta) {
@@ -57,7 +70,7 @@ impl<'a> Ui<'a> {
         }
     }
 
-    fn render_layout(&mut self, frame: &mut Frame<'_>, widget: &FumWidget, parent_area: &Rect, meta: &mut Meta) {
+    fn render_layout(&mut self, frame: &mut Frame<'_>, widget: &'a FumWidget, parent_area: &Rect, meta: &mut Meta) {
         match &widget {
             FumWidget::Container { width, height, direction, flex, children } => {
                 let area = get_size!(
@@ -115,10 +128,11 @@ impl<'a> Ui<'a> {
             FumWidget::Button { id, text, action, exec } => {
                 let text = self.replace_text(text, meta).to_string();
 
-                self.buttons.insert(
-                    id.to_string(),
-                    (*parent_area, action.to_owned(), exec.to_owned())
-                );
+                self.buttons.insert(id.to_string(), (
+                    *parent_area,
+                    action,
+                    exec
+                ));
 
                 frame.render_widget(
                     Paragraph::new(text),
