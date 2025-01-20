@@ -1,7 +1,9 @@
 use mpris::{LoopStatus, Player};
+use serde::Deserialize;
 
 use crate::fum::FumResult;
 
+#[derive(Debug, Clone)]
 pub enum Action {
     Stop,
     Play,
@@ -21,16 +23,46 @@ pub enum Action {
     LoopCycle
 }
 
+impl<'de> Deserialize<'de> for Action {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>
+    {
+        let action_str: &str = Deserialize::deserialize(deserializer)?;
+
+        match action_str {
+            "stop()"            => Ok(Action::Stop),
+            "play()"            => Ok(Action::Play),
+            "pause()"           => Ok(Action::Pause),
+
+            "prev()"            => Ok(Action::Prev),
+            "playpause()"       => Ok(Action::PlayPause),
+            "next()"            => Ok(Action::Next),
+
+            "shuffle_off()"     => Ok(Action::ShuffleOff),
+            "shuffle_toggle()"  => Ok(Action::ShuffleToggle),
+            "shuffle_on()"      => Ok(Action::ShuffleOn),
+
+            "loop_none()"       => Ok(Action::LoopNone),
+            "loop_track()"      => Ok(Action::LoopTrack),
+            "loop_playlist()"   => Ok(Action::LoopPlaylist),
+            "loop_cycle()"      => Ok(Action::LoopCycle),
+
+            _ => Err(serde::de::Error::custom(format!("Unknown action: {}", action_str)))
+        }
+    }
+}
+
 impl Action {
     pub fn run_str(action: &str, player: &Option<Player>) -> FumResult<()> {
         match action {
-            "stop()"    => Action::run(Action::Stop, player)?,
-            "play()"    => Action::run(Action::Play, player)?,
-            "pause()"   => Action::run(Action::Pause, player)?,
+            "stop()"            => Action::run(Action::Stop, player)?,
+            "play()"            => Action::run(Action::Play, player)?,
+            "pause()"           => Action::run(Action::Pause, player)?,
 
-            "prev()"        => Action::run(Action::Prev, player)?,
-            "play_pause()"  => Action::run(Action::PlayPause, player)?,
-            "next()"        => Action::run(Action::Next, player)?,
+            "prev()"            => Action::run(Action::Prev, player)?,
+            "play_pause()"      => Action::run(Action::PlayPause, player)?,
+            "next()"            => Action::run(Action::Next, player)?,
 
             "shuffle_off()"     => Action::run(Action::ShuffleOff, player)?,
             "shuffle_toggle()"  => Action::run(Action::ShuffleToggle, player)?,
@@ -39,7 +71,7 @@ impl Action {
             "loop_none()"       => Action::run(Action::LoopNone, player)?,
             "loop_track()"      => Action::run(Action::LoopTrack, player)?,
             "loop_playlist()"   => Action::run(Action::LoopPlaylist, player)?,
-            "loop_cycle()"   => Action::run(Action::LoopCycle, player)?,
+            "loop_cycle()"      => Action::run(Action::LoopCycle, player)?,
 
             _ => {}
         }
