@@ -11,8 +11,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/qxb3/fum/pulls">
-    <img src="https://img.shields.io/badge/OPEN-DEFEDF?style=for-the-badge&logo=github&label=Contributions&labelColor=1C1B22" />
+  <a href="https://discord.gg/UfXMeyZ6Zt">
+    <img src="https://img.shields.io/discord/1331325131649454184?style=for-the-badge&logo=discord&logoColor=%23ffffff&label=discord&labelColor=1C1B22&color=DEFEDF" />
   </a>
 
   <a href="https://github.com/qxb3/fum/blob/main/LICENSE">
@@ -135,6 +135,10 @@ mv target/release/fum /usr/bin
 ### Configuring
 
 See [Wiki](https://github.com/qxb3/fum/wiki/Configuring)
+
+### Need help?
+
+Join [Discord Server!](https://discord.gg/UfXMeyZ6Zt).
 
 ## Showcase on a rice
 
