@@ -2,7 +2,7 @@ use std::{fs, io::{self, Cursor}, str::FromStr, time::Duration};
 
 use base64::{prelude::BASE64_STANDARD, Engine};
 use image::ImageReader;
-use mpris::{Metadata, MetadataValue, PlaybackStatus, Player, PlayerFinder};
+use mpris::{Metadata, MetadataValue, PlaybackStatus, Player, PlayerFinder, TrackID};
 use ratatui_image::{picker::Picker, protocol::StatefulProtocol};
 use reqwest::{header::RANGE, Url};
 
@@ -17,6 +17,7 @@ pub struct CoverArt {
 #[derive(Clone)]
 pub struct Meta<'a> {
     pub metadata: Metadata,
+    pub track_id: Option<TrackID>,
     pub title: String,
     pub artists: Vec<String>,
     pub album: String,
@@ -32,6 +33,7 @@ impl<'a> Default for Meta<'a> {
     fn default() -> Self {
         Self {
             metadata: Metadata::default(),
+            track_id: None,
             title: "No Music".to_string(),
             artists: vec!["Artist".to_string()],
             album: "Album".to_string(),
@@ -48,6 +50,7 @@ impl<'a> Default for Meta<'a> {
 impl<'a> Meta<'a> {
     pub fn fetch(player: &Player, picker: &Picker, current: Option<&Self>) -> FumResult<Self> {
         let metadata = Meta::get_metadata(player)?;
+        let track_id = Meta::get_trackid(&metadata)?;
         let title = Meta::get_title(&metadata)?;
         let artists = Meta::get_artists(&metadata)?;
         let album = Meta::get_album(&metadata)?;
@@ -71,6 +74,7 @@ impl<'a> Meta<'a> {
 
         Ok(Self {
             metadata,
+            track_id: Some(track_id),
             title,
             artists,
             album,
@@ -122,6 +126,13 @@ impl<'a> Meta<'a> {
     pub fn get_metadata(player: &Player) -> FumResult<Metadata> {
         let metadata = player.get_metadata()?;
         Ok(metadata)
+    }
+
+    pub fn get_trackid(metadata: &Metadata) -> FumResult<TrackID> {
+        let trackid = metadata.track_id()
+            .ok_or("Failed to get track_id")?;
+
+        Ok(trackid)
     }
 
     pub fn get_title(metadata: &Metadata) -> FumResult<String> {

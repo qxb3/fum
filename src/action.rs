@@ -35,8 +35,8 @@ pub enum Action {
     LoopTrack,
     LoopCycle,
 
-    Forward(u64),
-    Backward(u64),
+    Forward(i64),
+    Backward(i64),
 }
 
 impl<'de> Deserialize<'de> for Action {
@@ -46,8 +46,8 @@ impl<'de> Deserialize<'de> for Action {
     {
         let action_str: &str = Deserialize::deserialize(deserializer)?;
 
-        let forward_re = Regex::new(r"forward\((\d+)\)").unwrap();
-        let backward_re = Regex::new(r"backward\((\d+)\)").unwrap();
+        let forward_re = Regex::new(r"forward\((-?\d+)\)").unwrap();
+        let backward_re = Regex::new(r"backward\((-?\d+)\)").unwrap();
 
         match action_str {
             "quit()"            => Ok(Action::Quit),
@@ -71,27 +71,31 @@ impl<'de> Deserialize<'de> for Action {
 
             a if forward_re.is_match(a) => {
                 if let Some(captures) = forward_re.captures(a) {
-                    match captures[1].parse::<u64>() {
+                    match captures[1].parse::<i64>() {
                         Ok(offset) => return Ok(Action::Forward(offset)),
-                        Err(_) => return Err(de::Error::custom("Invalid forward offset format"))
+                        Err(_) => return Err(de::Error::custom("Invalid forward() offset format"))
                     }
                 }
 
-                Err(de::Error::custom("Invalid forward format"))
+                Err(de::Error::custom("Invalid forward() format"))
             },
 
             a if backward_re.is_match(a) => {
                 if let Some(captures) = backward_re.captures(a) {
-                    match captures[1].parse::<u64>() {
+                    match captures[1].parse::<i64>() {
                         Ok(offset) => return Ok(Action::Backward(offset)),
-                        Err(_) => return Err(de::Error::custom("Invalid backward offset format"))
+                        Err(_) => return Err(de::Error::custom("Invalid backward() offset format"))
                     }
                 }
 
-                Err(de::Error::custom("Invalid backward format"))
+                Err(de::Error::custom("Invalid backward() format"))
             },
 
-            _ => Err(serde::de::Error::custom(format!("Unknown action: {}", action_str)))
+            // Error if forward() / backward() has no value inside
+            "forward()" => Err(de::Error::custom(format!("Invalid forward() format, needs value inside"))),
+            "backward()" => Err(de::Error::custom(format!("Invalid backward() format, needs value inside"))),
+
+            _ => Err(de::Error::custom(format!("Unknown action: {}", action_str)))
         }
     }
 }
@@ -128,8 +132,30 @@ impl Action {
                 }
             },
 
-            Action::Forward(offset)     => if_player!(&fum.player, |player: &Player| player.seek_forwards(&Duration::from_millis(*offset))),
-            Action::Backward(offset)    => if_player!(&fum.player, |player: &Player| player.seek_backwards(&Duration::from_millis(*offset)))
+            Action::Forward(offset)     => if_player!(&fum.player, |player: &Player| {
+                fum.redraw = true;
+
+                if let Some(track_id) = &fum.meta.track_id {
+                    match offset {
+                        -1  => return player.set_position(track_id.clone(), &fum.meta.length),
+                        _   => return player.seek_forwards(&Duration::from_millis(*offset as u64))
+                    }
+                }
+
+                unreachable!()
+            }),
+            Action::Backward(offset)     => if_player!(&fum.player, |player: &Player| {
+                fum.redraw = true;
+
+                if let Some(track_id) = &fum.meta.track_id {
+                    match offset {
+                        -1   => return player.set_position(track_id.clone(), &Duration::from_secs(0)),
+                        _   => return player.seek_backwards(&Duration::from_millis(*offset as u64))
+                    }
+                }
+
+                unreachable!()
+            })
         }
 
         Ok(())
