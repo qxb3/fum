@@ -13,6 +13,23 @@ macro_rules! get_size {
     }};
 }
 
+#[macro_export]
+macro_rules! get_color {
+    ($bg:expr, $fg:expr, $parent_bg:expr, $parent_fg:expr) => {{
+        let bg = match $bg {
+            Some(bg) => bg,
+            None => $parent_bg,
+        };
+
+        let fg = match $fg {
+            Some(fg) => fg,
+            None => $parent_fg,
+        };
+
+        (bg, fg)
+    }};
+}
+
 pub fn generate_btn_id() -> String {
     Uuid::new_v4().to_string()
 }
