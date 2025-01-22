@@ -132,8 +132,14 @@ impl Action {
                 }
             },
 
-            Action::Forward(offset)     => if_player!(&fum.player, |player: &Player| player.seek_forwards(&Duration::from_millis(*offset))),
-            Action::Backward(offset)    => if_player!(&fum.player, |player: &Player| player.seek_backwards(&Duration::from_millis(*offset)))
+            Action::Forward(offset)     => if_player!(&fum.player, |player: &Player| {
+                fum.redraw = true;
+                player.seek_forwards(&Duration::from_millis(*offset))
+            }),
+            Action::Backward(offset)     => if_player!(&fum.player, |player: &Player| {
+                fum.redraw = true;
+                player.seek_backwards(&Duration::from_millis(*offset))
+            })
         }
 
         Ok(())
