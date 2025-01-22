@@ -73,25 +73,29 @@ impl<'de> Deserialize<'de> for Action {
                 if let Some(captures) = forward_re.captures(a) {
                     match captures[1].parse::<u64>() {
                         Ok(offset) => return Ok(Action::Forward(offset)),
-                        Err(_) => return Err(de::Error::custom("Invalid forward offset format"))
+                        Err(_) => return Err(de::Error::custom("Invalid forward() offset format"))
                     }
                 }
 
-                Err(de::Error::custom("Invalid forward format"))
+                Err(de::Error::custom("Invalid forward() format"))
             },
 
             a if backward_re.is_match(a) => {
                 if let Some(captures) = backward_re.captures(a) {
                     match captures[1].parse::<u64>() {
                         Ok(offset) => return Ok(Action::Backward(offset)),
-                        Err(_) => return Err(de::Error::custom("Invalid backward offset format"))
+                        Err(_) => return Err(de::Error::custom("Invalid backward() offset format"))
                     }
                 }
 
-                Err(de::Error::custom("Invalid backward format"))
+                Err(de::Error::custom("Invalid backward() format"))
             },
 
-            _ => Err(serde::de::Error::custom(format!("Unknown action: {}", action_str)))
+            // Error if forward() / backward() has no value inside
+            "forward()" => Err(de::Error::custom(format!("Invalid forward() format, needs value inside"))),
+            "backward()" => Err(de::Error::custom(format!("Invalid backward() format, needs value inside"))),
+
+            _ => Err(de::Error::custom(format!("Unknown action: {}", action_str)))
         }
     }
 }
