@@ -1,11 +1,11 @@
 use core::f64;
 use std::{collections::HashMap, rc::Rc};
 
-use ratatui::{layout::{Constraint, Layout, Position, Rect}, text::Text, widgets::{Block, Borders, Paragraph, Wrap}, Frame};
+use ratatui::{layout::{Constraint, Layout, Position, Rect}, style::{Color, Stylize}, text::Text, widgets::{Block, Borders, Clear, Paragraph, Wrap}, Frame};
 use ratatui_image::StatefulImage;
 use regex::{Captures, Regex};
 
-use crate::{action::Action, config::Config, config_debug, debug_widget, get_size, meta::Meta, utils::{self, etc::format_duration}, widget::{self, ContainerFlex, FumWidget, LabelAlignment}};
+use crate::{action::Action, config::Config, config_debug, debug_widget, get_color, get_size, meta::Meta, utils::{self, etc::format_duration}, widget::{self, ContainerFlex, FumWidget, LabelAlignment}};
 
 pub struct Ui<'a> {
     config: &'a Config,
@@ -65,14 +65,35 @@ impl<'a> Ui<'a> {
         for (i, widget) in self.config.layout.iter().enumerate() {
             if let Some(area) = areas.get(i) {
                 config_debug!(self.config.debug, frame, *area);
-                self.render_layout(frame, widget, area, meta);
+
+                frame.render_widget(
+                    Block::new().bg(self.config.bg),
+                    *area
+                );
+
+                self.render_layout(
+                    frame,
+                    widget,
+                    area,
+                    &self.config.bg,
+                    &self.config.fg,
+                    meta
+                );
             }
         }
     }
 
-    fn render_layout(&mut self, frame: &mut Frame<'_>, widget: &'a FumWidget, parent_area: &Rect, meta: &mut Meta) {
+    fn render_layout(
+        &mut self,
+        frame: &mut Frame<'_>,
+        widget: &'a FumWidget,
+        parent_area: &Rect,
+        parent_bg: &Color,
+        parent_fg: &Color,
+        meta: &mut Meta
+    ) {
         match &widget {
-            FumWidget::Container { width, height, direction, flex, children } => {
+            FumWidget::Container { width, height, direction, flex, children, bg, fg } => {
                 let area = get_size!(
                     Layout::vertical,
                     height,
@@ -86,21 +107,30 @@ impl<'a> Ui<'a> {
                     area
                 );
 
+                let (bg, fg) = get_color!(bg, fg, parent_bg, parent_fg);
+
                 for (i, child) in children.iter().enumerate() {
                     if let Some(area) = areas.get(i) {
                         config_debug!(self.config.debug, frame, *area);
-                        self.render_layout(frame, child, area, meta);
+                        self.render_layout(frame, child, area, bg, fg, meta);
                     }
                 }
             },
-            FumWidget::CoverArt { width, height } => {
+            FumWidget::CoverArt { width, height, bg, fg } => {
                 let area = get_size!(
                     Layout::vertical,
                     height,
                     get_size!(Layout::horizontal, width, *parent_area)
                 );
 
+                let (bg, _) = get_color!(bg, fg, parent_bg, parent_fg);
+
                 if let Some(cover_art) = meta.cover_art.as_mut() {
+                    frame.render_widget(
+                        Block::new().bg(*bg),
+                        area
+                    );
+
                     frame.render_stateful_widget(
                         StatefulImage::default(),
                         area,
@@ -108,24 +138,31 @@ impl<'a> Ui<'a> {
                     );
                 }
             },
-            FumWidget::Label { text, align, truncate } => {
+            FumWidget::Label { text, align, truncate, bg, fg } => {
                 let text = match truncate {
                     true => utils::etc::truncate(&self.replace_text(text, meta), parent_area.width as usize),
                     false => self.replace_text(text, meta)
                 };
 
+                let (bg, fg) = get_color!(bg, fg, parent_bg, parent_fg);
+
                 let widget = match align {
-                    LabelAlignment::Left => Paragraph::new(text).left_aligned(),
-                    LabelAlignment::Center => Paragraph::new(text).centered(),
-                    LabelAlignment::Right => Paragraph::new(text).right_aligned(),
+                    LabelAlignment::Left => Paragraph::new(text).left_aligned().fg(*fg),
+                    LabelAlignment::Center => Paragraph::new(text).centered().fg(*fg),
+                    LabelAlignment::Right => Paragraph::new(text).right_aligned().fg(*fg),
                 };
+
+                frame.render_widget(
+                    Block::new().bg(*bg),
+                    *parent_area
+                );
 
                 frame.render_widget(
                     widget,
                     *parent_area
                 );
             }
-            FumWidget::Button { id, text, action, exec } => {
+            FumWidget::Button { id, text, action, exec, bg, fg } => {
                 let text = self.replace_text(text, meta).to_string();
 
                 self.buttons.insert(id.to_string(), (
@@ -134,12 +171,21 @@ impl<'a> Ui<'a> {
                     exec
                 ));
 
+                let (bg, fg) = get_color!(bg, fg, parent_bg, parent_fg);
+
                 frame.render_widget(
-                    Paragraph::new(text),
+                    Block::new().bg(*bg),
+                    *parent_area
+                );
+
+                frame.render_widget(
+                    Paragraph::new(text).fg(*fg),
                     *parent_area
                 );
             },
-            FumWidget::Progress { progress: progress_char, empty: empty_char, .. } => {
+            FumWidget::Progress { progress: progress_char, empty: empty_char, bg, fg, .. } => {
+                let (bg, fg) = get_color!(bg, fg, parent_bg, parent_fg);
+
                 if meta.length.as_secs() > 0 {
                     let ratio = meta.position.as_secs() as f64 / meta.length.as_secs() as f64;
 
@@ -149,12 +195,37 @@ impl<'a> Ui<'a> {
                     let filled_bar = progress_char.repeat(filled as usize);
                     let empty_bar = empty_char.repeat(empty.into());
 
-                    frame.render_widget(Text::from(format!("{filled_bar}{empty_bar}")), *parent_area);
+                    frame.render_widget(
+                        Block::new().bg(*bg),
+                        *parent_area
+                    );
+
+                    frame.render_widget(
+                        Text::from(format!("{filled_bar}{empty_bar}")).fg(*fg),
+                        *parent_area
+                    );
                 } else {
-                    frame.render_widget(Text::from(empty_char.repeat(parent_area.width.into())), *parent_area);
+                    frame.render_widget(
+                        Block::new().bg(*bg),
+                        *parent_area
+                    );
+
+                    frame.render_widget(
+                        Text::from(empty_char.repeat(parent_area.width.into())).fg(*fg),
+                        *parent_area
+                    );
                 }
             },
-            FumWidget::Empty { .. } => {}
+            FumWidget::Empty { bg, fg, .. } => {
+                let (bg, fg) = get_color!(bg, fg, parent_bg, parent_fg);
+
+                frame.render_widget(
+                    Block::new()
+                        .bg(*bg)
+                        .fg(*fg),
+                    *parent_area
+                );
+            }
         }
     }
 
@@ -187,7 +258,7 @@ impl<'a> Ui<'a> {
                     .iter()
                     .map(|child| match child {
                         FumWidget::Container { width, height, .. } |
-                        FumWidget::CoverArt { width, height } => {
+                        FumWidget::CoverArt { width, height, .. } => {
                             match direction {
                                 widget::Direction::Horizontal => width.map(|w| Constraint::Length(w)).unwrap_or(Constraint::Min(0)),
                                 widget::Direction::Vertical => height.map(|h| Constraint::Length(h)).unwrap_or(Constraint::Min(0))
@@ -208,7 +279,7 @@ impl<'a> Ui<'a> {
                                 widget::Direction::Vertical => Constraint::Length(1)
                             }
                         },
-                        FumWidget::Empty { size } => {
+                        FumWidget::Empty { size, .. } => {
                             Constraint::Length(*size)
                         }
                     })

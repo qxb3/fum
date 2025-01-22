@@ -1,3 +1,4 @@
+use ratatui::style::Color;
 use serde::Deserialize;
 use crate::{action::Action, utils::etc::generate_btn_id};
 
@@ -81,32 +82,44 @@ pub enum FumWidget {
         children: Vec<FumWidget>,
         #[serde(default = "ContainerFlex::default")]
         flex: ContainerFlex,
+        bg: Option<Color>,
+        fg: Option<Color>
     },
     #[serde(rename = "cover-art")]
     CoverArt {
         width: Option<u16>,
-        height: Option<u16>
+        height: Option<u16>,
+        bg: Option<Color>,
+        fg: Option<Color>
     },
     Label {
         text: String,
         #[serde(default = "LabelAlignment::default")]
         align: LabelAlignment,
         #[serde(default = "default_truncate")]
-        truncate: bool
+        truncate: bool,
+        bg: Option<Color>,
+        fg: Option<Color>
     },
     Button {
         #[serde(default = "generate_btn_id")]
         id: String,
         text: String,
         action: Option<Action>,
-        exec: Option<String>
+        exec: Option<String>,
+        bg: Option<Color>,
+        fg: Option<Color>
     },
     Progress {
         size: Option<u16>,
         progress: String,
-        empty: String
+        empty: String,
+        bg: Option<Color>,
+        fg: Option<Color>
     },
     Empty {
-        size: u16
+        size: u16,
+        bg: Option<Color>,
+        fg: Option<Color>
     }
 }
