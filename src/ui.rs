@@ -1,7 +1,7 @@
 use core::f64;
 use std::{collections::HashMap, rc::Rc};
 
-use ratatui::{layout::{Constraint, Layout, Position, Rect}, style::{Color, Stylize}, text::Text, widgets::{Block, Borders, Clear, Paragraph, Wrap}, Frame};
+use ratatui::{layout::{Constraint, Layout, Position, Rect}, style::{Color, Stylize}, text::Text, widgets::{Block, Borders, Paragraph, Wrap}, Frame};
 use ratatui_image::StatefulImage;
 use regex::{Captures, Regex};
 
