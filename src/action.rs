@@ -35,8 +35,8 @@ pub enum Action {
     LoopTrack,
     LoopCycle,
 
-    Forward(u64),
-    Backward(u64),
+    Forward(i64),
+    Backward(i64),
 }
 
 impl<'de> Deserialize<'de> for Action {
@@ -46,8 +46,8 @@ impl<'de> Deserialize<'de> for Action {
     {
         let action_str: &str = Deserialize::deserialize(deserializer)?;
 
-        let forward_re = Regex::new(r"forward\((\d+)\)").unwrap();
-        let backward_re = Regex::new(r"backward\((\d+)\)").unwrap();
+        let forward_re = Regex::new(r"forward\((-?\d+)\)").unwrap();
+        let backward_re = Regex::new(r"backward\((-?\d+)\)").unwrap();
 
         match action_str {
             "quit()"            => Ok(Action::Quit),
@@ -71,7 +71,7 @@ impl<'de> Deserialize<'de> for Action {
 
             a if forward_re.is_match(a) => {
                 if let Some(captures) = forward_re.captures(a) {
-                    match captures[1].parse::<u64>() {
+                    match captures[1].parse::<i64>() {
                         Ok(offset) => return Ok(Action::Forward(offset)),
                         Err(_) => return Err(de::Error::custom("Invalid forward() offset format"))
                     }
@@ -82,7 +82,7 @@ impl<'de> Deserialize<'de> for Action {
 
             a if backward_re.is_match(a) => {
                 if let Some(captures) = backward_re.captures(a) {
-                    match captures[1].parse::<u64>() {
+                    match captures[1].parse::<i64>() {
                         Ok(offset) => return Ok(Action::Backward(offset)),
                         Err(_) => return Err(de::Error::custom("Invalid backward() offset format"))
                     }
@@ -134,11 +134,27 @@ impl Action {
 
             Action::Forward(offset)     => if_player!(&fum.player, |player: &Player| {
                 fum.redraw = true;
-                player.seek_forwards(&Duration::from_millis(*offset))
+
+                if let Some(track_id) = &fum.meta.track_id {
+                    match offset {
+                        -1  => return player.set_position(track_id.clone(), &fum.meta.length),
+                        _   => return player.seek_forwards(&Duration::from_millis(*offset as u64))
+                    }
+                }
+
+                unreachable!()
             }),
             Action::Backward(offset)     => if_player!(&fum.player, |player: &Player| {
                 fum.redraw = true;
-                player.seek_backwards(&Duration::from_millis(*offset))
+
+                if let Some(track_id) = &fum.meta.track_id {
+                    match offset {
+                        -1   => return player.set_position(track_id.clone(), &Duration::from_secs(0)),
+                        _   => return player.seek_backwards(&Duration::from_millis(*offset as u64))
+                    }
+                }
+
+                unreachable!()
             })
         }
 
