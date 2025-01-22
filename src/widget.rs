@@ -71,6 +71,13 @@ impl ContainerFlex {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+pub struct ProgressOption {
+    pub char: char,
+    pub bg: Option<Color>,
+    pub fg: Option<Color>
+}
+
+#[derive(Debug, Clone, Deserialize)]
 #[serde(tag = "type")]
 #[serde(rename_all = "lowercase")]
 pub enum FumWidget {
@@ -112,10 +119,8 @@ pub enum FumWidget {
     },
     Progress {
         size: Option<u16>,
-        progress: String,
-        empty: String,
-        bg: Option<Color>,
-        fg: Option<Color>
+        progress: ProgressOption,
+        empty: ProgressOption
     },
     Empty {
         size: u16,

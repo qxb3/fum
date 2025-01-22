@@ -183,8 +183,11 @@ impl<'a> Ui<'a> {
                     *parent_area
                 );
             },
-            FumWidget::Progress { progress: progress_char, empty: empty_char, bg, fg, .. } => {
-                let (bg, fg) = get_color!(bg, fg, parent_bg, parent_fg);
+            FumWidget::Progress { progress: progress_opt, empty: empty_opt, .. } => {
+                let (progress_bg, progress_fg) = get_color!(&progress_opt.bg, &progress_opt.fg, parent_bg, parent_fg);
+                let (empty_bg, empty_fg) = get_color!(&empty_opt.bg, &empty_opt.fg, parent_bg, parent_fg);
+                let progress_char = &progress_opt.char.to_string();
+                let empty_char = &empty_opt.char.to_string();
 
                 if meta.length.as_secs() > 0 {
                     let ratio = meta.position.as_secs() as f64 / meta.length.as_secs() as f64;
@@ -192,26 +195,41 @@ impl<'a> Ui<'a> {
                     let filled = (ratio * parent_area.width as f64).round();
                     let empty = parent_area.width.saturating_sub(filled as u16);
 
-                    let filled_bar = progress_char.repeat(filled as usize);
+                    let progress_bar = progress_char.repeat(filled as usize);
                     let empty_bar = empty_char.repeat(empty.into());
 
+                    let [progress_area, empty_area] = Layout::horizontal([
+                        Constraint::Length(filled as u16),
+                        Constraint::Length(empty as u16),
+                    ]).areas(*parent_area);
+
                     frame.render_widget(
-                        Block::new().bg(*bg),
-                        *parent_area
+                        Block::new().bg(*progress_bg),
+                        progress_area
                     );
 
                     frame.render_widget(
-                        Text::from(format!("{filled_bar}{empty_bar}")).fg(*fg),
-                        *parent_area
+                        Block::new().bg(*empty_bg),
+                        empty_area
+                    );
+
+                    frame.render_widget(
+                        Text::from(format!("{progress_bar}")).fg(*progress_fg),
+                        progress_area
+                    );
+
+                    frame.render_widget(
+                        Text::from(format!("{empty_bar}")).fg(*empty_fg),
+                        empty_area
                     );
                 } else {
                     frame.render_widget(
-                        Block::new().bg(*bg),
+                        Block::new().bg(*empty_bg),
                         *parent_area
                     );
 
                     frame.render_widget(
-                        Text::from(empty_char.repeat(parent_area.width.into())).fg(*fg),
+                        Text::from(empty_char.repeat(parent_area.width.into())).fg(*empty_fg),
                         *parent_area
                     );
                 }
