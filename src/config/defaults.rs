@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use ratatui::style::Color;
 
-use crate::{action::Action, utils::etc::generate_btn_id, widget::{ContainerFlex, Direction, FumWidget, LabelAlignment}};
+use crate::{action::Action, utils::etc::generate_btn_id, widget::{ContainerFlex, Direction, FumWidget, LabelAlignment, ProgressOption}};
 
 use super::{keybind::Keybind, Align};
 
@@ -90,10 +90,16 @@ pub fn layout() -> Vec<FumWidget> {
                 },
                 FumWidget::Progress {
                     size: None,
-                    progress: "󰝤".to_string(),
-                    empty: "󰁱".to_string(),
-                    bg: None,
-                    fg: None
+                    progress: ProgressOption {
+                        char: '󰝤',
+                        bg: None,
+                        fg: None
+                    },
+                    empty: ProgressOption {
+                        char: '󰁱',
+                        bg: None,
+                        fg: None
+                    }
                 },
                 FumWidget::Container {
                     width: None,
