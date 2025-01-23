@@ -1,4 +1,4 @@
-use ratatui::style::Color;
+use ratatui::{buffer::Buffer, layout::Rect, style::Color, widgets::Widget};
 use serde::Deserialize;
 use crate::{action::Action, utils::etc::generate_btn_id};
 
@@ -126,5 +126,16 @@ pub enum FumWidget {
         size: u16,
         bg: Option<Color>,
         fg: Option<Color>
+    }
+}
+
+impl Widget for FumWidget {
+    fn render(self, area: Rect, buf: &mut Buffer)
+    where
+        Self: Sized
+    {
+        match self {
+            _ => todo!()
+        }
     }
 }
