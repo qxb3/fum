@@ -3,6 +3,7 @@ mod fum;
 mod meta;
 mod ui;
 mod utils;
+mod text;
 mod widget;
 mod config;
 mod action;

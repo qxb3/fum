@@ -16,7 +16,7 @@ pub struct Fum<'a> {
     pub ui: Ui<'a>,
     pub picker: Picker,
     pub player: Option<Player>,
-    pub meta: Meta<'a>,
+    pub meta: Meta,
     pub redraw: bool,
     pub exit: bool
 }
