@@ -1,4 +1,6 @@
-use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, widgets::StatefulWidget};
+use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, style::Stylize, widgets::{Block, StatefulWidget, Widget}};
+
+use crate::get_color;
 
 use super::{FumWidget, FumWidgetState};
 
@@ -10,6 +12,18 @@ pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumW
             width.unwrap_or(area.width),
             height.unwrap_or(area.height)
         );
+
+        // Render this container block with defined or parent's bg / fg
+        let (bg, fg) = get_color!(bg, fg, &state.parent_bg, &state.parent_fg);
+
+        Block::new()
+            .bg(*bg)
+            .fg(*fg)
+            .render(area, buf);
+
+        // Set the parent bg / fg to this container
+        state.parent_bg = *bg;
+        state.parent_fg = *fg;
 
         let areas = Layout::default()
             .direction(direction.to_dir())

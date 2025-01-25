@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use ratatui::{layout::{Constraint, Layout, Position, Rect}, widgets::{Block, Borders, Paragraph, Wrap}, Frame};
+use ratatui::{layout::{Constraint, Layout, Position, Rect}, style::Stylize, widgets::{Block, Borders, Paragraph, Wrap}, Frame};
 
 use crate::{action::Action, config::Config, config_debug, debug_widget, meta::Meta, utils, widget::FumWidgetState};
 
@@ -58,6 +58,18 @@ impl<'a> Ui<'a> {
                     .collect::<Vec<Constraint>>()
             )
             .split(main_area);
+
+        // Sets the very root bg / fg to be the config bg / fg
+        widget_state.parent_bg = self.config.bg;
+        widget_state.parent_fg = self.config.fg;
+
+        // Render background
+        frame.render_widget(
+            Block::new()
+                .bg(widget_state.parent_bg)
+                .fg(widget_state.parent_fg),
+            main_area
+        );
 
         for (i, widget) in self.config.layout.iter().enumerate() {
             if let Some(area) = areas.get(i) {
