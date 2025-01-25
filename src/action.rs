@@ -135,9 +135,9 @@ impl Action {
             Action::Forward(offset)     => if_player!(&fum.player, |player: &Player| {
                 fum.redraw = true;
 
-                if let Some(track_id) = &fum.meta.track_id {
+                if let Some(track_id) = &fum.widget_state.meta.track_id {
                     match offset {
-                        -1  => return player.set_position(track_id.clone(), &fum.meta.length),
+                        -1  => return player.set_position(track_id.clone(), &fum.widget_state.meta.length),
                         _   => return player.seek_forwards(&Duration::from_millis(*offset as u64))
                     }
                 }
@@ -147,7 +147,7 @@ impl Action {
             Action::Backward(offset)     => if_player!(&fum.player, |player: &Player| {
                 fum.redraw = true;
 
-                if let Some(track_id) = &fum.meta.track_id {
+                if let Some(track_id) = &fum.widget_state.meta.track_id {
                     match offset {
                         -1   => return player.set_position(track_id.clone(), &Duration::from_secs(0)),
                         _   => return player.seek_backwards(&Duration::from_millis(*offset as u64))

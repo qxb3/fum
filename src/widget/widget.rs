@@ -1,6 +1,10 @@
-use ratatui::style::Color;
+use std::collections::HashMap;
+
+use ratatui::{buffer::Buffer, layout::{Constraint, Rect}, style::Color, widgets::StatefulWidget};
 use serde::Deserialize;
-use crate::{action::Action, utils::etc::generate_btn_id};
+use crate::{action::Action, meta::Meta, utils::etc::generate_btn_id};
+
+use super::{button, container, cover_art, empty, label, progress};
 
 fn default_truncate() -> bool { true }
 
@@ -77,6 +81,24 @@ pub struct ProgressOption {
     pub fg: Option<Color>
 }
 
+pub struct FumWidgetState {
+    pub meta: Meta,
+    pub buttons: HashMap<String, (Rect, Option<Action>, Option<String>)>,
+    pub parent_bg: Color,
+    pub parent_fg: Color
+}
+
+impl FumWidgetState {
+    pub fn new(meta: Meta) -> Self {
+        Self {
+            meta,
+            buttons: HashMap::new(),
+            parent_bg: Color::Reset,
+            parent_fg: Color::Reset
+        }
+    }
+}
+
 #[derive(Debug, Clone, Deserialize)]
 #[serde(tag = "type")]
 #[serde(rename_all = "lowercase")]
@@ -126,5 +148,56 @@ pub enum FumWidget {
         size: u16,
         bg: Option<Color>,
         fg: Option<Color>
+    }
+}
+
+impl StatefulWidget for &FumWidget {
+    type State = FumWidgetState;
+
+    fn render(self, area: Rect, buf: &mut Buffer, state: &mut Self::State)
+    where
+        Self: Sized
+    {
+        match self {
+            FumWidget::Container { .. } => container::render(&self, area, buf, state),
+            FumWidget::CoverArt { .. } => cover_art::render(&self, area, buf, state),
+            FumWidget::Label { .. } => label::render(&self, area, buf, state),
+            FumWidget::Button { .. } => button::render(&self, area, buf, state),
+            FumWidget::Progress { .. } => progress::render(&self, area, buf, state),
+            FumWidget::Empty { .. } => empty::render(&self, area, buf, state)
+        }
+    }
+}
+
+impl FumWidget {
+    pub fn get_size(&self, parent_direction: &Direction) -> Constraint {
+        match self {
+            Self::Container { width, height, direction, .. } => {
+                match direction {
+                    Direction::Horizontal => width.map(|w| Constraint::Length(w)).unwrap_or(Constraint::Min(0)),
+                    Direction::Vertical => height.map(|h| Constraint::Length(h)).unwrap_or(Constraint::Min(0))
+                }
+            },
+            Self::CoverArt { width, height, .. } => {
+                match parent_direction {
+                    Direction::Horizontal => width.map(|w| Constraint::Length(w)).unwrap_or(Constraint::Min(0)),
+                    Direction::Vertical => height.map(|h| Constraint::Length(h)).unwrap_or(Constraint::Min(0))
+                }
+            },
+            Self::Label { .. } => {
+                match parent_direction {
+                    Direction::Horizontal => Constraint::Min(0),
+                    Direction::Vertical => Constraint::Length(1)
+                }
+            },
+            Self::Button { .. } => Constraint::Length(1),
+            Self::Progress { size, .. } => {
+                match parent_direction {
+                    Direction::Horizontal => size.map(|s| Constraint::Length(s)).unwrap_or(Constraint::Min(0)),
+                    Direction::Vertical => Constraint::Length(1)
+                }
+            },
+            Self::Empty { size, .. } => Constraint::Length(*size)
+        }
     }
 }

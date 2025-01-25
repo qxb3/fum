@@ -15,21 +15,21 @@ pub struct CoverArt {
 }
 
 #[derive(Clone)]
-pub struct Meta<'a> {
+pub struct Meta {
     pub metadata: Metadata,
     pub track_id: Option<TrackID>,
     pub title: String,
     pub artists: Vec<String>,
     pub album: String,
     pub status: PlaybackStatus,
-    pub status_icon: &'a str,
+    pub status_icon: char,
     pub position: Duration,
     pub length: Duration,
     pub cover_art: Option<CoverArt>,
     pub changed: bool
 }
 
-impl<'a> Default for Meta<'a> {
+impl Default for Meta {
     fn default() -> Self {
         Self {
             metadata: Metadata::default(),
@@ -47,7 +47,7 @@ impl<'a> Default for Meta<'a> {
     }
 }
 
-impl<'a> Meta<'a> {
+impl Meta {
     pub fn fetch(player: &Player, picker: &Picker, current: Option<&Self>) -> FumResult<Self> {
         let metadata = Meta::get_metadata(player)?;
         let track_id = Meta::get_trackid(&metadata)?;
@@ -161,11 +161,11 @@ impl<'a> Meta<'a> {
         Ok(status)
     }
 
-    pub fn get_status_icon(status: &PlaybackStatus) -> &'a str {
+    pub fn get_status_icon(status: &PlaybackStatus) -> char {
         match status {
-            PlaybackStatus::Stopped => "󰓛",
-            PlaybackStatus::Playing => "󰏤",
-            PlaybackStatus::Paused  => "󰐊"
+            PlaybackStatus::Stopped => '󰓛',
+            PlaybackStatus::Playing => '󰏤',
+            PlaybackStatus::Paused  => '󰐊'
         }
     }
 

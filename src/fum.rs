@@ -6,7 +6,7 @@ use mpris::Player;
 use ratatui::{prelude::CrosstermBackend, Terminal};
 use ratatui_image::picker::Picker;
 
-use crate::{action::Action, config::{Keybind, Config}, meta::Meta, ui::Ui, utils};
+use crate::{action::Action, config::{Config, Keybind}, meta::Meta, ui::Ui, utils, widget::FumWidgetState};
 
 pub type FumResult<T> = std::result::Result<T, Box<dyn error::Error>>;
 
@@ -16,7 +16,7 @@ pub struct Fum<'a> {
     pub ui: Ui<'a>,
     pub picker: Picker,
     pub player: Option<Player>,
-    pub meta: Meta<'a>,
+    pub widget_state: FumWidgetState,
     pub redraw: bool,
     pub exit: bool
 }
@@ -41,7 +41,7 @@ impl<'a> Fum<'a> {
             ui: Ui::new(config),
             picker,
             player,
-            meta,
+            widget_state: FumWidgetState::new(meta),
             redraw: true, // Draw at startup
             exit: false
         })
@@ -51,7 +51,7 @@ impl<'a> Fum<'a> {
         while !self.exit {
             if self.redraw {
                 self.terminal.draw(|frame| {
-                    self.ui.draw(frame, &mut self.meta);
+                    self.ui.draw(frame, &mut self.widget_state);
                     self.redraw = false;
                 })?;
             }
@@ -89,7 +89,7 @@ impl<'a> Fum<'a> {
                     }
                 },
                 Event::Mouse(mouse) if mouse.kind == MouseEventKind::Down(MouseButton::Left) => {
-                    if let Some((action, exec)) = self.ui.click(mouse.column, mouse.row) {
+                    if let Some((action, exec)) = self.ui.click(mouse.column, mouse.row, &self.widget_state.buttons) {
                         let action = action.to_owned();
                         let exec = exec.to_owned();
 
@@ -121,16 +121,16 @@ impl<'a> Fum<'a> {
 
     fn update_meta(&mut self) {
         if let Some(player) = &self.player {
-            let meta = Meta::fetch(player, &self.picker, Some(&self.meta))
+            let meta = Meta::fetch(player, &self.picker, Some(&self.widget_state.meta))
                 .unwrap_or(Meta::default());
 
             self.redraw = meta.changed;
-            self.meta = meta;
+            self.widget_state.meta = meta;
 
             return;
         }
 
         self.player = Meta::get_player(&self.config).ok();
-        self.meta = Meta::default();
+        self.widget_state.meta = Meta::default();
     }
 }

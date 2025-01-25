@@ -15,7 +15,6 @@ pub fn width() -> u16 { 20 }
 pub fn height() -> u16 { 18 }
 pub fn bg() -> Color { Color::Reset }
 pub fn fg() -> Color { Color::Reset }
-pub fn debug() -> Option<bool> { None }
 pub fn keybinds() -> HashMap<Keybind, Action> {
     HashMap::from([
         (Keybind::Many([Keybind::Esc, Keybind::Char('q')].to_vec()), Action::Quit),
