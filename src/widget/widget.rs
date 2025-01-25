@@ -1,4 +1,6 @@
-use ratatui::{buffer::Buffer, layout::{Constraint, Rect}, style::Color, widgets::{StatefulWidget, Widget}};
+use std::collections::HashMap;
+
+use ratatui::{buffer::Buffer, layout::{Constraint, Rect}, style::Color, widgets::StatefulWidget};
 use serde::Deserialize;
 use crate::{action::Action, meta::Meta, utils::etc::generate_btn_id};
 
@@ -80,7 +82,17 @@ pub struct ProgressOption {
 }
 
 pub struct FumWidgetState {
-    pub meta: Meta
+    pub meta: Meta,
+    pub buttons: HashMap<String, (Rect, Option<Action>, Option<String>)>
+}
+
+impl FumWidgetState {
+    pub fn new(meta: Meta) -> Self {
+        Self {
+            meta,
+            buttons: HashMap::new()
+        }
+    }
 }
 
 #[derive(Debug, Clone, Deserialize)]

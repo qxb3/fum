@@ -6,19 +6,17 @@ use crate::{action::Action, config::Config, config_debug, debug_widget, meta::Me
 
 pub struct Ui<'a> {
     config: &'a Config,
-    pub buttons: HashMap<String, (Rect, &'a Option<Action>, &'a Option<String>)>
 }
 
 impl<'a> Ui<'a> {
     pub fn new(config: &'a Config) -> Self {
         Self {
             config,
-            buttons: HashMap::new()
         }
     }
 
-    pub fn click(&self, x: u16, y: u16) -> Option<(&Option<Action>, &Option<String>)> {
-        for (_, (rect, action, exec)) in self.buttons.iter() {
+    pub fn click(&self, x: u16, y: u16, buttons: &'a HashMap<String, (Rect, Option<Action>, Option<String>)>) -> Option<(&'a Option<Action>, &'a Option<String>)> {
+        for (_, (rect, action, exec)) in buttons.iter() {
             if rect.contains(Position::new(x, y)) {
                 return Some((
                     action,
@@ -30,7 +28,7 @@ impl<'a> Ui<'a> {
         None
     }
 
-    pub fn draw(&mut self, frame: &mut Frame<'_>, meta: &mut Meta) {
+    pub fn draw(&mut self, frame: &mut Frame<'_>, widget_state: &mut FumWidgetState) {
         let main_area = utils::align::get_align(frame, &self.config.align, self.config.width, self.config.height);
 
         // Terminal window is too small
@@ -63,7 +61,7 @@ impl<'a> Ui<'a> {
 
         for (i, widget) in self.config.layout.iter().enumerate() {
             if let Some(area) = areas.get(i) {
-                frame.render_stateful_widget(widget, *area, &mut FumWidgetState { meta: meta.clone() });
+                frame.render_stateful_widget(widget, *area, widget_state);
             }
         }
     }
