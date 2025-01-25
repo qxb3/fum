@@ -94,8 +94,7 @@ pub enum FumWidget {
     },
     #[serde(rename = "cover-art")]
     CoverArt {
-        width: Option<u16>,
-        height: Option<u16>,
+        size: Option<u16>,
         bg: Option<Color>,
         fg: Option<Color>
     },
