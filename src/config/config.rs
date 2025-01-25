@@ -4,7 +4,7 @@ use serde::Deserialize;
 
 use crate::{action::Action, fum::FumResult, widget::{ContainerFlex, Direction, FumWidget}};
 
-use super::{defaults::{align, bg, debug, direction, fg, flex, height, keybinds, layout, players, use_active_player, width}, keybind::Keybind};
+use super::{defaults::{align, bg, direction, fg, flex, height, keybinds, layout, players, use_active_player, width}, keybind::Keybind};
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -72,9 +72,6 @@ pub struct Config {
     #[serde(default = "fg")]
     pub fg: Color,
 
-    #[serde(default = "debug")]
-    pub debug: Option<bool>,
-
     #[serde(default = "layout")]
     pub layout: Vec<FumWidget>,
 }
@@ -92,7 +89,6 @@ impl Default for Config {
             height: height(),
             bg: bg(),
             fg: fg(),
-            debug: debug(),
             layout: layout()
         }
     }

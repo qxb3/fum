@@ -66,12 +66,6 @@ in {
       default = 18;
     };
 
-    debug = mkOption {
-      description = "Enable debug mode.";
-      type = bool;
-      default = false;
-    };
-
     layout = mkOption {
       description = "Layout configuration.";
       type = lib.types.listOf lib.types.attrs;
@@ -99,7 +93,6 @@ in {
         ["flex" (builtins.toJSON cfg.flex)]
         ["width" (toString cfg.width)]
         ["height" (toString cfg.height)]
-        ["debug" (boolToString cfg.debug)]
         ["layout" (builtins.toJSON cfg.layout)]
       ])}
       }

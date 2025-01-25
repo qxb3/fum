@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use ratatui::{layout::{Constraint, Layout, Position, Rect}, style::Stylize, widgets::{Block, Borders, Paragraph, Wrap}, Frame};
 
-use crate::{action::Action, config::Config, config_debug, debug_widget, meta::Meta, utils, widget::FumWidgetState};
+use crate::{action::Action, config::Config, utils, widget::FumWidgetState};
 
 pub struct Ui<'a> {
     config: &'a Config,

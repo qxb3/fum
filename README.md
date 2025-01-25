@@ -82,7 +82,6 @@ To install `fum` using Nix Flakes and configure it with `configuration.nix`, fol
                     flex = "start";
                     width = 20;
                     height = 18;
-                    debug = false;
                     layout = [];
                   };
                 }
