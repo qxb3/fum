@@ -8,6 +8,7 @@ mod text;
 mod widget;
 mod config;
 mod action;
+mod regexes;
 
 use fum::{Fum, FumResult};
 

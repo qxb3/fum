@@ -17,6 +17,7 @@ clap = { version = "4.5.23", features = ["derive"] }
 crossterm = "0.28.1"
 expanduser = "1.2.2"
 image = "0.25.5"
+lazy_static = "1.5.0"
 mpris = "2.0.1"
 ratatui = { version = "0.29.0", features = ["all-widgets", "serde"] }
 ratatui-image = { version = "4.1.0", features = ["crossterm"] }

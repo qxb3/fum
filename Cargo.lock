@@ -754,6 +754,7 @@ dependencies = [
  "crossterm",
  "expanduser",
  "image",
+ "lazy_static",
  "mpris",
  "ratatui",
  "ratatui-image",

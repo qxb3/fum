@@ -1,21 +1,18 @@
-use regex::{Captures, Regex};
+use regex::Captures;
 
-use crate::{meta::Meta, state::FumState, utils::etc::{format_duration, format_remaining}};
+use crate::{meta::Meta, regexes::{GET_META_RE, VAR_RE}, state::FumState, utils::etc::{format_duration, format_remaining}};
 
 pub fn replace_text(text: &str, state: &mut FumState) -> String {
-    let get_meta_re = Regex::new(r"get_meta\((.*?)\)").unwrap();
-    let var_re = Regex::new(r"var\((\$\w+),\s*(\$\w+)\)").unwrap();
-
     match text {
-        text if get_meta_re.is_match(text) => {
-            get_meta_re.replace_all(text, |c: &Captures| {
+        text if GET_META_RE.is_match(text) => {
+            GET_META_RE.replace_all(text, |c: &Captures| {
                 let key = c[1].to_string();
                 Meta::get_custom_meta(&state.meta.metadata, key)
             }).to_string()
         },
 
-        text if var_re.is_match(text) => {
-            var_re.replace_all(text, |c: &Captures| {
+        text if VAR_RE.is_match(text) => {
+            VAR_RE.replace_all(text, |c: &Captures| {
                 let mut vars = state.vars.clone();
 
                 let name = c[1].to_string();

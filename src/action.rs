@@ -1,10 +1,9 @@
 use std::time::Duration;
 
 use mpris::{LoopStatus, Player};
-use regex::Regex;
 use serde::{de, Deserialize};
 
-use crate::{fum::Fum, FumResult};
+use crate::{fum::Fum, regexes::{BACKWARD_RE, FORWARD_RE, VAR_SET_RE, VAR_TOGGLE_RE}, FumResult};
 
 macro_rules! if_player {
     ($player:expr, $callback:expr) => {
@@ -49,11 +48,6 @@ impl<'de> Deserialize<'de> for Action {
     {
         let action_str: &str = Deserialize::deserialize(deserializer)?;
 
-        let forward_re = Regex::new(r"forward\((-?\d+)\)").unwrap();
-        let backward_re = Regex::new(r"backward\((-?\d+)\)").unwrap();
-        let var_toggle_re = Regex::new(r"toggle\((\$\w[-\w]*),\s*(\$\w[-\w]*),\s*(\$\w[-\w]*)\)").unwrap();
-        let var_set_re = Regex::new(r"set\((\$\w[-\w]*),\s*(\$\w[-\w]*)\)").unwrap();
-
         match action_str {
             "quit()"            => Ok(Action::Quit),
 
@@ -75,8 +69,8 @@ impl<'de> Deserialize<'de> for Action {
             "loop_cycle()"      => Ok(Action::LoopCycle),
 
             // forward() action
-            a if forward_re.is_match(a) => {
-                if let Some(captures) = forward_re.captures(a) {
+            a if FORWARD_RE.is_match(a) => {
+                if let Some(captures) = FORWARD_RE.captures(a) {
                     match captures[1].parse::<i64>() {
                         Ok(offset) => return Ok(Action::Forward(offset)),
                         Err(_) => return Err(de::Error::custom("Invalid forward() offset format"))
@@ -87,8 +81,8 @@ impl<'de> Deserialize<'de> for Action {
             },
 
             // backward() action
-            a if backward_re.is_match(a) => {
-                if let Some(captures) = backward_re.captures(a) {
+            a if BACKWARD_RE.is_match(a) => {
+                if let Some(captures) = BACKWARD_RE.captures(a) {
                     match captures[1].parse::<i64>() {
                         Ok(offset) => return Ok(Action::Backward(offset)),
                         Err(_) => return Err(de::Error::custom("Invalid backward() offset format"))
@@ -103,8 +97,8 @@ impl<'de> Deserialize<'de> for Action {
             "backward()" => Err(de::Error::custom(format!("Invalid backward() format, needs value inside"))),
 
             // toggle() action
-            a if var_toggle_re.is_match(a) => {
-                if let Some(captures) = var_toggle_re.captures(a) {
+            a if VAR_TOGGLE_RE.is_match(a) => {
+                if let Some(captures) = VAR_TOGGLE_RE.captures(a) {
                     let name = captures[1].to_string();
                     let first = captures[2].to_string();
                     let second = captures[3].to_string();
@@ -116,8 +110,8 @@ impl<'de> Deserialize<'de> for Action {
             },
 
             // set() action
-            a if var_set_re.is_match(a) => {
-                if let Some(captures) = var_set_re.captures(a) {
+            a if VAR_SET_RE.is_match(a) => {
+                if let Some(captures) = VAR_SET_RE.captures(a) {
                     let name = captures[1].to_string();
                     let first = captures[2].to_string();
 
