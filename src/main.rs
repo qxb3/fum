@@ -1,5 +1,6 @@
 mod cli;
 mod fum;
+mod state;
 mod meta;
 mod ui;
 mod utils;

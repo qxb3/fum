@@ -1,10 +1,10 @@
 use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, style::Stylize, widgets::{Block, StatefulWidget, Widget}};
 
-use crate::get_color;
+use crate::{get_color, state::FumState};
 
-use super::{FumWidget, FumWidgetState};
+use super::FumWidget;
 
-pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumWidgetState) {
+pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumState) {
     if let FumWidget::Container { width, height, direction, children, flex, bg, fg } = widget {
         let area = Rect::new(
             area.x,

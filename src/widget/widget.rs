@@ -1,8 +1,6 @@
-use std::collections::HashMap;
-
 use ratatui::{buffer::Buffer, layout::{Constraint, Rect}, style::Color, widgets::StatefulWidget};
 use serde::Deserialize;
-use crate::{action::Action, meta::Meta, text::replace_text, utils::etc::generate_btn_id};
+use crate::{action::Action, state::FumState, text::replace_text, utils::etc::generate_btn_id};
 
 use super::{button, container, cover_art, empty, label, progress};
 
@@ -105,26 +103,6 @@ pub struct ProgressOption {
     pub fg: Option<Color>
 }
 
-pub struct FumWidgetState {
-    pub meta: Meta,
-    pub buttons: HashMap<String, (Rect, Option<Action>, Option<String>)>,
-    pub parent_direction: Direction,
-    pub parent_bg: Color,
-    pub parent_fg: Color
-}
-
-impl FumWidgetState {
-    pub fn new(meta: Meta) -> Self {
-        Self {
-            meta,
-            buttons: HashMap::new(),
-            parent_direction: Direction::default(),
-            parent_bg: Color::Reset,
-            parent_fg: Color::Reset
-        }
-    }
-}
-
 #[derive(Debug, Clone, Deserialize)]
 #[serde(tag = "type")]
 #[serde(rename_all = "lowercase")]
@@ -180,7 +158,7 @@ pub enum FumWidget {
 }
 
 impl StatefulWidget for &FumWidget {
-    type State = FumWidgetState;
+    type State = FumState;
 
     fn render(self, area: Rect, buf: &mut Buffer, state: &mut Self::State)
     where
@@ -198,7 +176,7 @@ impl StatefulWidget for &FumWidget {
 }
 
 impl FumWidget {
-    pub fn get_size(&self, state: &mut FumWidgetState) -> Constraint {
+    pub fn get_size(&self, state: &mut FumState) -> Constraint {
         match self {
             Self::Container { width, height, direction, .. } => {
                 match direction {
@@ -220,7 +198,7 @@ impl FumWidget {
             },
             Self::Button { text, .. } => {
                 match &state.parent_direction {
-                    Direction::Horizontal => Constraint::Length(replace_text(text, &state.meta).len() as u16),
+                    Direction::Horizontal => Constraint::Length(replace_text(text, state).len() as u16),
                     Direction::Vertical => Constraint::Length(1)
                 }
             },
