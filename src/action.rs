@@ -38,7 +38,8 @@ pub enum Action {
     Forward(i64),
     Backward(i64),
 
-    Toggle(String, String, String)
+    Toggle(String, String, String),
+    Set(String, String)
 }
 
 impl<'de> Deserialize<'de> for Action {
@@ -51,6 +52,7 @@ impl<'de> Deserialize<'de> for Action {
         let forward_re = Regex::new(r"forward\((-?\d+)\)").unwrap();
         let backward_re = Regex::new(r"backward\((-?\d+)\)").unwrap();
         let var_toggle_re = Regex::new(r"toggle\((\$\w[-\w]*),\s*(\$\w[-\w]*),\s*(\$\w[-\w]*)\)").unwrap();
+        let var_set_re = Regex::new(r"set\((\$\w[-\w]*),\s*(\$\w[-\w]*)\)").unwrap();
 
         match action_str {
             "quit()"            => Ok(Action::Quit),
@@ -72,6 +74,7 @@ impl<'de> Deserialize<'de> for Action {
             "loop_playlist()"   => Ok(Action::LoopPlaylist),
             "loop_cycle()"      => Ok(Action::LoopCycle),
 
+            // forward() action
             a if forward_re.is_match(a) => {
                 if let Some(captures) = forward_re.captures(a) {
                     match captures[1].parse::<i64>() {
@@ -83,6 +86,7 @@ impl<'de> Deserialize<'de> for Action {
                 Err(de::Error::custom("Invalid forward() format"))
             },
 
+            // backward() action
             a if backward_re.is_match(a) => {
                 if let Some(captures) = backward_re.captures(a) {
                     match captures[1].parse::<i64>() {
@@ -98,6 +102,7 @@ impl<'de> Deserialize<'de> for Action {
             "forward()" => Err(de::Error::custom(format!("Invalid forward() format, needs value inside"))),
             "backward()" => Err(de::Error::custom(format!("Invalid backward() format, needs value inside"))),
 
+            // toggle() action
             a if var_toggle_re.is_match(a) => {
                 if let Some(captures) = var_toggle_re.captures(a) {
                     let name = captures[1].to_string();
@@ -109,6 +114,18 @@ impl<'de> Deserialize<'de> for Action {
 
                 Err(de::Error::custom("Unknown exception while parsing toggle() action"))
             },
+
+            // set() action
+            a if var_set_re.is_match(a) => {
+                if let Some(captures) = var_set_re.captures(a) {
+                    let name = captures[1].to_string();
+                    let first = captures[2].to_string();
+
+                    return Ok(Action::Set(name, first));
+                }
+
+                Err(de::Error::custom("Unknown exception while parsing set() action"))
+            }
 
             _ => Err(de::Error::custom(format!("Unknown action: {}", action_str)))
         }
@@ -181,6 +198,14 @@ impl Action {
                     } else {
                         fum.state.vars.insert(name.to_string(), first.to_string());
                     }
+                }
+            },
+            Action::Set(name, first) => {
+                fum.redraw = true;
+
+                // Just checks wether var exists, don't care about the value
+                if fum.state.vars.get(name).is_some() {
+                    fum.state.vars.insert(name.to_string(), first.to_string());
                 }
             }
         }
