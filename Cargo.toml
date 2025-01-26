@@ -11,7 +11,8 @@ edition = "2021"
 name = "fum"
 path = "./src/main.rs"
 
-[dependencies] base64 = "0.22.1"
+[dependencies]
+base64 = "0.22.1"
 clap = { version = "4.5.23", features = ["derive"] }
 crossterm = "0.28.1"
 expanduser = "1.2.2"
