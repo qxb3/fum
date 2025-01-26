@@ -1,6 +1,6 @@
 use regex::{Captures, Regex};
 
-use crate::{meta::Meta, state::FumState, utils::etc::format_duration};
+use crate::{meta::Meta, state::FumState, utils::etc::{format_duration, format_remaining}};
 
 pub fn replace_text(text: &str, state: &mut FumState) -> String {
     let get_meta_re = Regex::new(r"get_meta\((.*?)\)").unwrap();
@@ -40,6 +40,7 @@ pub fn replace_text(text: &str, state: &mut FumState) -> String {
         text if text.contains("$album") => text.replace("$album", &state.meta.album),
         text if text.contains("$status_icon") => text.replace("$status_icon", &state.meta.status_icon.to_string()),
         text if text.contains("$position") => text.replace("$position", &format_duration(state.meta.position)),
+        text if text.contains("$remaining-length") => text.replace("$remaining-length", &format_remaining(state.meta.position, state.meta.length)),
         text if text.contains("$length") => text.replace("$length", &format_duration(state.meta.length)),
 
         _ => text.to_string()
