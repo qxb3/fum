@@ -48,20 +48,21 @@ impl<'a> Ui<'a> {
             return;
         }
 
+        // Sets the state parents state
+        widget_state.parent_direction = self.config.direction.to_owned();
+        widget_state.parent_bg = self.config.bg;
+        widget_state.parent_fg = self.config.fg;
+
         let areas = Layout::default()
             .direction(self.config.direction.to_dir())
             .flex(self.config.flex.to_flex())
             .constraints(
                 self.config.layout
                     .iter()
-                    .map(|child| child.get_size(&self.config.direction))
+                    .map(|child| child.get_size(widget_state))
                     .collect::<Vec<Constraint>>()
             )
             .split(main_area);
-
-        // Sets the very root bg / fg to be the config bg / fg
-        widget_state.parent_bg = self.config.bg;
-        widget_state.parent_fg = self.config.fg;
 
         // Render background
         frame.render_widget(

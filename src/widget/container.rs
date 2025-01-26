@@ -21,7 +21,8 @@ pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumW
             .fg(*fg)
             .render(area, buf);
 
-        // Set the parent bg / fg to this container
+        // Sets the state parents state
+        state.parent_direction = direction.to_owned();
         state.parent_bg = *bg;
         state.parent_fg = *fg;
 
@@ -31,7 +32,7 @@ pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumW
             .constraints(
                 children
                     .iter()
-                    .map(|child| child.get_size(direction))
+                    .map(|child| child.get_size(state))
                     .collect::<Vec<Constraint>>()
             )
             .split(area);
