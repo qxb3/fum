@@ -37,6 +37,8 @@ pub enum Action {
 
     Forward(i64),
     Backward(i64),
+
+    Toggle(String, String, String)
 }
 
 impl<'de> Deserialize<'de> for Action {
@@ -48,6 +50,7 @@ impl<'de> Deserialize<'de> for Action {
 
         let forward_re = Regex::new(r"forward\((-?\d+)\)").unwrap();
         let backward_re = Regex::new(r"backward\((-?\d+)\)").unwrap();
+        let var_toggle_re = Regex::new(r"toggle\((\$\w[-\w]*),\s*(\$\w[-\w]*),\s*(\$\w[-\w]*)\)").unwrap();
 
         match action_str {
             "quit()"            => Ok(Action::Quit),
@@ -94,6 +97,18 @@ impl<'de> Deserialize<'de> for Action {
             // Error if forward() / backward() has no value inside
             "forward()" => Err(de::Error::custom(format!("Invalid forward() format, needs value inside"))),
             "backward()" => Err(de::Error::custom(format!("Invalid backward() format, needs value inside"))),
+
+            a if var_toggle_re.is_match(a) => {
+                if let Some(captures) = var_toggle_re.captures(a) {
+                    let name = captures[1].to_string();
+                    let first = captures[2].to_string();
+                    let second = captures[3].to_string();
+
+                    return Ok(Action::Toggle(name, first, second));
+                }
+
+                Err(de::Error::custom("Unknown exception while parsing toggle() action"))
+            },
 
             _ => Err(de::Error::custom(format!("Unknown action: {}", action_str)))
         }
@@ -155,7 +170,19 @@ impl Action {
                 }
 
                 unreachable!()
-            })
+            }),
+
+            Action::Toggle(name, first, second) => {
+                fum.redraw = true;
+
+                if let Some(current) = &fum.state.vars.get(name) {
+                    if *current == first {
+                        fum.state.vars.insert(name.to_string(), second.to_string());
+                    } else {
+                        fum.state.vars.insert(name.to_string(), first.to_string());
+                    }
+                }
+            }
         }
 
         Ok(())
