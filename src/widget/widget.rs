@@ -75,6 +75,30 @@ impl ContainerFlex {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum CoverArtResize {
+    Fit,
+    Crop,
+    Scale
+}
+
+impl Default for CoverArtResize {
+    fn default() -> Self {
+        Self::Scale
+    }
+}
+
+impl CoverArtResize {
+    pub fn to_resize(&self) -> ratatui_image::Resize {
+        match self {
+            Self::Fit       => ratatui_image::Resize::Fit(Some(ratatui_image::FilterType::CatmullRom)),
+            Self::Crop      => ratatui_image::Resize::Crop(None),
+            Self::Scale     => ratatui_image::Resize::Scale(Some(ratatui_image::FilterType::CatmullRom))
+        }
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
 pub struct ProgressOption {
     pub char: char,
     pub bg: Option<Color>,
@@ -118,6 +142,8 @@ pub enum FumWidget {
     CoverArt {
         width: Option<u16>,
         height: Option<u16>,
+        #[serde(default = "CoverArtResize::default")]
+        resize: CoverArtResize,
         bg: Option<Color>,
         fg: Option<Color>
     },

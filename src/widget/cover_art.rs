@@ -6,7 +6,7 @@ use crate::get_color;
 use super::{FumWidget, FumWidgetState};
 
 pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumWidgetState) {
-    if let FumWidget::CoverArt { bg, fg, .. } = widget {
+    if let FumWidget::CoverArt { resize, bg, fg, .. } = widget {
         let (bg, _) = get_color!(bg, fg, &state.parent_bg, &state.parent_fg);
 
         // Render bg
@@ -16,7 +16,7 @@ pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumW
 
         if let Some(cover_art) = state.meta.cover_art.as_mut() {
             StatefulWidget::render(
-                StatefulImage::default(),
+                StatefulImage::default().resize(resize.to_resize()),
                 area,
                 buf,
                 &mut cover_art.image

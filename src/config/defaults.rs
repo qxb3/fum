@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use ratatui::style::Color;
 
-use crate::{action::Action, utils::etc::generate_btn_id, widget::{ContainerFlex, Direction, FumWidget, LabelAlignment, ProgressOption}};
+use crate::{action::Action, utils::etc::generate_btn_id, widget::{ContainerFlex, CoverArtResize, Direction, FumWidget, LabelAlignment, ProgressOption}};
 
 use super::{keybind::Keybind, Align};
 
@@ -28,6 +28,7 @@ pub fn layout() -> Vec<FumWidget> {
         FumWidget::CoverArt {
             width: None,
             height: Some(10),
+            resize: CoverArtResize::Scale,
             bg: None,
             fg: None,
         },
