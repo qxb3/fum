@@ -29,7 +29,7 @@
 
         src = ./.;
 
-        cargoHash = "sha256-k3D7y0f3YBcLqMbsjN+Ojj1GIGLNZ5trosj1jHD/71k=";
+        cargoHash = "sha256-q6QfIlePhTcruBIH/Qr2F5H5HzfsGQWjsyaQNpZdVc8=";
 
         nativeBuildInputs = with pkgs; [
           openssl
