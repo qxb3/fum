@@ -1,10 +1,9 @@
 use std::time::Duration;
 
 use mpris::{LoopStatus, Player};
-use regex::Regex;
 use serde::{de, Deserialize};
 
-use crate::{fum::Fum, FumResult};
+use crate::{fum::Fum, regexes::{BACKWARD_RE, FORWARD_RE, VAR_SET_RE, VAR_TOGGLE_RE}, FumResult};
 
 macro_rules! if_player {
     ($player:expr, $callback:expr) => {
@@ -37,6 +36,9 @@ pub enum Action {
 
     Forward(i64),
     Backward(i64),
+
+    Toggle(String, String, String),
+    Set(String, String)
 }
 
 impl<'de> Deserialize<'de> for Action {
@@ -45,9 +47,6 @@ impl<'de> Deserialize<'de> for Action {
         D: serde::Deserializer<'de>
     {
         let action_str: &str = Deserialize::deserialize(deserializer)?;
-
-        let forward_re = Regex::new(r"forward\((-?\d+)\)").unwrap();
-        let backward_re = Regex::new(r"backward\((-?\d+)\)").unwrap();
 
         match action_str {
             "quit()"            => Ok(Action::Quit),
@@ -69,8 +68,9 @@ impl<'de> Deserialize<'de> for Action {
             "loop_playlist()"   => Ok(Action::LoopPlaylist),
             "loop_cycle()"      => Ok(Action::LoopCycle),
 
-            a if forward_re.is_match(a) => {
-                if let Some(captures) = forward_re.captures(a) {
+            // forward() action
+            a if FORWARD_RE.is_match(a) => {
+                if let Some(captures) = FORWARD_RE.captures(a) {
                     match captures[1].parse::<i64>() {
                         Ok(offset) => return Ok(Action::Forward(offset)),
                         Err(_) => return Err(de::Error::custom("Invalid forward() offset format"))
@@ -80,8 +80,9 @@ impl<'de> Deserialize<'de> for Action {
                 Err(de::Error::custom("Invalid forward() format"))
             },
 
-            a if backward_re.is_match(a) => {
-                if let Some(captures) = backward_re.captures(a) {
+            // backward() action
+            a if BACKWARD_RE.is_match(a) => {
+                if let Some(captures) = BACKWARD_RE.captures(a) {
                     match captures[1].parse::<i64>() {
                         Ok(offset) => return Ok(Action::Backward(offset)),
                         Err(_) => return Err(de::Error::custom("Invalid backward() offset format"))
@@ -94,6 +95,31 @@ impl<'de> Deserialize<'de> for Action {
             // Error if forward() / backward() has no value inside
             "forward()" => Err(de::Error::custom(format!("Invalid forward() format, needs value inside"))),
             "backward()" => Err(de::Error::custom(format!("Invalid backward() format, needs value inside"))),
+
+            // toggle() action
+            a if VAR_TOGGLE_RE.is_match(a) => {
+                if let Some(captures) = VAR_TOGGLE_RE.captures(a) {
+                    let name = captures[1].to_string();
+                    let first = captures[2].to_string();
+                    let second = captures[3].to_string();
+
+                    return Ok(Action::Toggle(name, first, second));
+                }
+
+                Err(de::Error::custom("Unknown exception while parsing toggle() action"))
+            },
+
+            // set() action
+            a if VAR_SET_RE.is_match(a) => {
+                if let Some(captures) = VAR_SET_RE.captures(a) {
+                    let name = captures[1].to_string();
+                    let first = captures[2].to_string();
+
+                    return Ok(Action::Set(name, first));
+                }
+
+                Err(de::Error::custom("Unknown exception while parsing set() action"))
+            }
 
             _ => Err(de::Error::custom(format!("Unknown action: {}", action_str)))
         }
@@ -135,9 +161,9 @@ impl Action {
             Action::Forward(offset)     => if_player!(&fum.player, |player: &Player| {
                 fum.redraw = true;
 
-                if let Some(track_id) = &fum.widget_state.meta.track_id {
+                if let Some(track_id) = &fum.state.meta.track_id {
                     match offset {
-                        -1  => return player.set_position(track_id.clone(), &fum.widget_state.meta.length),
+                        -1  => return player.set_position(track_id.clone(), &fum.state.meta.length),
                         _   => return player.seek_forwards(&Duration::from_millis(*offset as u64))
                     }
                 }
@@ -147,7 +173,7 @@ impl Action {
             Action::Backward(offset)     => if_player!(&fum.player, |player: &Player| {
                 fum.redraw = true;
 
-                if let Some(track_id) = &fum.widget_state.meta.track_id {
+                if let Some(track_id) = &fum.state.meta.track_id {
                     match offset {
                         -1   => return player.set_position(track_id.clone(), &Duration::from_secs(0)),
                         _   => return player.seek_backwards(&Duration::from_millis(*offset as u64))
@@ -155,7 +181,27 @@ impl Action {
                 }
 
                 unreachable!()
-            })
+            }),
+
+            Action::Toggle(name, first, second) => {
+                fum.redraw = true;
+
+                if let Some(current) = &fum.state.vars.get(name) {
+                    if *current == first {
+                        fum.state.vars.insert(name.to_string(), second.to_string());
+                    } else {
+                        fum.state.vars.insert(name.to_string(), first.to_string());
+                    }
+                }
+            },
+            Action::Set(name, first) => {
+                fum.redraw = true;
+
+                // Just checks wether var exists, don't care about the value
+                if fum.state.vars.get(name).is_some() {
+                    fum.state.vars.insert(name.to_string(), first.to_string());
+                }
+            }
         }
 
         Ok(())

@@ -56,3 +56,13 @@ pub fn format_duration(duration: Duration) -> String {
         format!("{}:{:02}", duration.as_secs() / 60, duration.as_secs() % 60)
     }
 }
+
+pub fn format_remaining(current: Duration, total: Duration) -> String {
+    if total > current {
+        let remaining = total - current;
+        format!("-{}", format_duration(remaining))
+    } else {
+        format!("-0:00")
+    }
+}
+

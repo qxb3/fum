@@ -1,18 +1,19 @@
 use ratatui::{buffer::Buffer, layout::Rect, style::Stylize, widgets::{Block, Paragraph, Widget}};
 
-use crate::{get_color, text::replace_text};
+use crate::{get_color, state::FumState, text::replace_text};
 
-use super::{FumWidget, FumWidgetState};
+use super::FumWidget;
 
-pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumWidgetState) {
+pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumState) {
     if let FumWidget::Button { id, text, action, exec, bg, fg } = widget {
-        let (bg, fg) = get_color!(bg, fg, &state.parent_bg, &state.parent_fg);
-        let text = replace_text(text, &state.meta).to_string();
+        let text = replace_text(text, state).to_string();
 
         state.buttons.insert(
             id.to_string(),
             (area.clone(), action.to_owned(), exec.to_owned())
         );
+
+        let (bg, fg) = get_color!(bg, fg, &state.parent_bg, &state.parent_fg);
 
         // Render bg
         Block::new()

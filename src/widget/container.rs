@@ -1,10 +1,10 @@
 use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, style::Stylize, widgets::{Block, StatefulWidget, Widget}};
 
-use crate::get_color;
+use crate::{get_color, state::FumState};
 
-use super::{FumWidget, FumWidgetState};
+use super::FumWidget;
 
-pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumWidgetState) {
+pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumState) {
     if let FumWidget::Container { width, height, direction, children, flex, bg, fg } = widget {
         let area = Rect::new(
             area.x,
@@ -21,7 +21,8 @@ pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumW
             .fg(*fg)
             .render(area, buf);
 
-        // Set the parent bg / fg to this container
+        // Sets the state parents state
+        state.parent_direction = direction.to_owned();
         state.parent_bg = *bg;
         state.parent_fg = *fg;
 
@@ -31,7 +32,7 @@ pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumW
             .constraints(
                 children
                     .iter()
-                    .map(|child| child.get_size(direction))
+                    .map(|child| child.get_size(state))
                     .collect::<Vec<Constraint>>()
             )
             .split(area);

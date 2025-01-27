@@ -1,11 +1,11 @@
 use ratatui::{buffer::Buffer, layout::Rect, style::Stylize, widgets::{Block, StatefulWidget, Widget}};
 use ratatui_image::StatefulImage;
 
-use crate::get_color;
+use crate::{get_color, state::FumState};
 
-use super::{FumWidget, FumWidgetState};
+use super::FumWidget;
 
-pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumWidgetState) {
+pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumState) {
     if let FumWidget::CoverArt { resize, bg, fg, .. } = widget {
         let (bg, _) = get_color!(bg, fg, &state.parent_bg, &state.parent_fg);
 

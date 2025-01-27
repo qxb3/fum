@@ -1,5 +1,6 @@
 mod cli;
 mod fum;
+mod state;
 mod meta;
 mod ui;
 mod utils;
@@ -7,6 +8,7 @@ mod text;
 mod widget;
 mod config;
 mod action;
+mod regexes;
 
 use fum::{Fum, FumResult};
 

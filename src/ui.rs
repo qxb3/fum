@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use ratatui::{layout::{Constraint, Layout, Position, Rect}, style::Stylize, widgets::{Block, Borders, Paragraph, Wrap}, Frame};
 
-use crate::{action::Action, config::Config, utils, widget::FumWidgetState};
+use crate::{action::Action, config::Config, state::FumState, utils};
 
 pub struct Ui<'a> {
     config: &'a Config,
@@ -28,7 +28,7 @@ impl<'a> Ui<'a> {
         None
     }
 
-    pub fn draw(&mut self, frame: &mut Frame<'_>, widget_state: &mut FumWidgetState) {
+    pub fn draw(&mut self, frame: &mut Frame<'_>, state: &mut FumState) {
         let main_area = utils::align::get_align(frame, &self.config.align, self.config.width, self.config.height);
 
         // Terminal window is too small
@@ -48,32 +48,33 @@ impl<'a> Ui<'a> {
             return;
         }
 
+        // Sets the state parents state
+        state.parent_direction = self.config.direction.to_owned();
+        state.parent_bg = self.config.bg;
+        state.parent_fg = self.config.fg;
+
         let areas = Layout::default()
             .direction(self.config.direction.to_dir())
             .flex(self.config.flex.to_flex())
             .constraints(
                 self.config.layout
                     .iter()
-                    .map(|child| child.get_size(&self.config.direction))
+                    .map(|child| child.get_size(state))
                     .collect::<Vec<Constraint>>()
             )
             .split(main_area);
 
-        // Sets the very root bg / fg to be the config bg / fg
-        widget_state.parent_bg = self.config.bg;
-        widget_state.parent_fg = self.config.fg;
-
         // Render background
         frame.render_widget(
             Block::new()
-                .bg(widget_state.parent_bg)
-                .fg(widget_state.parent_fg),
+                .bg(state.parent_bg)
+                .fg(state.parent_fg),
             main_area
         );
 
         for (i, widget) in self.config.layout.iter().enumerate() {
             if let Some(area) = areas.get(i) {
-                frame.render_stateful_widget(widget, *area, widget_state);
+                frame.render_stateful_widget(widget, *area, state);
             }
         }
     }

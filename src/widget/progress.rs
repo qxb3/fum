@@ -1,10 +1,10 @@
 use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, style::Stylize, text::Text, widgets::{Block, Widget}};
 
-use crate::get_color;
+use crate::{get_color, state::FumState};
 
-use super::{FumWidget, FumWidgetState};
+use super::FumWidget;
 
-pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumWidgetState) {
+pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumState) {
     if let FumWidget::Progress { progress: prog_opt, empty: empt_opt, .. } = widget {
         let (prog_bg, prog_fg) = get_color!(&prog_opt.bg, &prog_opt.fg, &state.parent_bg, &state.parent_fg);
         let (empt_bg, empt_fg) = get_color!(&empt_opt.bg, &empt_opt.fg, &state.parent_bg, &state.parent_fg);
