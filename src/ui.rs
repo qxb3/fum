@@ -53,6 +53,9 @@ impl<'a> Ui<'a> {
         state.parent_bg = self.config.bg;
         state.parent_fg = self.config.fg;
 
+        // Also pass in the cover_art_ascii on state
+        state.cover_art_ascii = self.config.cover_art_ascii.to_owned();
+
         let areas = Layout::default()
             .direction(self.config.direction.to_dir())
             .flex(self.config.flex.to_flex())

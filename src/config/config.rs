@@ -1,10 +1,11 @@
 use std::{collections::HashMap, fs, path::PathBuf};
+use expanduser::expanduser;
 use ratatui::style::Color;
 use serde::Deserialize;
 
 use crate::{action::Action, fum::FumResult, widget::{ContainerFlex, Direction, FumWidget}};
 
-use super::{defaults::{align, bg, direction, fg, flex, height, keybinds, layout, players, use_active_player, width}, keybind::Keybind};
+use super::{defaults::{align, bg, cover_art_ascii, direction, fg, flex, height, keybinds, layout, players, use_active_player, width}, keybind::Keybind};
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -72,6 +73,9 @@ pub struct Config {
     #[serde(default = "fg")]
     pub fg: Color,
 
+    #[serde(default = "cover_art_ascii")]
+    pub cover_art_ascii: String,
+
     #[serde(default = "layout")]
     pub layout: Vec<FumWidget>,
 }
@@ -89,6 +93,7 @@ impl Default for Config {
             height: height(),
             bg: bg(),
             fg: fg(),
+            cover_art_ascii: cover_art_ascii(),
             layout: layout()
         }
     }
@@ -98,8 +103,18 @@ impl Config {
     pub fn load(path: &PathBuf) -> FumResult<Self> {
         match fs::read_to_string(path) {
             Ok(config_file) => {
-                let config: Config = serde_json::from_str(&config_file)
+                let mut config: Config = serde_json::from_str(&config_file)
                     .map_err(|err| format!("Failed to parse config: {err}"))?;
+
+                // Get expanded path of cover_art_ascii
+                let cover_art_ascii_path = expanduser(&config.cover_art_ascii)
+                    .map_err(|err| format!("Failed to expand path of cover_art_ascii: {err}"))?;
+
+                // Load the cover_art_ascii
+                match fs::read_to_string(cover_art_ascii_path) {
+                    Ok(cover_art_ascii) => config.cover_art_ascii = cover_art_ascii,
+                    Err(_) => config.cover_art_ascii = "".to_string()
+                }
 
                 Ok(config)
             },
