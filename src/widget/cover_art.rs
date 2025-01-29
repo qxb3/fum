@@ -1,4 +1,4 @@
-use ratatui::{buffer::Buffer, layout::Rect, style::Stylize, widgets::{Block, StatefulWidget, Widget}};
+use ratatui::{buffer::Buffer, layout::{Constraint, Flex, Layout, Rect}, style::Stylize, text::Text, widgets::{Block, StatefulWidget, Widget}};
 use ratatui_image::StatefulImage;
 
 use crate::{get_color, state::FumState};
@@ -21,6 +21,16 @@ pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumS
                 buf,
                 &mut cover_art.image
             );
+        } else {
+            let split = state.cover_art_ascii.split('\n');
+            let width = split.to_owned().map(|line| line.len() as u16).max().unwrap_or(0);
+            let height = split.count() as u16;
+
+            let [ascii_area] = Layout::horizontal([Constraint::Length(width)]).flex(Flex::Center).areas(area);
+            let [ascii_area] = Layout::vertical([Constraint::Length(height)]).flex(Flex::Center).areas(ascii_area);
+
+            Text::from(state.cover_art_ascii.as_str())
+                .render(ascii_area, buf);
         }
     }
 }
