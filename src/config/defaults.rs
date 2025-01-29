@@ -8,13 +8,19 @@ use super::{keybind::Keybind, Align};
 
 pub fn players() -> Vec<String> { vec!["spotify".to_string()] }
 pub fn use_active_player() -> bool { false }
+
 pub fn align() -> Align { Align::Center }
 pub fn direction() -> Direction { Direction::Vertical }
 pub fn flex() -> ContainerFlex { ContainerFlex::Start }
+
 pub fn width() -> u16 { 20 }
 pub fn height() -> u16 { 18 }
+
 pub fn bg() -> Color { Color::Reset }
 pub fn fg() -> Color { Color::Reset }
+
+pub fn cover_art_ascii() -> String { "/usr/share/fum/ascii.txt".to_string() }
+
 pub fn keybinds() -> HashMap<Keybind, Action> {
     HashMap::from([
         (Keybind::Many([Keybind::Esc, Keybind::Char('q')].to_vec()), Action::Quit),
@@ -23,6 +29,7 @@ pub fn keybinds() -> HashMap<Keybind, Action> {
         (Keybind::Char(' '), Action::PlayPause)
     ])
 }
+
 pub fn layout() -> Vec<FumWidget> {
     Vec::from([
         FumWidget::CoverArt {
