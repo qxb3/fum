@@ -1,5 +1,6 @@
 use ratatui::{buffer::Buffer, layout::{Constraint, Rect}, style::Color, widgets::StatefulWidget};
 use serde::Deserialize;
+use unicode_width::UnicodeWidthStr;
 use crate::{action::Action, state::FumState, text::replace_text, utils::etc::generate_btn_id};
 
 use super::{button, container, cover_art, empty, label, progress};
@@ -198,7 +199,7 @@ impl FumWidget {
             },
             Self::Button { text, .. } => {
                 match &state.parent_direction {
-                    Direction::Horizontal => Constraint::Length(replace_text(text, state).len() as u16),
+                    Direction::Horizontal => Constraint::Length(UnicodeWidthStr::width(replace_text(text, state).as_str()) as u16),
                     Direction::Vertical => Constraint::Length(1)
                 }
             },
