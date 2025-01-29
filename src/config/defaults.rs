@@ -19,7 +19,7 @@ pub fn height() -> u16 { 18 }
 pub fn bg() -> Color { Color::Reset }
 pub fn fg() -> Color { Color::Reset }
 
-pub fn cover_art_ascii() -> String { "/usr/share/fum/ascii.txt".to_string() }
+pub fn cover_art_ascii() -> String { "".to_string() }
 
 pub fn keybinds() -> HashMap<Keybind, Action> {
     HashMap::from([
