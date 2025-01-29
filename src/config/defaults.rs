@@ -13,8 +13,8 @@ pub fn align() -> Align { Align::Center }
 pub fn direction() -> Direction { Direction::Vertical }
 pub fn flex() -> ContainerFlex { ContainerFlex::Start }
 
-pub fn width() -> u16 { 20 }
-pub fn height() -> u16 { 18 }
+pub fn width() -> u16 { 19 }
+pub fn height() -> u16 { 15 }
 
 pub fn bg() -> Color { Color::Reset }
 pub fn fg() -> Color { Color::Reset }
@@ -34,14 +34,19 @@ pub fn layout() -> Vec<FumWidget> {
     Vec::from([
         FumWidget::CoverArt {
             width: None,
-            height: Some(10),
+            height: None,
             resize: CoverArtResize::Scale,
             bg: None,
             fg: None,
         },
+        FumWidget::Empty {
+            size: 1,
+            bg: None,
+            fg: None
+        },
         FumWidget::Container {
             width: None,
-            height: Some(10),
+            height: None,
             direction: Direction::Vertical,
             flex: ContainerFlex::default(),
             bg: None,
@@ -58,6 +63,11 @@ pub fn layout() -> Vec<FumWidget> {
                     text: "$artists".to_string(),
                     align: LabelAlignment::Center,
                     truncate: true,
+                    bg: None,
+                    fg: None
+                },
+                FumWidget::Empty {
+                    size: 1,
                     bg: None,
                     fg: None
                 },
