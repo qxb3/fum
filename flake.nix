@@ -13,79 +13,81 @@
   }:
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = import nixpkgs {inherit system;};
-      rustPlatform = pkgs.rustPlatform;
-      envVars = ''
-        export OPENSSL_DIR=${pkgs.openssl.dev}
-        export OPENSSL_LIB_DIR=${pkgs.openssl.out}/lib
-        export OPENSSL_INCLUDE_DIR=${pkgs.openssl.dev}/include
-        export DEP_OPENSSL_INCLUDE=${pkgs.openssl.dev}/include
-        export PKG_CONFIG_ALLOW_CROSS=1
-        export PKG_CONFIG_PATH=${pkgs.openssl.dev}/lib/pkgconfig:${pkgs.dbus.dev}/lib/pkgconfig
-        export CARGO_TARGET_DIR=target
+
+      updateScript = pkgs.writeShellScriptBin "update-fum" ''
+        nix flake update
+
+        ${pkgs.nix-update}/bin/nix-update -vr 'v(.*)' --flake --commit fum
       '';
-      fumPackage = rustPlatform.buildRustPackage {
+    in {
+      packages.fum = pkgs.rustPlatform.buildRustPackage rec {
         pname = "fum";
-        version = "v0.4.1";
+        version = "0.8.2";
 
-        src = ./.;
+        src = pkgs.fetchFromGitHub {
+          owner = "qxb3";
+          repo = pname;
+          rev = "v${version}";
+          hash = "sha256-KOxT7h7HcI3AsWKTV7BjJeVCkzReMHu3Xl6oGD+JjJw=";
+        };
 
-        cargoHash = "sha256-q6QfIlePhTcruBIH/Qr2F5H5HzfsGQWjsyaQNpZdVc8=";
+        cargoLock = {
+          lockFile = ./Cargo.lock;
+        };
 
         nativeBuildInputs = with pkgs; [
-          openssl
           pkg-config
-          dbus
+          autoPatchelfHook
         ];
 
         buildInputs = with pkgs; [
           openssl
           dbus
+          libgcc
         ];
 
-        buildPhase = ''
-          ${envVars}
-          cargo build --release
-        '';
-
-        installPhase = ''
-          mkdir -p $out/bin
-          cp target/release/fum $out/bin
-        '';
+        OPENSSL_DIR = "${pkgs.openssl.dev}";
+        OPENSSL_LIB_DIR = "${pkgs.openssl.out}/lib";
+        OPENSSL_INCLUDE_DIR = "${pkgs.openssl.dev}/include";
 
         meta = with pkgs.lib; {
           description = "A fully ricable tui-based music client";
+          homepage = "https://github.com/qxb3/fum";
           license = licenses.mit;
-          maintainers = ["qxbt" "linuxmobile"];
+          maintainers = with maintainers; [linuxmobile];
           platforms = platforms.linux;
         };
       };
-    in {
-      defaultPackage = fumPackage;
-      packages = {
-        fum = fumPackage;
+
+      packages.default = self.packages.${system}.fum;
+
+      devShells.default = pkgs.mkShell {
+        inputsFrom = [self.packages.${system}.fum];
+        buildInputs = with pkgs; [
+          cargo
+          rust-analyzer
+          rustfmt
+          clippy
+          updateScript
+        ];
       };
 
-      devShells = {
-        default = pkgs.mkShell {
-          buildInputs = [pkgs.cargo];
-          shellHook = ''
-            ${envVars}
-          '';
+      apps.update = {
+        type = "app";
+        program = "${updateScript}/bin/update-fum";
+      };
+
+      nixosModules.fum = import ./modules/default.nix;
+
+      homeManagerModules.fum = {
+        config,
+        pkgs,
+        lib,
+        ...
+      }:
+        import ./nix/hm-module.nix {
+          inherit config pkgs lib;
+          fumPackage = self.packages.${system}.fum;
         };
-      };
-
-      nixosModules = {
-        fum = import ./modules/default.nix;
-      };
-
-      homeManagerModules = {
-        fum = {
-          config,
-          pkgs,
-          lib,
-          ...
-        }:
-          import ./nix/hm-module.nix {inherit config pkgs lib fumPackage;};
-      };
     });
 }
