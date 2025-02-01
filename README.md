@@ -22,14 +22,6 @@
   <a href="https://github.com/qxb3/fum/stargazers">
     <img src="https://img.shields.io/github/stars/qxb3/fum?style=for-the-badge&logo=Apache%20Spark&logoColor=ffffff&labelColor=1C1B22&color=DEFEDF" />
   </a>
-
-  <a href="https://aur.archlinux.org/packages/fum">
-    <img src="https://img.shields.io/aur/version/fum?style=for-the-badge&logo=archlinux&logoColor=ffffff&labelColor=1C1B22&color=DEFEDF" />
-  </a>
-
-  <a href="https://crates.io/crates/fum-player">
-    <img src="https://img.shields.io/crates/v/fum-player?style=for-the-badge&logo=rust&logoColor=ffffff&labelColor=1C1B22&color=DEFEDF" />
-  </a>
 </p>
 
 ## Demo
