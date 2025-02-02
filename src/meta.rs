@@ -52,8 +52,8 @@ impl Meta {
         let metadata = Meta::get_metadata(player)?;
         let track_id = Meta::get_trackid(&metadata).ok();
         let title = Meta::get_title(&metadata)?;
-        let artists = Meta::get_artists(&metadata)?;
-        let album = Meta::get_album(&metadata)?;
+        let artists = Meta::get_artists(&metadata).unwrap_or(vec!["Artist".to_string()]);
+        let album = Meta::get_album(&metadata).unwrap_or("Album".to_string());
         let status = Meta::get_status(player)?;
         let status_icon = Meta::get_status_icon(&status);
         let position = Meta::get_position(player)?;
