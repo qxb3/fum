@@ -50,15 +50,15 @@ impl Default for Meta {
 impl Meta {
     pub fn fetch(player: &Player, picker: &Picker, current: Option<&Self>) -> FumResult<Self> {
         let metadata = Meta::get_metadata(player)?;
-        let track_id = Meta::get_trackid(&metadata)?;
+        let track_id = Meta::get_trackid(&metadata).ok();
         let title = Meta::get_title(&metadata)?;
-        let artists = Meta::get_artists(&metadata)?;
-        let album = Meta::get_album(&metadata)?;
+        let artists = Meta::get_artists(&metadata).unwrap_or(vec!["Artist".to_string()]);
+        let album = Meta::get_album(&metadata).unwrap_or("Album".to_string());
         let status = Meta::get_status(player)?;
         let status_icon = Meta::get_status_icon(&status);
         let position = Meta::get_position(player)?;
         let length = Meta::get_length(&metadata)?;
-        let cover_art = Meta::get_cover_art(&metadata, picker, current)?;
+        let cover_art = Meta::get_cover_art(&metadata, picker, current).ok();
 
         let mut changed = false;
 
@@ -74,7 +74,7 @@ impl Meta {
 
         Ok(Self {
             metadata,
-            track_id: Some(track_id),
+            track_id,
             title,
             artists,
             album,
@@ -82,7 +82,7 @@ impl Meta {
             status_icon,
             position,
             length,
-            cover_art: Some(cover_art),
+            cover_art,
             changed
         })
     }
