@@ -3,7 +3,7 @@ use std::time::Duration;
 use mpris::{LoopStatus, Player};
 use serde::{de, Deserialize};
 
-use crate::{fum::Fum, regexes::{BACKWARD_RE, FORWARD_RE, VAR_SET_RE, VAR_TOGGLE_RE}, FumResult};
+use crate::{fum::Fum, regexes::{BACKWARD_RE, FORWARD_RE, VAR_SET_RE, VAR_TOGGLE_RE, VOLUME_RE}, FumResult};
 
 macro_rules! if_player {
     ($player:expr, $callback:expr) => {
@@ -11,6 +11,13 @@ macro_rules! if_player {
             $callback(player)?;
         }
     };
+}
+
+#[derive(Debug, Clone)]
+pub enum VolumeType {
+    Increase(f64),
+    Decrease(f64),
+    Set(f64)
 }
 
 #[derive(Debug, Clone)]
@@ -36,6 +43,8 @@ pub enum Action {
 
     Forward(i64),
     Backward(i64),
+
+    Volume(VolumeType),
 
     Toggle(String, String, String),
     Set(String, String)
@@ -92,9 +101,38 @@ impl<'de> Deserialize<'de> for Action {
                 Err(de::Error::custom("Invalid backward() format"))
             },
 
-            // Error if forward() / backward() has no value inside
-            "forward()" => Err(de::Error::custom(format!("Invalid forward() format, needs value inside"))),
-            "backward()" => Err(de::Error::custom(format!("Invalid backward() format, needs value inside"))),
+            // volume() action
+            a if VOLUME_RE.is_match(a) => {
+                if let Some(captures) = VOLUME_RE.captures(a) {
+                    match captures[1].to_string().as_str() {
+                        c if c.starts_with("+") => {
+                            let value = c
+                                .replace("+", "")
+                                .parse::<f64>()
+                                .map_err(|_| de::Error::custom("Failed to parse volume() value."))?;
+
+                            return Ok(Action::Volume(VolumeType::Increase(value.min(100.0))));
+                        },
+                        c if c.starts_with("-") => {
+                            let value = c
+                                .replace("-", "")
+                                .parse::<f64>()
+                                .map_err(|_| de::Error::custom("Failed to parse volume() value."))?;
+
+                            return Ok(Action::Volume(VolumeType::Decrease(value.min(100.0))));
+                        },
+                        c => {
+                            let value = c
+                                .parse::<f64>()
+                                .map_err(|_| de::Error::custom("Failed to parse volume() value."))?;
+
+                            return Ok(Action::Volume(VolumeType::Set(value.min(100.0))))
+                        }
+                    }
+                }
+
+                Err(de::Error::custom("Unknown exception while parsing volume() action"))
+            }
 
             // toggle() action
             a if VAR_TOGGLE_RE.is_match(a) => {
@@ -119,7 +157,11 @@ impl<'de> Deserialize<'de> for Action {
                 }
 
                 Err(de::Error::custom("Unknown exception while parsing set() action"))
-            }
+            },
+
+            // Error if forward() / backward() has no value inside
+            "forward()" => Err(de::Error::custom(format!("Invalid forward() format, needs value inside"))),
+            "backward()" => Err(de::Error::custom(format!("Invalid backward() format, needs value inside"))),
 
             _ => Err(de::Error::custom(format!("Unknown action: {}", action_str)))
         }
@@ -181,6 +223,18 @@ impl Action {
                 }
 
                 player.seek_backwards(&Duration::from_millis(*offset as u64))
+            }),
+
+            Action::Volume(volume_type)       => if_player!(&fum.player, |player: &Player| {
+                fum.redraw = true;
+
+                let current_volume = player.get_volume().unwrap_or(0.0) * 100.0;
+
+                match volume_type {
+                    VolumeType::Increase(value) => player.set_volume(((current_volume + *value) / 100.0).min(1.0)),
+                    VolumeType::Decrease(value) => player.set_volume(((current_volume - *value) / 100.0).min(1.0)),
+                    VolumeType::Set(value) => player.set_volume((*value / 100.0).min(1.0))
+                }
             }),
 
             Action::Toggle(name, first, second) => {
