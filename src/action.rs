@@ -161,26 +161,26 @@ impl Action {
             Action::Forward(offset)     => if_player!(&fum.player, |player: &Player| {
                 fum.redraw = true;
 
-                if let Some(track_id) = &fum.state.meta.track_id {
-                    match offset {
-                        -1  => return player.set_position(track_id.clone(), &fum.state.meta.length),
-                        _   => return player.seek_forwards(&Duration::from_millis(*offset as u64))
+                // if offset is -1, set position to music length
+                if *offset == -1 {
+                    if let Some(track_id) = &fum.state.meta.track_id {
+                        return player.set_position(track_id.clone(), &fum.state.meta.length)
                     }
                 }
 
-                unreachable!()
+                player.seek_forwards(&Duration::from_millis(*offset as u64))
             }),
             Action::Backward(offset)     => if_player!(&fum.player, |player: &Player| {
                 fum.redraw = true;
 
-                if let Some(track_id) = &fum.state.meta.track_id {
-                    match offset {
-                        -1   => return player.set_position(track_id.clone(), &Duration::from_secs(0)),
-                        _   => return player.seek_backwards(&Duration::from_millis(*offset as u64))
+                // if offset is -1, set position to music start
+                if *offset == -1 {
+                    if let Some(track_id) = &fum.state.meta.track_id {
+                        return player.set_position(track_id.clone(), &Duration::from_secs(0))
                     }
                 }
 
-                unreachable!()
+                player.seek_backwards(&Duration::from_millis(*offset as u64))
             }),
 
             Action::Toggle(name, first, second) => {
