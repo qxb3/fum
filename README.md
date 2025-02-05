@@ -35,6 +35,18 @@
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/fum.svg)](https://repology.org/project/fum/versions)
 
+## Build from source
+
+```bash
+git clone https://github.com/qxb3/fum.git
+cd fum
+cargo build --release
+# Either copy/move `target/release/yum` to /usr/bin
+# Or add the release path to your system's path
+# Moving fum binary to /usr/bin
+mv target/release/fum /usr/bin
+```
+
 ### Configuring
 
 See [Wiki](https://github.com/qxb3/fum/wiki/Configuring)
