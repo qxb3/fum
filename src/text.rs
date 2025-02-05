@@ -4,6 +4,7 @@ use crate::{meta::Meta, regexes::{GET_META_RE, VAR_RE}, state::FumState, utils::
 
 pub fn replace_text(text: &str, state: &mut FumState) -> String {
     match text {
+        // get_meta() text action
         text if GET_META_RE.is_match(text) => {
             GET_META_RE.replace_all(text, |c: &Captures| {
                 let key = c[1].to_string();
@@ -11,6 +12,7 @@ pub fn replace_text(text: &str, state: &mut FumState) -> String {
             }).to_string()
         },
 
+        // var() text action
         text if VAR_RE.is_match(text) => {
             VAR_RE.replace_all(text, |c: &Captures| {
                 let mut vars = state.vars.clone();
