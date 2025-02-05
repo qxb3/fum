@@ -39,6 +39,7 @@ pub fn replace_text(text: &str, state: &mut FumState) -> String {
         text if text.contains("$position") => text.replace("$position", &format_duration(state.meta.position)),
         text if text.contains("$remaining-length") => text.replace("$remaining-length", &format_remaining(state.meta.position, state.meta.length)),
         text if text.contains("$length") => text.replace("$length", &format_duration(state.meta.length)),
+        text if text.contains("$volume") => text.replace("$volume", &format!("{:.0}", state.meta.volume * 100.0)),
 
         _ => text.to_string()
     }
