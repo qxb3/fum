@@ -25,6 +25,7 @@ pub struct Meta {
     pub status_icon: char,
     pub position: Duration,
     pub length: Duration,
+    pub volume: f64,
     pub cover_art: Option<CoverArt>,
     pub changed: bool
 }
@@ -41,6 +42,7 @@ impl Default for Meta {
             status_icon: Meta::get_status_icon(&PlaybackStatus::Stopped),
             position: Duration::from_secs(0),
             length: Duration::from_secs(0),
+            volume: 0.0,
             cover_art: None,
             changed: false
         }
@@ -58,6 +60,7 @@ impl Meta {
         let status_icon = Meta::get_status_icon(&status);
         let position = Meta::get_position(player)?;
         let length = Meta::get_length(&metadata)?;
+        let volume = Meta::get_voume(player)?;
         let cover_art = Meta::get_cover_art(&metadata, picker, current).ok();
 
         let mut changed = false;
@@ -82,6 +85,7 @@ impl Meta {
             status_icon,
             position,
             length,
+            volume,
             cover_art,
             changed
         })
@@ -191,6 +195,13 @@ impl Meta {
             .ok_or("Failed to get xesam:album".to_string())?;
 
         Ok(album)
+    }
+
+    pub fn get_voume(player: &Player) -> FumResult<f64> {
+        let volume = player.get_volume()
+            .map_err(|err| format!("Failed to get player volume: {err}"))?;
+
+        Ok(volume)
     }
 
     pub fn get_custom_meta(metadata: &Metadata, key: String) -> String {

@@ -3,7 +3,7 @@ use serde::Deserialize;
 use unicode_width::UnicodeWidthStr;
 use crate::{action::Action, state::FumState, text::replace_text, utils::etc::generate_btn_id};
 
-use super::{button, container, cover_art, empty, label, progress};
+use super::{button, container, cover_art, empty, label, progress, volume};
 
 fn default_truncate() -> bool { true }
 
@@ -105,6 +105,13 @@ pub struct ProgressOption {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+pub struct VolumeOption {
+    pub char: char,
+    pub bg: Option<Color>,
+    pub fg: Option<Color>
+}
+
+#[derive(Debug, Clone, Deserialize)]
 #[serde(tag = "type")]
 #[serde(rename_all = "lowercase")]
 pub enum FumWidget {
@@ -151,6 +158,11 @@ pub enum FumWidget {
         progress: ProgressOption,
         empty: ProgressOption
     },
+    Volume {
+        size: Option<u16>,
+        volume: VolumeOption,
+        empty: VolumeOption
+    },
     Empty {
         size: u16,
         bg: Option<Color>,
@@ -171,6 +183,7 @@ impl StatefulWidget for &FumWidget {
             FumWidget::Label { .. } => label::render(&self, area, buf, state),
             FumWidget::Button { .. } => button::render(&self, area, buf, state),
             FumWidget::Progress { .. } => progress::render(&self, area, buf, state),
+            FumWidget::Volume { .. } => volume::render(&self, area, buf, state),
             FumWidget::Empty { .. } => empty::render(&self, area, buf, state)
         }
     }
@@ -204,6 +217,12 @@ impl FumWidget {
                 }
             },
             Self::Progress { size, .. } => {
+                match &state.parent_direction {
+                    Direction::Horizontal => size.map(|s| Constraint::Length(s)).unwrap_or(Constraint::Min(0)),
+                    Direction::Vertical => Constraint::Length(1)
+                }
+            },
+            Self::Volume { size, .. } => {
                 match &state.parent_direction {
                     Direction::Horizontal => size.map(|s| Constraint::Length(s)).unwrap_or(Constraint::Min(0)),
                     Direction::Vertical => Constraint::Length(1)
