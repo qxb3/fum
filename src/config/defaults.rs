@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use ratatui::style::Color;
 
-use crate::{action::Action, utils::etc::generate_btn_id, widget::{ContainerFlex, CoverArtResize, Direction, FumWidget, LabelAlignment, ProgressOption}};
+use crate::{action::Action, utils::etc::generate_id, widget::{ContainerFlex, CoverArtResize, Direction, FumWidget, LabelAlignment, ProgressOption}};
 
 use super::{keybind::Keybind, Align};
 
@@ -80,7 +80,7 @@ pub fn layout() -> Vec<FumWidget> {
                     fg: None,
                     children: Vec::from([
                         FumWidget::Button {
-                            id: generate_btn_id(),
+                            id: generate_id(),
                             text: "󰒮".to_string(),
                             action: Some(Action::Prev),
                             exec: None,
@@ -88,7 +88,7 @@ pub fn layout() -> Vec<FumWidget> {
                             fg: None
                         },
                         FumWidget::Button {
-                            id: generate_btn_id(),
+                            id: generate_id(),
                             text: "$status_icon".to_string(),
                             action: Some(Action::PlayPause),
                             exec: None,
@@ -96,7 +96,7 @@ pub fn layout() -> Vec<FumWidget> {
                             fg: None
                         },
                         FumWidget::Button {
-                            id: generate_btn_id(),
+                            id: generate_id(),
                             text: "󰒭".to_string(),
                             action: Some(Action::Next),
                             exec: None,
@@ -106,6 +106,7 @@ pub fn layout() -> Vec<FumWidget> {
                     ])
                 },
                 FumWidget::Progress {
+                    id: generate_id(),
                     size: None,
                     direction: Direction::Horizontal,
                     progress: ProgressOption {
