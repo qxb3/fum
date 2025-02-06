@@ -65,7 +65,6 @@ pub fn replace_text(text: &str, state: &mut FumState) -> String {
         text if UPPER_RE.is_match(text) => {
             UPPER_RE.replace_all(text, |c: &Captures| {
                 let value = c[1].to_string();
-                println!("{value}");
 
                 if value.starts_with("$") {
                     replace_global_var(&value, state).to_uppercase()
