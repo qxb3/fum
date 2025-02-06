@@ -1,7 +1,7 @@
 use ratatui::{buffer::Buffer, layout::{Constraint, Rect}, style::Color, widgets::StatefulWidget};
 use serde::Deserialize;
 use unicode_width::UnicodeWidthStr;
-use crate::{action::Action, state::FumState, text::replace_text, utils::etc::generate_btn_id};
+use crate::{action::Action, state::FumState, text::replace_text, utils::etc::generate_id};
 
 use super::{button, container, cover_art, empty, label, progress, volume};
 
@@ -145,7 +145,7 @@ pub enum FumWidget {
         fg: Option<Color>
     },
     Button {
-        #[serde(default = "generate_btn_id")]
+        #[serde(default = "generate_id")]
         id: String,
         text: String,
         action: Option<Action>,
@@ -154,6 +154,8 @@ pub enum FumWidget {
         fg: Option<Color>
     },
     Progress {
+        #[serde(default = "generate_id")]
+        id: String,
         size: Option<u16>,
         #[serde(default = "Direction::default")]
         direction: Direction,
@@ -161,6 +163,8 @@ pub enum FumWidget {
         empty: ProgressOption
     },
     Volume {
+        #[serde(default = "generate_id")]
+        id: String,
         size: Option<u16>,
         #[serde(default = "Direction::default")]
         direction: Direction,
