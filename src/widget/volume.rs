@@ -12,12 +12,17 @@ struct Volume {
 }
 
 pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumState) {
-    if let FumWidget::Volume { direction, volume: vol_opt, empty: empt_opt, .. } = widget {
+    if let FumWidget::Volume { id, direction, volume: vol_opt, empty: empt_opt, .. } = widget {
         let (vol_bg, vol_fg) = get_color!(&vol_opt.bg, &vol_opt.fg, &state.parent_bg, &state.parent_fg);
         let (empt_bg, empt_fg) = get_color!(&empt_opt.bg, &empt_opt.fg, &state.parent_bg, &state.parent_fg);
 
         let progress_char = vol_opt.char.to_string();
         let empty_char = empt_opt.char.to_string();
+
+        state.sliders.insert(
+            id.to_string(),
+            (area.clone(), direction.clone(), "volume".to_string())
+        );
 
         let Volume {
             volume_bar,

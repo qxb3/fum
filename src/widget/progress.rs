@@ -12,12 +12,17 @@ struct Progress {
 }
 
 pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumState) {
-    if let FumWidget::Progress { direction, progress: prog_opt, empty: empt_opt, .. } = widget {
+    if let FumWidget::Progress { id, direction, progress: prog_opt, empty: empt_opt, .. } = widget {
         let (prog_bg, prog_fg) = get_color!(&prog_opt.bg, &prog_opt.fg, &state.parent_bg, &state.parent_fg);
         let (empt_bg, empt_fg) = get_color!(&empt_opt.bg, &empt_opt.fg, &state.parent_bg, &state.parent_fg);
 
         let progress_char = prog_opt.char.to_string();
         let empty_char = empt_opt.char.to_string();
+
+        state.sliders.insert(
+            id.to_string(),
+            (area.clone(), direction.clone(), "progress".to_string())
+        );
 
         let position = state.meta.position;
         let ratio = if position.as_secs() > 0 {
