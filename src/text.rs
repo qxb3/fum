@@ -1,6 +1,20 @@
 use regex::Captures;
 
-use crate::{meta::Meta, regexes::{GET_META_RE, VAR_RE}, state::FumState, utils::etc::{format_duration, format_remaining}};
+use crate::{meta::Meta, regexes::{GET_META_RE, LOWER_RE, UPPER_RE, VAR_RE}, state::FumState, utils::etc::{format_duration, format_remaining}};
+
+fn replace_global_var(text: &str, state: &mut FumState) -> String {
+    match text {
+        text if text.contains("$title")             => text.replace("$title", &state.meta.title),
+        text if text.contains("$artists")           => text.replace("$artists", &state.meta.artists.join(", ")),
+        text if text.contains("$album")             => text.replace("$album", &state.meta.album),
+        text if text.contains("$status_icon")       => text.replace("$status_icon", &state.meta.status_icon.to_string()),
+        text if text.contains("$position")          => text.replace("$position", &format_duration(state.meta.position)),
+        text if text.contains("$remaining-length")  => text.replace("$remaining-length", &format_remaining(state.meta.position, state.meta.length)),
+        text if text.contains("$length")            => text.replace("$length", &format_duration(state.meta.length)),
+        text if text.contains("$volume")            => text.replace("$volume", &format!("{:.0}", state.meta.volume * 100.0)),
+        _                                           => text.to_string()
+    }
+}
 
 pub fn replace_text(text: &str, state: &mut FumState) -> String {
     match text {
@@ -34,14 +48,35 @@ pub fn replace_text(text: &str, state: &mut FumState) -> String {
             }).to_string()
         },
 
-        text if text.contains("$title") => text.replace("$title", &state.meta.title),
-        text if text.contains("$artists") => text.replace("$artists", &state.meta.artists.join(", ")),
-        text if text.contains("$album") => text.replace("$album", &state.meta.album),
-        text if text.contains("$status_icon") => text.replace("$status_icon", &state.meta.status_icon.to_string()),
-        text if text.contains("$position") => text.replace("$position", &format_duration(state.meta.position)),
-        text if text.contains("$remaining-length") => text.replace("$remaining-length", &format_remaining(state.meta.position, state.meta.length)),
-        text if text.contains("$length") => text.replace("$length", &format_duration(state.meta.length)),
-        text if text.contains("$volume") => text.replace("$volume", &format!("{:.0}", state.meta.volume * 100.0)),
+        // lower() text action
+        text if LOWER_RE.is_match(text) => {
+            LOWER_RE.replace_all(text, |c: &Captures| {
+                let value = c[1].to_string();
+
+                if value.starts_with("$") {
+                    replace_global_var(&value, state).to_lowercase()
+                } else {
+                    value.to_lowercase()
+                }
+            }).to_string()
+        },
+
+        // upper() text action
+        text if UPPER_RE.is_match(text) => {
+            UPPER_RE.replace_all(text, |c: &Captures| {
+                let value = c[1].to_string();
+                println!("{value}");
+
+                if value.starts_with("$") {
+                    replace_global_var(&value, state).to_uppercase()
+                } else {
+                    value.to_uppercase()
+                }
+            }).to_string()
+        },
+
+        // global vars
+        text if text.contains("$") => replace_global_var(text, state),
 
         _ => text.to_string()
     }
