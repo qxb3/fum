@@ -73,6 +73,7 @@ impl Meta {
             current.artists != artists ||
             current.status != status ||
             current.length != length ||
+            current.volume != volume ||
             position.as_secs() > current.position.as_secs() {
                 changed = true;
             }
