@@ -3,7 +3,7 @@ use std::time::Duration;
 use mpris::{LoopStatus, Player};
 use serde::{de, Deserialize};
 
-use crate::{fum::Fum, regexes::{BACKWARD_RE, FORWARD_RE, VAR_SET_RE, VAR_TOGGLE_RE, VOLUME_RE}, FumResult};
+use crate::{fum::Fum, regexes::{BACKWARD_RE, FORWARD_RE, POSITION_RE, VAR_SET_RE, VAR_TOGGLE_RE, VOLUME_RE}, FumResult};
 
 macro_rules! if_player {
     ($player:expr, $callback:expr) => {
@@ -43,6 +43,7 @@ pub enum Action {
 
     Forward(i64),
     Backward(i64),
+    Position(u64),
 
     Volume(VolumeType),
 
@@ -99,6 +100,18 @@ impl<'de> Deserialize<'de> for Action {
                 }
 
                 Err(de::Error::custom("Invalid backward() format"))
+            },
+
+            // position() action
+            a if POSITION_RE.is_match(a) => {
+                if let Some(captures) = POSITION_RE.captures(a) {
+                    match captures[1].parse::<u64>() {
+                        Ok(position) => return Ok(Action::Position(position)),
+                        Err(_) => return Err(de::Error::custom("Invalid position() offset format"))
+                    }
+                }
+
+                Err(de::Error::custom("Invalid position() format"))
             },
 
             // volume() action
@@ -223,6 +236,15 @@ impl Action {
                 }
 
                 player.seek_backwards(&Duration::from_millis(*offset as u64))
+            }),
+            Action::Position(position)  => if_player!(&fum.player, |player: &Player| {
+                fum.redraw = true;
+
+                if let Some(track_id) = &fum.state.meta.track_id {
+                    return player.set_position(track_id.clone(), &Duration::from_secs(*position));
+                }
+
+                unreachable!();
             }),
 
             Action::Volume(volume_type)       => if_player!(&fum.player, |player: &Player| {
