@@ -23,6 +23,7 @@ pub struct Meta {
     pub album: String,
     pub status: PlaybackStatus,
     pub status_icon: char,
+    pub status_text: String,
     pub position: Duration,
     pub length: Duration,
     pub volume: f64,
@@ -40,6 +41,7 @@ impl Default for Meta {
             album: "Album".to_string(),
             status: PlaybackStatus::Stopped,
             status_icon: Meta::get_status_icon(&PlaybackStatus::Stopped),
+            status_text: "stopped".to_string(),
             position: Duration::from_secs(0),
             length: Duration::from_secs(0),
             volume: 0.0,
@@ -58,6 +60,7 @@ impl Meta {
         let album = Meta::get_album(&metadata).unwrap_or("Album".to_string());
         let status = Meta::get_status(player)?;
         let status_icon = Meta::get_status_icon(&status);
+        let status_text = Meta::get_status_text(&status);
         let position = Meta::get_position(player)?;
         let length = Meta::get_length(&metadata)?;
         let volume = Meta::get_voume(player)?;
@@ -83,6 +86,7 @@ impl Meta {
             album,
             status,
             status_icon,
+            status_text,
             position,
             length,
             volume,
@@ -170,6 +174,14 @@ impl Meta {
             PlaybackStatus::Stopped => '󰓛',
             PlaybackStatus::Playing => '󰏤',
             PlaybackStatus::Paused  => '󰐊'
+        }
+    }
+
+    pub fn get_status_text(status: &PlaybackStatus) -> String {
+        match status {
+            PlaybackStatus::Stopped => "stopped".to_string(),
+            PlaybackStatus::Playing => "playing".to_string(),
+            PlaybackStatus::Paused  => "paused".to_string()
         }
     }
 
