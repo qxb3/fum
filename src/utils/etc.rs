@@ -30,7 +30,7 @@ macro_rules! get_color {
     }};
 }
 
-pub fn generate_btn_id() -> String {
+pub fn generate_id() -> String {
     Uuid::new_v4().to_string()
 }
 

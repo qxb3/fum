@@ -3,10 +3,10 @@ use std::{io::{stdout, Stdout}, process::{Command, Stdio}, time::Duration};
 
 use crossterm::{event::{self, EnableMouseCapture, Event, KeyEventKind, MouseButton, MouseEventKind}, execute};
 use mpris::Player;
-use ratatui::{prelude::CrosstermBackend, Terminal};
+use ratatui::{layout::Position, prelude::CrosstermBackend, Terminal};
 use ratatui_image::picker::Picker;
 
-use crate::{action::Action, config::{Config, Keybind}, meta::Meta, state::FumState, ui::Ui, utils};
+use crate::{action::{Action, VolumeType}, config::{Config, Keybind}, meta::Meta, state::FumState, ui::Ui, utils, widget::Direction};
 
 pub type FumResult<T> = std::result::Result<T, Box<dyn error::Error>>;
 
@@ -17,6 +17,13 @@ pub struct Fum<'a> {
     pub picker: Picker,
     pub player: Option<Player>,
     pub state: FumState,
+
+    // drag state
+    pub dragging: bool,
+    pub start_drag: Option<Position>,
+    pub current_drag: Option<Position>,
+    pub drag_action: Option<Action>,
+
     pub redraw: bool,
     pub exit: bool
 }
@@ -42,6 +49,13 @@ impl<'a> Fum<'a> {
             picker,
             player,
             state: FumState::new(meta),
+
+            // drag state
+            dragging: false,
+            start_drag: None,
+            current_drag: None,
+            drag_action: None,
+
             redraw: true, // Draw at startup
             exit: false
         })
@@ -109,6 +123,44 @@ impl<'a> Fum<'a> {
                         }
                     }
                 },
+                Event::Mouse(mouse) if mouse.kind == MouseEventKind::Drag(MouseButton::Left) => {
+                    if !self.dragging && self.start_drag.is_none() {
+                        self.dragging = true;
+                        self.start_drag = Some(Position::new(mouse.column, mouse.row));
+                    }
+
+                    if self.dragging {
+                        self.current_drag = Some(Position::new(mouse.column, mouse.row));
+
+                        if let Some(start_drag) = &self.start_drag {
+                            if let Some(current_drag) = &self.current_drag {
+                                if let Some((rect, direction, widget)) = self.ui.drag(start_drag, &self.state.sliders) {
+                                    let value: f64 = match direction {
+                                        Direction::Horizontal => ((current_drag.x as f64 - rect.x as f64) / rect.width as f64).clamp(0.0, 1.0),
+                                        Direction::Vertical => (1.0 - ((current_drag.y as f64 - rect.y as f64) / rect.height as f64)).clamp(0.0, 1.0)
+                                    };
+
+                                    match widget.as_str() {
+                                        "progress" => {
+                                            let position = value * self.state.meta.length.as_secs() as f64;
+                                            Action::run(&Action::Position(position as u64), self)?;
+                                        },
+                                        "volume" => {
+                                            let volume = value * 100.0;
+                                            Action::run(&Action::Volume(VolumeType::Set(volume)), self)?;
+                                        },
+                                        _ => {}
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                Event::Mouse(mouse) if mouse.kind == MouseEventKind::Up(MouseButton::Left) => {
+                    self.dragging = false;
+                    self.start_drag = None;
+                    self.current_drag = None;
+                }
                 Event::Resize(_, _) => {
                     self.redraw = true;
                 }

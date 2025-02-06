@@ -4,6 +4,7 @@ use regex::Regex;
 lazy_static! {
     pub static ref FORWARD_RE: Regex = Regex::new(r"forward\((-?\d+)\)").unwrap();
     pub static ref BACKWARD_RE: Regex = Regex::new(r"backward\((-?\d+)\)").unwrap();
+    pub static ref POSITION_RE: Regex = Regex::new(r"^position\(\d+\)$").unwrap();
 
     pub static ref VOLUME_RE: Regex = Regex::new(r"volume\(([-+]?\d+)\)").unwrap();
 
