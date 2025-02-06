@@ -35,12 +35,14 @@ pub fn layout() -> Vec<FumWidget> {
         FumWidget::CoverArt {
             width: None,
             height: None,
+            bordered: false,
             resize: CoverArtResize::Scale,
             bg: None,
             fg: None,
         },
         FumWidget::Empty {
             size: 1,
+            bordered: false,
             bg: None,
             fg: None
         },
@@ -48,6 +50,7 @@ pub fn layout() -> Vec<FumWidget> {
             width: None,
             height: None,
             direction: Direction::Vertical,
+            bordered: false,
             flex: ContainerFlex::default(),
             bg: None,
             fg: None,
@@ -56,6 +59,7 @@ pub fn layout() -> Vec<FumWidget> {
                     text: "$title".to_string(),
                     align: LabelAlignment::Center,
                     truncate: true,
+                    bordered: false,
                     bg: None,
                     fg: None
                 },
@@ -63,11 +67,13 @@ pub fn layout() -> Vec<FumWidget> {
                     text: "$artists".to_string(),
                     align: LabelAlignment::Center,
                     truncate: true,
+                    bordered: false,
                     bg: None,
                     fg: None
                 },
                 FumWidget::Empty {
                     size: 1,
+                    bordered: false,
                     bg: None,
                     fg: None
                 },
@@ -75,6 +81,7 @@ pub fn layout() -> Vec<FumWidget> {
                     width: None,
                     height: Some(1),
                     direction: Direction::Horizontal,
+                    bordered: false,
                     flex: ContainerFlex::SpaceAround,
                     bg: None,
                     fg: None,
@@ -82,6 +89,7 @@ pub fn layout() -> Vec<FumWidget> {
                         FumWidget::Button {
                             id: generate_id(),
                             text: "󰒮".to_string(),
+                            bordered: false,
                             action: Some(Action::Prev),
                             exec: None,
                             bg: None,
@@ -90,6 +98,7 @@ pub fn layout() -> Vec<FumWidget> {
                         FumWidget::Button {
                             id: generate_id(),
                             text: "$status_icon".to_string(),
+                            bordered: false,
                             action: Some(Action::PlayPause),
                             exec: None,
                             bg: None,
@@ -98,6 +107,7 @@ pub fn layout() -> Vec<FumWidget> {
                         FumWidget::Button {
                             id: generate_id(),
                             text: "󰒭".to_string(),
+                            bordered: false,
                             action: Some(Action::Next),
                             exec: None,
                             bg: None,
@@ -109,6 +119,7 @@ pub fn layout() -> Vec<FumWidget> {
                     id: generate_id(),
                     size: None,
                     direction: Direction::Horizontal,
+                    bordered: false,
                     progress: ProgressOption {
                         char: '󰝤',
                         bg: None,
@@ -123,6 +134,7 @@ pub fn layout() -> Vec<FumWidget> {
                 FumWidget::Container {
                     width: None,
                     height: Some(1),
+                    bordered: false,
                     direction: Direction::Horizontal,
                     flex: ContainerFlex::SpaceBetween,
                     bg: None,
@@ -132,6 +144,7 @@ pub fn layout() -> Vec<FumWidget> {
                             text: "$position".to_string(),
                             align: LabelAlignment::Left,
                             truncate: false,
+                            bordered: false,
                             bg: None,
                             fg: None
                         },
@@ -139,6 +152,7 @@ pub fn layout() -> Vec<FumWidget> {
                             text: "$length".to_string(),
                             align: LabelAlignment::Right,
                             truncate: false,
+                            bordered: false,
                             bg: None,
                             fg: None
                         }
