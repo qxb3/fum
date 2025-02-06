@@ -1,11 +1,11 @@
-use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, style::Stylize, widgets::{Block, StatefulWidget, Widget}};
+use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, style::Stylize, widgets::{Block, Borders, StatefulWidget, Widget}};
 
 use crate::{get_color, state::FumState};
 
 use super::FumWidget;
 
 pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumState) {
-    if let FumWidget::Container { width, height, direction, children, flex, bg, fg } = widget {
+    if let FumWidget::Container { width, height, direction, bordered, children, flex, bg, fg } = widget {
         let area = Rect::new(
             area.x,
             area.y,
@@ -16,7 +16,14 @@ pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumS
         // Render this container block with defined or parent's bg / fg
         let (bg, fg) = get_color!(bg, fg, &state.parent_bg, &state.parent_fg);
 
+        // Whether to render border
+        let border = match bordered {
+            true => Borders::ALL,
+            false => Borders::NONE
+        };
+
         Block::new()
+            .borders(border)
             .bg(*bg)
             .fg(*fg)
             .render(area, buf);
