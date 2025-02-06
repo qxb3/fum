@@ -26,7 +26,12 @@ pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumS
             0.0
         };
 
-        let progress = match direction {
+        let Progress {
+            progress_bar,
+            empty_bar,
+            progress_area,
+            empty_area
+        } = match direction {
             Direction::Horizontal => {
                 let filled = (ratio * area.width as f64).round();
                 let empty = area.width.saturating_sub(filled as u16);
@@ -70,23 +75,23 @@ pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumS
         // Render progress bg
         Block::new()
             .bg(*prog_bg)
-            .render(progress.progress_area, buf);
+            .render(progress_area, buf);
 
         // Render progress
-        Paragraph::new(progress.progress_bar)
+        Paragraph::new(progress_bar)
             .wrap(Wrap::default())
             .fg(*prog_fg)
-            .render(progress.progress_area, buf);
+            .render(progress_area, buf);
 
         // Render empty bg
         Block::new()
             .bg(*empt_bg)
-            .render(progress.empty_area, buf);
+            .render(empty_area, buf);
 
         // Render empty
-        Paragraph::new(progress.empty_bar)
+        Paragraph::new(empty_bar)
             .wrap(Wrap::default())
             .fg(*empt_fg)
-            .render(progress.empty_area, buf);
+            .render(empty_area, buf);
     }
 }

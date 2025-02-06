@@ -13,13 +13,18 @@ struct Volume {
 
 pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumState) {
     if let FumWidget::Volume { direction, volume: vol_opt, empty: empt_opt, .. } = widget {
-        let (prog_bg, prog_fg) = get_color!(&vol_opt.bg, &vol_opt.fg, &state.parent_bg, &state.parent_fg);
+        let (vol_bg, vol_fg) = get_color!(&vol_opt.bg, &vol_opt.fg, &state.parent_bg, &state.parent_fg);
         let (empt_bg, empt_fg) = get_color!(&empt_opt.bg, &empt_opt.fg, &state.parent_bg, &state.parent_fg);
 
         let progress_char = vol_opt.char.to_string();
         let empty_char = empt_opt.char.to_string();
 
-        let volume = match direction {
+        let Volume {
+            volume_bar,
+            empty_bar,
+            volume_area,
+            empty_area
+        } = match direction {
             Direction::Horizontal => {
                 let filled = (state.meta.volume * area.width as f64).round();
                 let empty = area.width.saturating_sub(filled as u16);
@@ -62,24 +67,24 @@ pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumS
 
         // Render volume filled bg
         Block::new()
-            .bg(*prog_bg)
-            .render(volume.volume_area, buf);
+            .bg(*vol_bg)
+            .render(volume_area, buf);
 
         // Render volume filled
-        Paragraph::new(volume.volume_bar)
+        Paragraph::new(volume_bar)
             .wrap(Wrap::default())
-            .fg(*prog_fg)
-            .render(volume.volume_area, buf);
+            .fg(*vol_fg)
+            .render(volume_area, buf);
 
         // Render empty bg
         Block::new()
             .bg(*empt_bg)
-            .render(volume.empty_area, buf);
+            .render(empty_area, buf);
 
         // Render empty
-        Paragraph::new(volume.empty_bar)
+        Paragraph::new(empty_bar)
             .wrap(Wrap::default())
             .fg(*empt_fg)
-            .render(volume.empty_area, buf);
+            .render(empty_area, buf);
     }
 }
