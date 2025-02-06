@@ -13,6 +13,6 @@ lazy_static! {
 
     pub static ref GET_META_RE: Regex = Regex::new(r"get_meta\((.*?)\)").unwrap();
 
-    pub static ref LOWER_RE: Regex = Regex::new(r"lower\(([\w$-]+)\)").unwrap();
-    pub static ref UPPER_RE: Regex = Regex::new(r"upper\(([\w$-]+)\)").unwrap();
+    pub static ref LOWER_RE: Regex = Regex::new(r"lower\(\s*([\w$-]+(?:\s+[\w$-]+)*)\s*\)").unwrap();
+    pub static ref UPPER_RE: Regex = Regex::new(r"upper\(\s*([\w$-]+(?:\s+[\w$-]+)*)\s*\)").unwrap();
 }
