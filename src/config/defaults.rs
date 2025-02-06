@@ -107,6 +107,7 @@ pub fn layout() -> Vec<FumWidget> {
                 },
                 FumWidget::Progress {
                     size: None,
+                    direction: Direction::Horizontal,
                     progress: ProgressOption {
                         char: '󰝤',
                         bg: None,
