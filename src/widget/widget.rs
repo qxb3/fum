@@ -155,11 +155,15 @@ pub enum FumWidget {
     },
     Progress {
         size: Option<u16>,
+        #[serde(default = "Direction::default")]
+        direction: Direction,
         progress: ProgressOption,
         empty: ProgressOption
     },
     Volume {
         size: Option<u16>,
+        #[serde(default = "Direction::default")]
+        direction: Direction,
         volume: VolumeOption,
         empty: VolumeOption
     },
@@ -216,14 +220,14 @@ impl FumWidget {
                     Direction::Vertical => Constraint::Length(1)
                 }
             },
-            Self::Progress { size, .. } => {
-                match &state.parent_direction {
+            Self::Progress { size, direction, .. } => {
+                match direction {
                     Direction::Horizontal => size.map(|s| Constraint::Length(s)).unwrap_or(Constraint::Min(0)),
                     Direction::Vertical => Constraint::Length(1)
                 }
             },
-            Self::Volume { size, .. } => {
-                match &state.parent_direction {
+            Self::Volume { size, direction, .. } => {
+                match direction {
                     Direction::Horizontal => size.map(|s| Constraint::Length(s)).unwrap_or(Constraint::Min(0)),
                     Direction::Vertical => Constraint::Length(1)
                 }
