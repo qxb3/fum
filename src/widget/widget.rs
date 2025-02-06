@@ -146,8 +146,6 @@ pub enum FumWidget {
         align: LabelAlignment,
         #[serde(default = "default_truncate")]
         truncate: bool,
-        #[serde(default = "default_bordered")]
-        bordered: bool,
         bg: Option<Color>,
         fg: Option<Color>
     },
@@ -155,8 +153,6 @@ pub enum FumWidget {
         #[serde(default = "generate_id")]
         id: String,
         text: String,
-        #[serde(default = "default_bordered")]
-        bordered: bool,
         action: Option<Action>,
         exec: Option<String>,
         bg: Option<Color>,
@@ -168,8 +164,6 @@ pub enum FumWidget {
         size: Option<u16>,
         #[serde(default = "Direction::default")]
         direction: Direction,
-        #[serde(default = "default_bordered")]
-        bordered: bool,
         progress: ProgressOption,
         empty: ProgressOption
     },
@@ -179,15 +173,11 @@ pub enum FumWidget {
         size: Option<u16>,
         #[serde(default = "Direction::default")]
         direction: Direction,
-        #[serde(default = "default_bordered")]
-        bordered: bool,
         volume: VolumeOption,
         empty: VolumeOption
     },
     Empty {
         size: u16,
-        #[serde(default = "default_bordered")]
-        bordered: bool,
         bg: Option<Color>,
         fg: Option<Color>
     }
