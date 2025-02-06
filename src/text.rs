@@ -8,6 +8,7 @@ fn replace_global_var(text: &str, state: &mut FumState) -> String {
         text if text.contains("$artists")           => text.replace("$artists", &state.meta.artists.join(", ")),
         text if text.contains("$album")             => text.replace("$album", &state.meta.album),
         text if text.contains("$status-icon")       => text.replace("$status-icon", &state.meta.status_icon.to_string()),
+        text if text.contains("$status-text")       => text.replace("$status-text", &state.meta.status_text),
         text if text.contains("$position")          => text.replace("$position", &format_duration(state.meta.position)),
         text if text.contains("$remaining-length")  => text.replace("$remaining-length", &format_remaining(state.meta.position, state.meta.length)),
         text if text.contains("$length")            => text.replace("$length", &format_duration(state.meta.length)),
