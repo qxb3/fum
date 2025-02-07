@@ -58,6 +58,7 @@ pub fn layout() -> Vec<FumWidget> {
             children: Vec::from([
                 FumWidget::Label {
                     text: "$title".to_string(),
+                    direction: Direction::default(),
                     align: LabelAlignment::Center,
                     truncate: true,
                     bold: false,
@@ -66,6 +67,7 @@ pub fn layout() -> Vec<FumWidget> {
                 },
                 FumWidget::Label {
                     text: "$artists".to_string(),
+                    direction: Direction::default(),
                     align: LabelAlignment::Center,
                     truncate: true,
                     bold: false,
@@ -89,6 +91,7 @@ pub fn layout() -> Vec<FumWidget> {
                         FumWidget::Button {
                             id: generate_id(),
                             text: "󰒮".to_string(),
+                            direction: Direction::default(),
                             action: Some(Action::Prev),
                             exec: None,
                             bold: false,
@@ -98,6 +101,7 @@ pub fn layout() -> Vec<FumWidget> {
                         FumWidget::Button {
                             id: generate_id(),
                             text: "$status_icon".to_string(),
+                            direction: Direction::default(),
                             action: Some(Action::PlayPause),
                             exec: None,
                             bold: false,
@@ -107,6 +111,7 @@ pub fn layout() -> Vec<FumWidget> {
                         FumWidget::Button {
                             id: generate_id(),
                             text: "󰒭".to_string(),
+                            direction: Direction::default(),
                             action: Some(Action::Next),
                             exec: None,
                             bold: false,
@@ -141,6 +146,7 @@ pub fn layout() -> Vec<FumWidget> {
                     children: Vec::from([
                         FumWidget::Label {
                             text: "$position".to_string(),
+                            direction: Direction::default(),
                             align: LabelAlignment::Left,
                             truncate: false,
                             bold: false,
@@ -149,6 +155,7 @@ pub fn layout() -> Vec<FumWidget> {
                         },
                         FumWidget::Label {
                             text: "$length".to_string(),
+                            direction: Direction::default(),
                             align: LabelAlignment::Right,
                             truncate: false,
                             bold: false,

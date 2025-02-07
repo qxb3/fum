@@ -1,11 +1,11 @@
-use ratatui::{buffer::Buffer, layout::Rect, style::{Modifier, Stylize}, widgets::{Block, Paragraph, Widget}};
+use ratatui::{buffer::Buffer, layout::Rect, style::{Modifier, Stylize}, widgets::{Block, Paragraph, Widget, Wrap}};
 
 use crate::{get_color, state::FumState, text::replace_text};
 
 use super::FumWidget;
 
 pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumState) {
-    if let FumWidget::Button { id, text, action, exec, bold, bg, fg } = widget {
+    if let FumWidget::Button { id, text, action, exec, bold, bg, fg, .. } = widget {
         let text = replace_text(text, state).to_string();
 
         state.buttons.insert(
@@ -27,6 +27,7 @@ pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumS
             .render(area, buf);
 
         Paragraph::new(text)
+            .wrap(Wrap::default())
             .add_modifier(bold)
             .fg(*fg)
             .render(area, buf);
