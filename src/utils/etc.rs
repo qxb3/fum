@@ -34,12 +34,13 @@ pub fn generate_id() -> String {
     Uuid::new_v4().to_string()
 }
 
-pub fn truncate(string: &str, width: usize) -> String {
-    if string.chars().count() <= width {
+pub fn truncate(string: &str, area_size: usize) -> String {
+    if string.chars().count() <= area_size {
         string.to_string()
     } else {
         // minus 3 since the dots (...)
-        let truncated: String = string.chars().take(width - 3).collect();
+        let take = if area_size > 3 { area_size - 3 } else { area_size };
+        let truncated: String = string.chars().take(take).collect();
         format!("{}...", truncated)
     }
 }

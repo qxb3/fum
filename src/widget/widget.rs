@@ -143,6 +143,8 @@ pub enum FumWidget {
     },
     Label {
         text: String,
+        #[serde(default = "Direction::default")]
+        direction: Direction,
         #[serde(default = "LabelAlignment::default")]
         align: LabelAlignment,
         #[serde(default = "default_truncate")]
@@ -158,6 +160,8 @@ pub enum FumWidget {
         text: String,
         action: Option<Action>,
         exec: Option<String>,
+        #[serde(default = "Direction::default")]
+        direction: Direction,
         #[serde(default = "default_bold")]
         bold: bool,
         bg: Option<Color>,
@@ -222,14 +226,14 @@ impl FumWidget {
                     Direction::Vertical => height.map(|h| Constraint::Length(h)).unwrap_or(Constraint::Min(0))
                 }
             },
-            Self::Label { .. } => {
-                match &state.parent_direction {
+            Self::Label { direction, .. } => {
+                match direction {
                     Direction::Horizontal => Constraint::Min(0),
                     Direction::Vertical => Constraint::Length(1)
                 }
             },
-            Self::Button { text, .. } => {
-                match &state.parent_direction {
+            Self::Button { direction, text, .. } => {
+                match direction {
                     Direction::Horizontal => Constraint::Length(UnicodeWidthStr::width(replace_text(text, state).as_str()) as u16),
                     Direction::Vertical => Constraint::Length(1)
                 }
