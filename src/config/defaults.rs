@@ -60,6 +60,7 @@ pub fn layout() -> Vec<FumWidget> {
                     text: "$title".to_string(),
                     align: LabelAlignment::Center,
                     truncate: true,
+                    bold: false,
                     bg: None,
                     fg: None
                 },
@@ -67,6 +68,7 @@ pub fn layout() -> Vec<FumWidget> {
                     text: "$artists".to_string(),
                     align: LabelAlignment::Center,
                     truncate: true,
+                    bold: false,
                     bg: None,
                     fg: None
                 },
@@ -89,6 +91,7 @@ pub fn layout() -> Vec<FumWidget> {
                             text: "󰒮".to_string(),
                             action: Some(Action::Prev),
                             exec: None,
+                            bold: false,
                             bg: None,
                             fg: None
                         },
@@ -97,6 +100,7 @@ pub fn layout() -> Vec<FumWidget> {
                             text: "$status_icon".to_string(),
                             action: Some(Action::PlayPause),
                             exec: None,
+                            bold: false,
                             bg: None,
                             fg: None
                         },
@@ -105,6 +109,7 @@ pub fn layout() -> Vec<FumWidget> {
                             text: "󰒭".to_string(),
                             action: Some(Action::Next),
                             exec: None,
+                            bold: false,
                             bg: None,
                             fg: None
                         }
@@ -138,6 +143,7 @@ pub fn layout() -> Vec<FumWidget> {
                             text: "$position".to_string(),
                             align: LabelAlignment::Left,
                             truncate: false,
+                            bold: false,
                             bg: None,
                             fg: None
                         },
@@ -145,6 +151,7 @@ pub fn layout() -> Vec<FumWidget> {
                             text: "$length".to_string(),
                             align: LabelAlignment::Right,
                             truncate: false,
+                            bold: false,
                             bg: None,
                             fg: None
                         }
