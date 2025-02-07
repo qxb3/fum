@@ -3,7 +3,7 @@ use expanduser::expanduser;
 use ratatui::style::Color;
 use serde::Deserialize;
 
-use crate::{action::Action, fum::FumResult, widget::{ContainerFlex, Direction, FumWidget}};
+use crate::{action::Action, fum::FumResult, regexes::JSONC_COMMENT_RE, widget::{ContainerFlex, Direction, FumWidget}};
 
 use super::{defaults::{align, bg, border, cover_art_ascii, direction, fg, flex, height, keybinds, layout, players, use_active_player, width}, keybind::Keybind};
 
@@ -107,7 +107,11 @@ impl Config {
     pub fn load(path: &PathBuf) -> FumResult<Self> {
         match fs::read_to_string(path) {
             Ok(config_file) => {
-                let mut config: Config = serde_json::from_str(&config_file)
+                // Clean config file for comments
+                let cleaned_config_file = JSONC_COMMENT_RE.replace_all(&config_file, "")
+                    .to_string();
+
+                let mut config: Config = serde_json::from_str(&cleaned_config_file)
                     .map_err(|err| format!("Failed to parse config: {err}"))?;
 
                 // Get expanded path of cover_art_ascii
