@@ -6,7 +6,7 @@ use crate::{action::Action, state::FumState, text::replace_text, utils::etc::gen
 use super::{button, container, cover_art, empty, label, progress, volume};
 
 fn default_truncate() -> bool { true }
-fn default_bordered() -> bool { false }
+fn default_border() -> bool { false }
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -121,8 +121,8 @@ pub enum FumWidget {
         height: Option<u16>,
         #[serde(default = "Direction::default")]
         direction: Direction,
-        #[serde(default = "default_bordered")]
-        bordered: bool,
+        #[serde(default = "default_border")]
+        border: bool,
         children: Vec<FumWidget>,
         #[serde(default = "ContainerFlex::default")]
         flex: ContainerFlex,
@@ -135,8 +135,8 @@ pub enum FumWidget {
         height: Option<u16>,
         #[serde(default = "CoverArtResize::default")]
         resize: CoverArtResize,
-        #[serde(default = "default_bordered")]
-        bordered: bool,
+        #[serde(default = "default_border")]
+        border: bool,
         bg: Option<Color>,
         fg: Option<Color>
     },

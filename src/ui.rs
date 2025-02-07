@@ -82,7 +82,7 @@ impl<'a> Ui<'a> {
             .split(main_area);
 
         // Whether to render border
-        let border = match &self.config.bordered {
+        let border = match &self.config.border {
             true => Borders::ALL,
             false => Borders::NONE
         };

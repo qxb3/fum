@@ -5,7 +5,7 @@ use crate::{get_color, state::FumState};
 use super::FumWidget;
 
 pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumState) {
-    if let FumWidget::Container { width, height, direction, bordered, children, flex, bg, fg } = widget {
+    if let FumWidget::Container { width, height, direction, border, children, flex, bg, fg } = widget {
         let area = Rect::new(
             area.x,
             area.y,
@@ -17,7 +17,7 @@ pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumS
         let (bg, fg) = get_color!(bg, fg, &state.parent_bg, &state.parent_fg);
 
         // Whether to render border
-        let border = match bordered {
+        let border = match border {
             true => Borders::ALL,
             false => Borders::NONE
         };

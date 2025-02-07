@@ -6,11 +6,11 @@ use crate::{get_color, state::FumState};
 use super::FumWidget;
 
 pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumState) {
-    if let FumWidget::CoverArt { resize, bordered, bg, fg, .. } = widget {
+    if let FumWidget::CoverArt { resize, border, bg, fg, .. } = widget {
         let (bg, _) = get_color!(bg, fg, &state.parent_bg, &state.parent_fg);
 
         // Whether to render border
-        let border = match bordered {
+        let border = match border {
             true => Borders::ALL,
             false => Borders::NONE
         };

@@ -16,7 +16,7 @@ pub fn flex() -> ContainerFlex { ContainerFlex::Start }
 pub fn width() -> u16 { 19 }
 pub fn height() -> u16 { 15 }
 
-pub fn bordered() -> bool { false }
+pub fn border() -> bool { false }
 
 pub fn bg() -> Color { Color::Reset }
 pub fn fg() -> Color { Color::Reset }
@@ -37,7 +37,7 @@ pub fn layout() -> Vec<FumWidget> {
         FumWidget::CoverArt {
             width: None,
             height: None,
-            bordered: false,
+            border: false,
             resize: CoverArtResize::Scale,
             bg: None,
             fg: None,
@@ -51,7 +51,7 @@ pub fn layout() -> Vec<FumWidget> {
             width: None,
             height: None,
             direction: Direction::Vertical,
-            bordered: false,
+            border: false,
             flex: ContainerFlex::default(),
             bg: None,
             fg: None,
@@ -79,7 +79,7 @@ pub fn layout() -> Vec<FumWidget> {
                     width: None,
                     height: Some(1),
                     direction: Direction::Horizontal,
-                    bordered: false,
+                    border: false,
                     flex: ContainerFlex::SpaceAround,
                     bg: None,
                     fg: None,
@@ -128,7 +128,7 @@ pub fn layout() -> Vec<FumWidget> {
                 FumWidget::Container {
                     width: None,
                     height: Some(1),
-                    bordered: false,
+                    border: false,
                     direction: Direction::Horizontal,
                     flex: ContainerFlex::SpaceBetween,
                     bg: None,
