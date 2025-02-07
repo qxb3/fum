@@ -747,7 +747,7 @@ dependencies = [
 
 [[package]]
 name = "fum-player"
-version = "0.9.13"
+version = "0.9.14"
 dependencies = [
  "base64 0.22.1",
  "clap",
