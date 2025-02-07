@@ -81,9 +81,16 @@ impl<'a> Ui<'a> {
             )
             .split(main_area);
 
+        // Whether to render border
+        let border = match &self.config.bordered {
+            true => Borders::ALL,
+            false => Borders::NONE
+        };
+
         // Render background
         frame.render_widget(
             Block::new()
+                .borders(border)
                 .bg(state.parent_bg)
                 .fg(state.parent_fg),
             main_area
