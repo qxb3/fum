@@ -237,15 +237,15 @@ impl Action {
 
                 player.seek_backwards(&Duration::from_millis(*offset as u64))
             }),
-            Action::Position(position)  => if_player!(&fum.player, |player: &Player| {
+            Action::Position(position) => {
                 fum.redraw = true;
 
-                if let Some(track_id) = &fum.state.meta.track_id {
-                    return player.set_position(track_id.clone(), &Duration::from_secs(*position));
+                if let Some(player) = &fum.player {
+                    if let Some(track_id) = &fum.state.meta.track_id {
+                        player.set_position(track_id.clone(), &Duration::from_secs(*position))?;
+                    }
                 }
-
-                unreachable!();
-            }),
+            }
 
             Action::Volume(volume_type)       => if_player!(&fum.player, |player: &Player| {
                 fum.redraw = true;
