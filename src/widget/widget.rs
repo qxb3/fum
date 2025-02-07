@@ -7,6 +7,7 @@ use super::{button, container, cover_art, empty, label, progress, volume};
 
 fn default_truncate() -> bool { true }
 fn default_border() -> bool { false }
+fn default_bold() -> bool { false }
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -146,6 +147,8 @@ pub enum FumWidget {
         align: LabelAlignment,
         #[serde(default = "default_truncate")]
         truncate: bool,
+        #[serde(default = "default_bold")]
+        bold: bool,
         bg: Option<Color>,
         fg: Option<Color>
     },
@@ -155,6 +158,8 @@ pub enum FumWidget {
         text: String,
         action: Option<Action>,
         exec: Option<String>,
+        #[serde(default = "default_bold")]
+        bold: bool,
         bg: Option<Color>,
         fg: Option<Color>
     },
