@@ -2,6 +2,8 @@ use lazy_static::lazy_static;
 use regex::Regex;
 
 lazy_static! {
+    pub static ref JSONC_COMMENT_RE: Regex = Regex::new(r#"(?m)//.*$|/\*[\s\S]*?\*/"#).unwrap();
+
     pub static ref FORWARD_RE: Regex = Regex::new(r"forward\((-?\d+)\)").unwrap();
     pub static ref BACKWARD_RE: Regex = Regex::new(r"backward\((-?\d+)\)").unwrap();
     pub static ref POSITION_RE: Regex = Regex::new(r"^position\(\d+\)$").unwrap();

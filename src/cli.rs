@@ -6,7 +6,7 @@ use crate::{config::{Align, Config}, fum::FumResult};
 #[derive(Parser)]
 #[command(name = "fum", version, about)]
 struct FumCli {
-    #[arg(short, long, value_name = "json file", default_value = "~/.config/fum/config.json")]
+    #[arg(short, long, value_name = "config file", default_value = "~/.config/fum/config.jsonc")]
     config: Option<String>,
 
     #[arg(short, long, value_name = "string[]", value_delimiter = ',')]
