@@ -5,7 +5,7 @@ use serde::Deserialize;
 
 use crate::{action::Action, fum::FumResult, regexes::JSONC_COMMENT_RE, widget::{ContainerFlex, Direction, FumWidget}};
 
-use super::{defaults::{align, bg, border, cover_art_ascii, direction, fg, flex, height, keybinds, layout, players, use_active_player, width}, keybind::Keybind};
+use super::{defaults::{align, bg, border, cover_art_ascii, direction, fg, flex, height, keybinds, layout, players, use_active_player, width, fps}, keybind::Keybind};
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -49,6 +49,9 @@ pub struct Config {
     #[serde(default = "use_active_player")]
     pub use_active_player: bool,
 
+    #[serde(default = "fps")]
+    pub fps: i32,
+
     #[serde(default = "keybinds")]
     pub keybinds: HashMap<Keybind, Action>,
 
@@ -88,6 +91,7 @@ impl Default for Config {
         Self {
             players: players(),
             use_active_player: use_active_player(),
+            fps: fps(),
             keybinds: keybinds(),
             align: align(),
             direction: direction(),
@@ -123,6 +127,9 @@ impl Config {
                     Ok(cover_art_ascii) => config.cover_art_ascii = cover_art_ascii,
                     Err(_) => config.cover_art_ascii = "".to_string()
                 }
+
+                // Convert fps into millis
+                config.fps = 1000 / config.fps;
 
                 Ok(config)
             },

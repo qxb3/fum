@@ -15,6 +15,9 @@ struct FumCli {
     #[arg(long, value_name = "boolean")]
     use_active_player: Option<bool>,
 
+    #[arg(long, value_name = "number")]
+    fps: Option<i32>,
+
     #[arg(short, long, value_name = "center,top,left,bottom,right,top-left,top-right,bottom-left,bottom-right")]
     align: Option<String>
 }
@@ -33,6 +36,10 @@ pub fn run() -> FumResult<Config> {
 
     if let Some(use_active_player) = fum_cli.use_active_player.as_ref() {
         config.use_active_player = use_active_player.to_owned();
+    }
+
+    if let Some(fps) = fum_cli.fps.as_ref() {
+        config.fps = fps.to_owned();
     }
 
     if let Some(align) = fum_cli.align.as_ref() {
