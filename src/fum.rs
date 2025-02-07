@@ -143,6 +143,12 @@ impl<'a> Fum<'a> {
                                     match widget.as_str() {
                                         "progress" => {
                                             let position = value * self.state.meta.length.as_secs() as f64;
+                                            if position >= self.state.meta.length.as_secs() as f64 {
+                                                self.dragging = false;
+                                                self.start_drag = None;
+                                                self.current_drag = None;
+                                            }
+
                                             Action::run(&Action::Position(position as u64), self)?;
                                         },
                                         "volume" => {
