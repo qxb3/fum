@@ -16,6 +16,8 @@ pub fn flex() -> ContainerFlex { ContainerFlex::Start }
 pub fn width() -> u16 { 19 }
 pub fn height() -> u16 { 15 }
 
+pub fn bordered() -> bool { false }
+
 pub fn bg() -> Color { Color::Reset }
 pub fn fg() -> Color { Color::Reset }
 
