@@ -16,7 +16,7 @@ struct FumCli {
     use_active_player: Option<bool>,
 
     #[arg(long, value_name = "number")]
-    fps: Option<i32>,
+    fps: Option<u64>,
 
     #[arg(short, long, value_name = "center,top,left,bottom,right,top-left,top-right,bottom-left,bottom-right")]
     align: Option<String>

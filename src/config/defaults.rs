@@ -8,7 +8,7 @@ use super::{keybind::Keybind, Align};
 
 pub fn players() -> Vec<String> { vec!["spotify".to_string()] }
 pub fn use_active_player() -> bool { false }
-pub fn fps() -> i32 { 10 }
+pub fn fps() -> u64 { 10 }
 
 pub fn align() -> Align { Align::Center }
 pub fn direction() -> Direction { Direction::Vertical }
