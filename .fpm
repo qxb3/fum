@@ -1,0 +1,7 @@
+-s dir
+--name fum
+--description "A tui-based mpris music client."
+--license MIT
+--maintainer "qxb3 <qxbthree@gmail.com>"
+--url "https://github.com/qxb3/fum"
+--architecture x86_64

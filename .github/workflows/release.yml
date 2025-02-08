@@ -13,29 +13,39 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Install system dependencies
+        run: apt-get update && apt-get install -y libdbus-1-dev pkg-config wget libssl-dev squashfs-tools -y build-essential
+
       - name: Set up Rust
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
 
-      - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y libdbus-1-dev pkg-config
-
-      - name: Compile dependencies
+      - name: Compile fum
         run: cargo build --release --locked
-
-      - name: Build release artifacts
-        run: cargo build --release
 
       - name: Add postfix to binary
         run: |
-          VERSION=$(git describe --tags --abbrev=0)
-          mv target/release/fum target/release/fum-x86-64_${VERSION}
+          mv target/release/fum target/release/fum-x86-64_${{ github.ref_name }}
+
+      - name: Build .deb package
+        uses: bpicode/github-action-fpm@master
+        with:
+          fpm_args: target/release/fum-x86-64_${{ github.ref_name }}
+          fpm_opts: -t deb --version ${{ github.ref_name }} -p fum-x86-64_${{ github.ref_name }}.deb
+
+      - name: Build .rpm package
+        uses: bpicode/github-action-fpm@master
+        with:
+          fpm_args: target/release/fum-x86-64_${{ github.ref_name }}
+          fpm_opts: -t rpm --version ${{ github.ref_name }} -p fum-x86-64_${{ github.ref_name }}.rpm
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: target/release/fum-x86-64_${{ github.ref_name }}
+          files: |
+            target/release/fum-x86-64_${{ github.ref_name }}
+            fum-x86-64_${{ github.ref_name }}.deb
