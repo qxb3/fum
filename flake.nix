@@ -22,13 +22,13 @@
     in {
       packages.fum = pkgs.rustPlatform.buildRustPackage rec {
         pname = "fum";
-        version = "0.8.2";
+        version = "0.9.17";
 
         src = pkgs.fetchFromGitHub {
           owner = "qxb3";
           repo = pname;
           rev = "v${version}";
-          hash = "sha256-KOxT7h7HcI3AsWKTV7BjJeVCkzReMHu3Xl6oGD+JjJw=";
+          hash = "sha256-E9Z8bs5bdNcXHRJIkzcISIz8R1wnZu8sO6tXQp+5bpQ=";
         };
 
         cargoLock = {
