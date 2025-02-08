@@ -50,7 +50,7 @@ pub struct Config {
     pub use_active_player: bool,
 
     #[serde(default = "fps")]
-    pub fps: i32,
+    pub fps: u64,
 
     #[serde(default = "keybinds")]
     pub keybinds: HashMap<Keybind, Action>,
