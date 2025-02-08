@@ -101,7 +101,7 @@ pub fn layout() -> Vec<FumWidget> {
                         },
                         FumWidget::Button {
                             id: generate_id(),
-                            text: "$status_icon".to_string(),
+                            text: "$status-icon".to_string(),
                             direction: Direction::default(),
                             action: Some(Action::PlayPause),
                             exec: None,
