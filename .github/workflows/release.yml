@@ -49,3 +49,4 @@ jobs:
           files: |
             target/release/fum-x86-64_${{ github.ref_name }}
             fum-x86-64_${{ github.ref_name }}.deb
+            fum-x86-64_${{ github.ref_name }}.rpm
