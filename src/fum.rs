@@ -80,7 +80,7 @@ impl<'a> Fum<'a> {
     }
 
     fn term_events(&mut self) -> FumResult<()> {
-        if event::poll(Duration::from_millis(100))? {
+        if event::poll(Duration::from_millis(self.config.fps))? {
             let event = event::read()?;
 
             match event {
