@@ -1,7 +1,7 @@
 use ratatui::{buffer::Buffer, layout::{Constraint, Rect}, style::Color, widgets::StatefulWidget};
 use serde::Deserialize;
 use unicode_width::UnicodeWidthStr;
-use crate::{action::Action, state::FumState, text::replace_text, utils::etc::generate_id};
+use crate::{action::Action, state::FumState, text::replace_text, utils::widget::generate_id};
 
 use super::{button, container, cover_art, empty, label, progress, volume};
 

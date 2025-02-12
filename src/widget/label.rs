@@ -1,4 +1,4 @@
-use ratatui::{buffer::Buffer, layout::Rect, style::{Modifier, Stylize}, widgets::{Block, Paragraph, Widget, Wrap}};
+use ratatui::{buffer::Buffer, layout::Rect, style::Stylize, widgets::{Block, Paragraph, Widget, Wrap}};
 
 use crate::{get_bold, get_color, state::FumState, text::replace_text, utils};
 
@@ -7,8 +7,8 @@ use super::{Direction, FumWidget, LabelAlignment};
 pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumState) {
     if let FumWidget::Label { text, direction, truncate, align, bold, bg, fg } = widget {
         let text = match (truncate, direction) {
-            (true, Direction::Horizontal) => utils::etc::truncate(&replace_text(text, state), area.width.into()),
-            (true, Direction::Vertical) => utils::etc::truncate(&replace_text(text, state), area.height.into()),
+            (true, Direction::Horizontal) => utils::widget::truncate(&replace_text(text, state), area.width.into()),
+            (true, Direction::Vertical) => utils::widget::truncate(&replace_text(text, state), area.height.into()),
             _ => replace_text(text, state)
         };
 
