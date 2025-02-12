@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use ratatui::{layout::{Constraint, Layout, Margin, Position, Rect}, style::Stylize, widgets::{Block, Borders, Paragraph, Wrap}, Frame};
 
-use crate::{action::Action, config::Config, state::FumState, utils, widget::Direction};
+use crate::{action::Action, config::Config, get_border, state::FumState, utils, widget::Direction};
 
 pub struct Ui<'a> {
     config: &'a Config,
@@ -82,10 +82,7 @@ impl<'a> Ui<'a> {
             .split(main_area);
 
         // Whether to render border
-        let border = match &self.config.border {
-            true => Borders::ALL,
-            false => Borders::NONE
-        };
+        let border = get_border!(&self.config.border);
 
         // Render background
         frame.render_widget(

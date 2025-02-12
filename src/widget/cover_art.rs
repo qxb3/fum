@@ -1,7 +1,7 @@
-use ratatui::{buffer::Buffer, layout::{Constraint, Flex, Layout, Rect}, style::Stylize, text::Text, widgets::{Block, Borders, StatefulWidget, Widget}};
+use ratatui::{buffer::Buffer, layout::{Constraint, Flex, Layout, Rect}, style::Stylize, text::Text, widgets::{Block, StatefulWidget, Widget}};
 use ratatui_image::StatefulImage;
 
-use crate::{get_color, state::FumState};
+use crate::{get_border, get_color, state::FumState};
 
 use super::FumWidget;
 
@@ -9,11 +9,7 @@ pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumS
     if let FumWidget::CoverArt { resize, border, bg, fg, .. } = widget {
         let (bg, _) = get_color!(bg, fg, &state.parent_bg, &state.parent_fg);
 
-        // Whether to render border
-        let border = match border {
-            true => Borders::ALL,
-            false => Borders::NONE
-        };
+        let border = get_border!(border);
 
         // Render bg
         Block::new()
