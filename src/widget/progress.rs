@@ -2,7 +2,7 @@ use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, style::Stylize
 
 use crate::{get_color, state::FumState};
 
-use super::{Direction, FumWidget};
+use super::{Direction, FumWidget, SliderSource};
 
 struct Progress {
     progress_bar: String,
@@ -21,7 +21,7 @@ pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumS
 
         state.sliders.insert(
             id.to_string(),
-            (area.clone(), direction.clone(), "progress".to_string())
+            (area.clone(), direction.clone(), SliderSource::Progress)
         );
 
         let position = state.meta.position;

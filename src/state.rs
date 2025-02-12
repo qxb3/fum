@@ -2,13 +2,13 @@ use std::collections::HashMap;
 
 use ratatui::{layout::Rect, style::Color};
 
-use crate::{action::Action, meta::Meta, widget::Direction};
+use crate::{action::Action, meta::Meta, widget::{Direction, SliderSource}};
 
 pub struct FumState {
     pub meta: Meta,
     pub cover_art_ascii: String,
     pub buttons: HashMap<String, (Rect, Option<Action>, Option<String>)>,
-    pub sliders: HashMap<String, (Rect, Direction, String)>,
+    pub sliders: HashMap<String, (Rect, Direction, SliderSource)>,
     pub vars: HashMap<String, String>,
     pub parent_direction: Direction,
     pub parent_bg: Color,

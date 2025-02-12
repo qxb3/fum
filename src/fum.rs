@@ -6,7 +6,7 @@ use mpris::Player;
 use ratatui::{layout::Position, prelude::CrosstermBackend, Terminal};
 use ratatui_image::picker::Picker;
 
-use crate::{action::{Action, VolumeType}, config::{Config, Keybind}, meta::Meta, state::FumState, ui::Ui, utils, widget::Direction};
+use crate::{action::{Action, VolumeType}, config::{Config, Keybind}, meta::Meta, state::FumState, ui::Ui, utils, widget::{Direction, SliderSource}};
 
 pub type FumResult<T> = std::result::Result<T, Box<dyn error::Error>>;
 
@@ -140,8 +140,8 @@ impl<'a> Fum<'a> {
                                         Direction::Vertical => (1.0 - ((current_drag.y as f64 - rect.y as f64) / rect.height as f64)).clamp(0.0, 1.0)
                                     };
 
-                                    match widget.as_str() {
-                                        "progress" => {
+                                    match widget {
+                                        SliderSource::Progress => {
                                             let position = value * self.state.meta.length.as_secs() as f64;
                                             if position >= self.state.meta.length.as_secs() as f64 {
                                                 self.dragging = false;
@@ -151,11 +151,10 @@ impl<'a> Fum<'a> {
 
                                             Action::run(&Action::Position(position as u64), self)?;
                                         },
-                                        "volume" => {
+                                        SliderSource::Volume => {
                                             let volume = value * 100.0;
                                             Action::run(&Action::Volume(VolumeType::Set(volume)), self)?;
-                                        },
-                                        _ => {}
+                                        }
                                     }
                                 }
                             }

@@ -30,6 +30,26 @@ macro_rules! get_color {
     }};
 }
 
+#[macro_export]
+macro_rules! get_bold {
+    ($bold:expr) => {{
+        match $bold {
+            true => ratatui::style::Modifier::BOLD,
+            false => ratatui::style::Modifier::default()
+        }
+    }};
+}
+
+#[macro_export]
+macro_rules! get_border {
+    ($border:expr) => {{
+        match $border {
+            true => ratatui::widgets::Borders::ALL,
+            false => ratatui::widgets::Borders::NONE
+        }
+    }};
+}
+
 pub fn generate_id() -> String {
     Uuid::new_v4().to_string()
 }

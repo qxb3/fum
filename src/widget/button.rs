@@ -1,6 +1,6 @@
-use ratatui::{buffer::Buffer, layout::Rect, style::{Modifier, Stylize}, widgets::{Block, Paragraph, Widget, Wrap}};
+use ratatui::{buffer::Buffer, layout::Rect, style::Stylize, widgets::{Block, Paragraph, Widget, Wrap}};
 
-use crate::{get_color, state::FumState, text::replace_text};
+use crate::{get_bold, get_color, state::FumState, text::replace_text};
 
 use super::FumWidget;
 
@@ -14,12 +14,7 @@ pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumS
         );
 
         let (bg, fg) = get_color!(bg, fg, &state.parent_bg, &state.parent_fg);
-
-        // Whether the text is bold
-        let bold = match bold {
-            true => Modifier::BOLD,
-            false => Modifier::default()
-        };
+        let bold = get_bold!(bold);
 
         // Render bg
         Block::new()

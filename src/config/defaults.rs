@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use ratatui::style::Color;
 
-use crate::{action::Action, utils::etc::generate_id, widget::{ContainerFlex, CoverArtResize, Direction, FumWidget, LabelAlignment, ProgressOption}};
+use crate::{action::Action, utils::widget::generate_id, widget::{ContainerFlex, CoverArtResize, Direction, FumWidget, LabelAlignment, ProgressOption}};
 
 use super::{keybind::Keybind, Align};
 

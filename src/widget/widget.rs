@@ -1,7 +1,7 @@
 use ratatui::{buffer::Buffer, layout::{Constraint, Rect}, style::Color, widgets::StatefulWidget};
 use serde::Deserialize;
 use unicode_width::UnicodeWidthStr;
-use crate::{action::Action, state::FumState, text::replace_text, utils::etc::generate_id};
+use crate::{action::Action, state::FumState, text::replace_text, utils::widget::generate_id};
 
 use super::{button, container, cover_art, empty, label, progress, volume};
 
@@ -9,6 +9,12 @@ fn default_truncate() -> bool { true }
 fn default_border() -> bool { false }
 fn default_bold() -> bool { false }
 fn default_padding() -> [u16; 2] { [0, 0] }
+
+#[derive(Debug, Copy, Clone)]
+pub enum SliderSource {
+    Progress,
+    Volume
+}
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "lowercase")]

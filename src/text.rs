@@ -1,6 +1,6 @@
 use regex::Captures;
 
-use crate::{meta::Meta, regexes::{GET_META_RE, LOWER_RE, UPPER_RE, VAR_RE}, state::FumState, utils::etc::{format_duration, format_remaining}};
+use crate::{meta::Meta, regexes::{GET_META_RE, LOWER_RE, UPPER_RE, VAR_RE}, state::FumState, utils::widget::{format_duration, format_remaining}};
 
 fn replace_global_var(text: &str, state: &mut FumState) -> String {
     match text {
