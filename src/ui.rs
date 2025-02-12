@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use ratatui::{layout::{Constraint, Layout, Position, Rect}, style::Stylize, widgets::{Block, Borders, Paragraph, Wrap}, Frame};
+use ratatui::{layout::{Constraint, Layout, Margin, Position, Rect}, style::Stylize, widgets::{Block, Borders, Paragraph, Wrap}, Frame};
 
 use crate::{action::Action, config::Config, state::FumState, utils, widget::Direction};
 
@@ -98,7 +98,8 @@ impl<'a> Ui<'a> {
 
         for (i, widget) in self.config.layout.iter().enumerate() {
             if let Some(area) = areas.get(i) {
-                frame.render_stateful_widget(widget, *area, state);
+                let [horizontal_padding, vertical_padding] = &self.config.padding;
+                frame.render_stateful_widget(widget, area.inner(Margin::new(*horizontal_padding, *vertical_padding)), state);
             }
         }
     }

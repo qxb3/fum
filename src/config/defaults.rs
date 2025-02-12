@@ -19,6 +19,8 @@ pub fn height() -> u16 { 15 }
 
 pub fn border() -> bool { false }
 
+pub fn padding() -> [u16; 2] { [0, 0] }
+
 pub fn bg() -> Color { Color::Reset }
 pub fn fg() -> Color { Color::Reset }
 
@@ -53,6 +55,7 @@ pub fn layout() -> Vec<FumWidget> {
             height: None,
             direction: Direction::Vertical,
             border: false,
+            padding: padding(),
             flex: ContainerFlex::default(),
             bg: None,
             fg: None,
@@ -85,6 +88,7 @@ pub fn layout() -> Vec<FumWidget> {
                     height: Some(1),
                     direction: Direction::Horizontal,
                     border: false,
+                    padding: padding(),
                     flex: ContainerFlex::SpaceAround,
                     bg: None,
                     fg: None,
@@ -140,6 +144,7 @@ pub fn layout() -> Vec<FumWidget> {
                     width: None,
                     height: Some(1),
                     border: false,
+                    padding: padding(),
                     direction: Direction::Horizontal,
                     flex: ContainerFlex::SpaceBetween,
                     bg: None,

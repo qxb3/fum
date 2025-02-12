@@ -8,6 +8,7 @@ use super::{button, container, cover_art, empty, label, progress, volume};
 fn default_truncate() -> bool { true }
 fn default_border() -> bool { false }
 fn default_bold() -> bool { false }
+fn default_padding() -> [u16; 2] { [0, 0] }
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -124,12 +125,15 @@ pub enum FumWidget {
         direction: Direction,
         #[serde(default = "default_border")]
         border: bool,
+        #[serde(default = "default_padding")]
+        padding: [u16; 2],
         children: Vec<FumWidget>,
         #[serde(default = "ContainerFlex::default")]
         flex: ContainerFlex,
         bg: Option<Color>,
         fg: Option<Color>
     },
+
     #[serde(rename = "cover-art")]
     CoverArt {
         width: Option<u16>,
@@ -141,6 +145,7 @@ pub enum FumWidget {
         bg: Option<Color>,
         fg: Option<Color>
     },
+
     Label {
         text: String,
         #[serde(default = "Direction::default")]
@@ -154,6 +159,7 @@ pub enum FumWidget {
         bg: Option<Color>,
         fg: Option<Color>
     },
+
     Button {
         #[serde(default = "generate_id")]
         id: String,
@@ -167,6 +173,7 @@ pub enum FumWidget {
         bg: Option<Color>,
         fg: Option<Color>
     },
+
     Progress {
         #[serde(default = "generate_id")]
         id: String,
@@ -176,6 +183,7 @@ pub enum FumWidget {
         progress: ProgressOption,
         empty: ProgressOption
     },
+
     Volume {
         #[serde(default = "generate_id")]
         id: String,
@@ -185,6 +193,7 @@ pub enum FumWidget {
         volume: VolumeOption,
         empty: VolumeOption
     },
+
     Empty {
         size: u16,
         bg: Option<Color>,
