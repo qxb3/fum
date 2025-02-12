@@ -1,11 +1,11 @@
-use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, style::Stylize, widgets::{Block, Borders, StatefulWidget, Widget}};
+use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Margin, Rect}, style::Stylize, widgets::{Block, Borders, StatefulWidget, Widget}};
 
 use crate::{get_color, state::FumState};
 
 use super::FumWidget;
 
 pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumState) {
-    if let FumWidget::Container { width, height, direction, border, children, flex, bg, fg } = widget {
+    if let FumWidget::Container { width, height, direction, border, padding, children, flex, bg, fg } = widget {
         let area = Rect::new(
             area.x,
             area.y,
@@ -46,7 +46,8 @@ pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumS
 
         for (i, child) in children.iter().enumerate() {
             if let Some(area) = areas.get(i) {
-                child.render(*area, buf, state);
+                let [horizontal_padding, vertical_padding] = padding;
+                child.render(area.inner(Margin::new(*horizontal_padding, *vertical_padding)), buf, state);
             }
         }
     }
