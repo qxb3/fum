@@ -10,6 +10,12 @@ fn default_border() -> bool { false }
 fn default_bold() -> bool { false }
 fn default_padding() -> [u16; 2] { [0, 0] }
 
+#[derive(Debug, Copy, Clone)]
+pub enum SliderSource {
+    Progress,
+    Volume
+}
+
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Direction {

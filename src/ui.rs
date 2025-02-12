@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use ratatui::{layout::{Constraint, Layout, Margin, Position, Rect}, style::Stylize, widgets::{Block, Borders, Paragraph, Wrap}, Frame};
 
-use crate::{action::Action, config::Config, get_border, state::FumState, utils, widget::Direction};
+use crate::{action::Action, config::Config, get_border, state::FumState, utils, widget::{Direction, SliderSource}};
 
 pub struct Ui<'a> {
     config: &'a Config,
@@ -31,11 +31,11 @@ impl<'a> Ui<'a> {
     pub fn drag(
         &self,
         start_drag: &Position,
-        sliders: &HashMap<String, (Rect, Direction, String)>
-    ) -> Option<(Rect, Direction, String)> {
+        sliders: &HashMap<String, (Rect, Direction, SliderSource)>
+    ) -> Option<(Rect, Direction, SliderSource)> {
         for (_, (rect, direction, widget)) in sliders.iter() {
             if rect.contains(*start_drag) {
-                return Some((*rect, direction.to_owned(), widget.to_string()));
+                return Some((*rect, direction.to_owned(), *widget));
             }
         }
 
