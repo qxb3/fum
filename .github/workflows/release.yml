@@ -32,14 +32,14 @@ jobs:
       - name: Build .deb package
         uses: bpicode/github-action-fpm@master
         with:
-          fpm_args: target/release/fum-x86-64_${{ github.ref_name }}
-          fpm_opts: -t deb --version ${{ github.ref_name }} -p fum-x86-64_${{ github.ref_name }}.deb -C target/release fum
+          fpm_args: fum
+          fpm_opts: -t deb --version ${{ github.ref_name }} -p fum-x86-64_${{ github.ref_name }}.deb -C target/release
 
       - name: Build .rpm package
         uses: bpicode/github-action-fpm@master
         with:
-          fpm_args: target/release/fum-x86-64_${{ github.ref_name }}
-          fpm_opts: -t rpm --version ${{ github.ref_name }} -p fum-x86-64_${{ github.ref_name }}.rpm -C target/release fum
+          fpm_args: fum
+          fpm_opts: -t rpm --version ${{ github.ref_name }} -p fum-x86-64_${{ github.ref_name }}.rpm -C target/release
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
