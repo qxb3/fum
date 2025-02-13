@@ -27,19 +27,19 @@ jobs:
 
       - name: Add postfix to binary
         run: |
-          mv target/release/fum target/release/fum-x86-64_${{ github.ref_name }}
+          cp target/release/fum target/release/fum-x86-64_${{ github.ref_name }}
 
       - name: Build .deb package
         uses: bpicode/github-action-fpm@master
         with:
           fpm_args: target/release/fum-x86-64_${{ github.ref_name }}
-          fpm_opts: -t deb --version ${{ github.ref_name }} -p fum-x86-64_${{ github.ref_name }}.deb
+          fpm_opts: -t deb --version ${{ github.ref_name }} -p fum-x86-64_${{ github.ref_name }}.deb -C target/release fum
 
       - name: Build .rpm package
         uses: bpicode/github-action-fpm@master
         with:
           fpm_args: target/release/fum-x86-64_${{ github.ref_name }}
-          fpm_opts: -t rpm --version ${{ github.ref_name }} -p fum-x86-64_${{ github.ref_name }}.rpm
+          fpm_opts: -t rpm --version ${{ github.ref_name }} -p fum-x86-64_${{ github.ref_name }}.rpm -C target/release fum
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1

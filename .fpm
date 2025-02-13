@@ -5,3 +5,4 @@
 --maintainer "qxb3 <qxbthree@gmail.com>"
 --url "https://github.com/qxb3/fum"
 --architecture x86_64
+--prefix /usr/bin
