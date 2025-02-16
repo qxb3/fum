@@ -89,8 +89,16 @@ impl<'a> Fum<'a> {
                         match keybind {
                             Keybind::Many(keybinds) => {
                                 for keybind in keybinds {
-                                    if key.code == keybind.into_keycode() {
-                                        Action::run(action, self)?;
+                                    if let Keybind::WithModifier(modifiers, keybind) = keybind {
+                                        if key.modifiers.intersects(*modifiers) {
+                                            if key.code == keybind.into_keycode() {
+                                                Action::run(action, self)?;
+                                            }
+                                        }
+                                    } else {
+                                        if key.code == keybind.into_keycode() {
+                                            Action::run(action, self)?;
+                                        }
                                     }
                                 }
                             },
