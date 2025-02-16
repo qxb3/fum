@@ -61,7 +61,7 @@ Join [Discord Server!](https://discord.gg/UfXMeyZ6Zt).
 
 ## Contributing
 
-[CONTRIBUTING](https://github.com/qxb3/fum/blob/main/CONTRIBUTING)
+[CONTRIBUTING](https://github.com/qxb3/fum/blob/main/CONTRIBUTING.md)
 
 ## LICENSE
 
