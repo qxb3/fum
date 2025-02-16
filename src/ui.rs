@@ -15,11 +15,17 @@ impl<'a> Ui<'a> {
         }
     }
 
-    pub fn click(&self, x: u16, y: u16, buttons: &'a HashMap<String, (Rect, Option<Action>, Option<String>)>) -> Option<(&'a Option<Action>, &'a Option<String>)> {
-        for (_, (rect, action, exec)) in buttons.iter() {
+    pub fn click(
+        &self,
+        x: u16,
+        y: u16,
+        buttons: &'a HashMap<String, (Rect, Option<Action>, Option<Action>, Option<String>)>
+    ) -> Option<(&'a Option<Action>, &'a Option<Action>, &'a Option<String>)> {
+        for (_, (rect, action, action_secondary, exec)) in buttons.iter() {
             if rect.contains(Position::new(x, y)) {
                 return Some((
                     action,
+                    action_secondary,
                     exec
                 ))
             }
