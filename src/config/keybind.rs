@@ -1,4 +1,4 @@
-use crossterm::event::KeyCode;
+use crossterm::event::{KeyCode, KeyModifiers};
 use serde::{de, Deserialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -20,7 +20,8 @@ pub enum Keybind {
     Caps,
     F(u8),
     Char(char),
-    Many(Vec<Keybind>)
+    Many(Vec<Keybind>),
+    WithModifier(KeyModifiers, Box<Keybind>)
 }
 
 impl<'de> Deserialize<'de> for Keybind {
@@ -60,11 +61,11 @@ impl Keybind {
             Keybind::BackTab             => KeyCode::BackTab,
             Keybind::Delete              => KeyCode::Delete,
             Keybind::Insert              => KeyCode::Insert,
-            Keybind::Esc                 => KeyCode::Esc,
-            Keybind::Caps                => KeyCode::CapsLock,
+            Keybind::Esc                 => KeyCode::Esc, Keybind::Caps                => KeyCode::CapsLock,
             Keybind::F(u8)               => KeyCode::F(*u8),
             Keybind::Char(char)          => KeyCode::Char(*char),
-            Keybind::Many(_)             => unreachable!()
+            Keybind::Many(_)             => unreachable!(),
+            Keybind::WithModifier(_, _)  => unreachable!()
         }
     }
 
@@ -88,18 +89,51 @@ impl Keybind {
             "insert"        => Ok(Keybind::Insert),
             "caps"          => Ok(Keybind::Caps),
             "esc"           => Ok(Keybind::Esc),
+
+            // Fn keys.
             k if k.starts_with('f') => {
                 match k[1..].parse::<u8>() {
                     Ok(fn_num) => Ok(Keybind::F(fn_num)),
                     Err(_) => Err(de::Error::custom("Invalid fn key format"))
                 }
             },
+
+            // Individual key.
             k if k.len() == 1 => {
                 match k.chars().next() {
                     Some(char) => Ok(Keybind::Char(char)),
                     None => Err(de::Error::custom(format!("Invalid keyboard key: {k}")))
                 }
             },
+
+            k if k.contains("+") => {
+                let split = k.split('+');
+                let len = split.to_owned().count();
+
+                let modifier_keys = split.to_owned().take(len.saturating_sub(1)).collect::<Vec<&str>>();
+                let key = split.to_owned().last().unwrap();
+
+                let mut modifiers = KeyModifiers::NONE;
+
+                for modifier in modifier_keys {
+                    let modifier = match modifier {
+                        "shift" => KeyModifiers::SHIFT,
+                        "ctrl" => KeyModifiers::CONTROL,
+                        "alt" => KeyModifiers::ALT,
+                        "super" => KeyModifiers::SUPER,
+                        "hyper" => KeyModifiers::HYPER,
+                        "meta" => KeyModifiers::META,
+                        _ => return Err(de::Error::custom(format!("Unknown key modifier: {modifier}")))
+                    };
+
+                    modifiers = modifiers | modifier;
+                }
+
+                let keybind = Keybind::parse_keybind(key)?;
+
+                Ok(Keybind::WithModifier(modifiers, Box::new(keybind)))
+            },
+
             _ => Err(de::Error::custom(format!("Unknown keybind: {keybind}")))
         }
     }

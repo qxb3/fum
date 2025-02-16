@@ -94,6 +94,13 @@ impl<'a> Fum<'a> {
                                     }
                                 }
                             },
+                            Keybind::WithModifier(modifiers, keybind) => {
+                                if key.modifiers.intersects(*modifiers) {
+                                    if key.code == keybind.into_keycode() {
+                                        Action::run(action, self)?;
+                                    }
+                                }
+                            },
                             keybind => {
                                 if key.code == keybind.into_keycode() {
                                     Action::run(action, self)?;
