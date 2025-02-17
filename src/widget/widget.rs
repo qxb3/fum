@@ -171,6 +171,8 @@ pub enum FumWidget {
         id: String,
         text: String,
         action: Option<Action>,
+        #[serde(rename = "action-secondary")]
+        action_secondary: Option<Action>,
         exec: Option<String>,
         #[serde(default = "Direction::default")]
         direction: Direction,

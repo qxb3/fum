@@ -5,12 +5,17 @@ use crate::{get_bold, get_color, state::FumState, text::replace_text};
 use super::FumWidget;
 
 pub fn render(widget: &FumWidget, area: Rect, buf: &mut Buffer, state: &mut FumState) {
-    if let FumWidget::Button { id, text, action, exec, bold, bg, fg, .. } = widget {
+    if let FumWidget::Button { id, text, action, action_secondary, exec, bold, bg, fg, .. } = widget {
         let text = replace_text(text, state).to_string();
 
         state.buttons.insert(
             id.to_string(),
-            (area.clone(), action.to_owned(), exec.to_owned())
+            (
+                area.clone(),
+                action.to_owned(),
+                action_secondary.to_owned(),
+                exec.to_owned()
+            )
         );
 
         let (bg, fg) = get_color!(bg, fg, &state.parent_bg, &state.parent_fg);
