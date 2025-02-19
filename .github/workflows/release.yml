@@ -46,6 +46,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          generate_release_notes: true
+          make_latest: true
           files: |
             target/release/fum-x86-64_${{ github.ref_name }}
             fum-x86-64_${{ github.ref_name }}.deb
