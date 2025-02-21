@@ -1,9 +1,9 @@
-:root {
+@import 'tailwindcss';
+
+@theme {
   --color-background: #1c1b22;
   --color-fg:         #defedf;
   --color-primary:    #40e78a;
   --color-secondary:  #3a86ff;
   --color-tertiary:   #9b5de5;
 }
-
-@import 'tailwindcss'
