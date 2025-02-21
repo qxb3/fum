@@ -65,23 +65,36 @@ pub fn truncate(string: &str, area_size: usize) -> String {
     }
 }
 
-pub fn format_duration(duration: Duration) -> String {
+pub fn format_duration(duration: Duration, extend: bool) -> String {
     if duration.as_secs() >= 3600 {
-        format!(
-            "{}:{:02}:{:02}",
-            duration.as_secs() / 3600,
-            (duration.as_secs() % 3600) / 60,
-            duration.as_secs() % 60
-        )
+        if extend {
+            format!(
+                "{:02}:{:02}:{:02}",
+                duration.as_secs() / 3600,
+                (duration.as_secs() % 3600) / 60,
+                duration.as_secs() % 60
+            )
+        } else {
+            format!(
+                "{}:{:02}:{:02}",
+                duration.as_secs() / 3600,
+                (duration.as_secs() % 3600) / 60,
+                duration.as_secs() % 60
+            )
+        }
     } else {
-        format!("{}:{:02}", duration.as_secs() / 60, duration.as_secs() % 60)
+        if extend {
+            format!("{:02}:{:02}", duration.as_secs() / 60, duration.as_secs() % 60)
+        } else {
+            format!("{}:{:02}", duration.as_secs() / 60, duration.as_secs() % 60)
+        }
     }
 }
 
-pub fn format_remaining(current: Duration, total: Duration) -> String {
+pub fn format_remaining(current: Duration, total: Duration, extend: bool) -> String {
     if total > current {
         let remaining = total - current;
-        format!("-{}", format_duration(remaining))
+        format!("-{}", format_duration(remaining, extend))
     } else {
         format!("-0:00")
     }
