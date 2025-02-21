@@ -4,8 +4,8 @@
 </script>
 
 <nav class="px-4 py-2 bg-background text-fg border-b border-fg">
-  <div class="flex items-center justify-between text-xl">
-    <div class="flex items-center space-x-4">
+  <div class="grid grid-cols-3 text-xl">
+    <div class="flex items-center justify-start space-x-4">
       <button
         on:click={toggleSideBar}
         class="cursor-pointer"
@@ -14,11 +14,11 @@
       </button>
     </div>
 
-    <a href="/">
+    <a class="text-center" href="/">
       <h1 class="font-bold">fum documentation</h1>
     </a>
 
-    <li class="list-none flex items-center space-x-4">
+    <li class="list-none flex items-center justify-end space-x-4">
       <ul>
         <a
           class="text-background text-sm px-2 py-1 bg-fg"
