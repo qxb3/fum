@@ -31,6 +31,15 @@
 
       <ul>
         <a
+          href="https://discord.gg/UfXMeyZ6Zt"
+          target="_blank"
+          aria-label="discord invite">
+          <i class="fa-brands fa-discord"></i>
+        </a>
+      </ul>
+
+      <ul>
+        <a
           href="https://github.com/qxb3/fum"
           target="_blank"
           aria-label="github link">
