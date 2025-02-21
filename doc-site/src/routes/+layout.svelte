@@ -2,10 +2,17 @@
   import '../app.css'
 
   import Nav from '$lib/Nav.svelte'
+  import SideBar from '$lib/SideBar.svelte'
 
   let { children } = $props()
 </script>
 
-<Nav />
+<div class="flex h-screen">
+  <SideBar />
 
-{@render children()}
+  <div class="w-full h-full">
+    <Nav />
+
+    {@render children()}
+  </div>
+</div>
