@@ -10,7 +10,11 @@
 }
 
 html {
-  @apply scroll-smooth;
+  @apply scroll-smooth h-full;
+}
+
+body {
+  @apply bg-background text-fg font-embed-code;
 }
 
 .doc p,

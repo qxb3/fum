@@ -7,10 +7,10 @@
   let { children } = $props()
 </script>
 
-<div class="flex h-screen">
+<div class="flex min-h-full">
   <SideBar />
 
-  <div class="w-full h-full">
+  <div class="w-full min-h-full">
     <Nav />
 
     {@render children()}

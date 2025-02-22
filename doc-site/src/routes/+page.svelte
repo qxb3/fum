@@ -1,4 +1,4 @@
-<div class="max-w-[64rem] mx-auto">
+<div class="h-full max-w-[64rem] mx-auto">
   <div class="pt-16 px-8 space-y-12 text-center">
     <div class="flex justify-center">
       <img
