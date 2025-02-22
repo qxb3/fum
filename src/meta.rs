@@ -107,11 +107,11 @@ impl Meta {
 
         for player in players {
             let identity = player.identity().to_lowercase();
-            let bus_name = player.bus_name();
+            let bus_name = player.bus_name().to_lowercase();
 
             if config.players.iter().any(|p|
                 p.to_lowercase() == identity.to_lowercase() ||
-                bus_name.starts_with(p)
+                bus_name.starts_with(&p.to_lowercase())
             ) {
                 return Ok(player);
             }
