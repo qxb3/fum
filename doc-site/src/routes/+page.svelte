@@ -12,11 +12,13 @@
       fum - A fully ricable tui-based mpris music client.
     </h1>
 
-    <button class="font-bold border border-fg px-4 py-2 cursor-pointer hover:bg-primary hover:text-background hover:border-primary duration-300 transition-colors">
+    <a
+      class="font-bold border border-fg px-4 py-2 cursor-pointer hover:bg-primary hover:text-background hover:border-primary duration-300 transition-colors"
+      href="/docs/getting_started">
       <span>Get Started</span>
       <span>
         <i class="fa-solid fa-arrow-right"></i>
       </span>
-    </button>
+    </a>
   </div>
 </div>
