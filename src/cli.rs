@@ -1,11 +1,16 @@
-use clap::Parser;
+use clap::{Parser, Subcommand};
 use expanduser::expanduser;
 
 use crate::{config::{Align, Config}, fum::FumResult};
 
+#[derive(Subcommand)]
+pub enum Commands {
+    ListPlayers
+}
+
 #[derive(Parser)]
 #[command(name = "fum", version, about)]
-struct FumCli {
+pub struct FumCli {
     #[arg(short, long, value_name = "config file", default_value = "~/.config/fum/config.jsonc")]
     config: Option<String>,
 
@@ -19,13 +24,16 @@ struct FumCli {
     fps: Option<u64>,
 
     #[arg(short, long, value_name = "center,top,left,bottom,right,top-left,top-right,bottom-left,bottom-right")]
-    align: Option<String>
+    align: Option<String>,
+
+    #[command(subcommand)]
+    pub command: Option<Commands>
 }
 
-pub fn run() -> FumResult<Config> {
+pub fn run() -> FumResult<(FumCli, Config)> {
     let fum_cli = FumCli::parse();
 
-    let config_path = expanduser(&fum_cli.config.unwrap())
+    let config_path = expanduser(fum_cli.config.as_ref().unwrap())
         .map_err(|err| format!("Failed to expand path: {err}"))?;
 
     let mut config = Config::load(&config_path)?;
@@ -49,5 +57,5 @@ pub fn run() -> FumResult<Config> {
         config.align = align;
     }
 
-    Ok(config)
+    Ok((fum_cli, config))
 }
