@@ -1,5 +1,8 @@
 <script lang="ts">
+  import { sideBarStore } from '$lib/stores'
+
   function toggleSideBar() {
+    sideBarStore.update(state => !state)
   }
 </script>
 
