@@ -46,8 +46,6 @@ async function getDocs(docsPath: string) {
                 node.value = node.value.replace(/({|&#123;)DOC_VERSION(}|&#125;)/g, DOC_VERSION)
               }
 
-              console.log(node)
-
               if (node.children) {
                 node.children.forEach(replaceTextNodes)
               }
