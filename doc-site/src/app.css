@@ -44,6 +44,7 @@ body {
 
 .doc blockquote { @apply border-l-4 border-gray-400 dark:border-gray-600 pl-4 italic text-gray-700 dark:text-gray-300; }
 
-.doc code { @apply bg-slate-600 text-xl font-embed-code px-1; }
+.doc pre { @apply mb-4 p-2; }
+.doc code:not(pre code) { @apply bg-[#1F1F28] text-xl font-embed-code px-1; }
 
 .doc hr { @apply my-8; }

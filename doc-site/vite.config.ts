@@ -6,7 +6,8 @@ import { defineConfig } from 'vite'
 import fs from 'fs'
 import path from 'path'
 
-import { compile } from 'mdsvex'
+import { compile, escapeSvelte } from 'mdsvex'
+import { codeToHtml } from 'shiki'
 
 import rehypeSlug from 'rehype-slug'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
@@ -36,8 +37,30 @@ async function getDocs(docsPath: string) {
           rehypeSlug,
           [rehypeAutolinkHeadings, {
             behavior: 'wrap',
-          }]
-        ]
+          }],
+
+          // Custom extension to replace {DOC_VERSION} to current version in the readme.
+          () => (tree: any) => {
+            function replaceTextNodes(node: any) {
+              if (typeof node.value === 'string') {
+                node.value = node.value.replace(/({|&#123;)DOC_VERSION(}|&#125;)/g, DOC_VERSION)
+              }
+
+              console.log(node)
+
+              if (node.children) {
+                node.children.forEach(replaceTextNodes)
+              }
+            }
+
+            replaceTextNodes(tree)
+          }
+        ],
+        highlight: {
+          highlighter: async (code: string, lang: string) => {
+            return escapeSvelte(await codeToHtml(code, { lang, theme: 'kanagawa-wave' }));
+          }
+        }
       })
 
       return {

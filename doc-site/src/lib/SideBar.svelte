@@ -24,7 +24,8 @@
       <li>
         <a
           class="hover:text-primary"
-          href={doc.url}>
+          href={doc.url}
+          on:click={closeSideBar}>
           {doc.title}
         </a>
       </li>

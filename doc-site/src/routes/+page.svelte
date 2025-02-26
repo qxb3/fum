@@ -8,12 +8,12 @@
       />
     </div>
 
-    <h1 class="text-4xl font-bold">
+    <h1 class="text-5xl font-bold">
       fum - A fully ricable tui-based mpris music client.
     </h1>
 
     <a
-      class="font-bold border border-fg px-4 py-2 cursor-pointer hover:bg-primary hover:text-background hover:border-primary duration-300 transition-colors"
+      class="font-bold border border-fg text-xl px-4 py-2 cursor-pointer hover:bg-primary hover:text-background hover:border-primary duration-300 transition-colors"
       href="/docs/getting_started">
       <span>Get Started</span>
       <span>
