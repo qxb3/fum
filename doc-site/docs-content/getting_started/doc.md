@@ -31,11 +31,15 @@ home-manager switch
 
 ### Debian based systems
 
+Download the latest deb from [releases](https://github.com/qxb3/fum/releases) first and:
+
 ```bash
 sudo dpkg -i fum-x86-64_v{DOC_VERSION}.deb
 ```
 
 ### RPM based systems
+
+Download the latest rpm from [releases](https://github.com/qxb3/fum/releases) first and:
 
 ```bash
 sudo dnf install fum-x86-64_v{DOC_VERSION}.rpm
