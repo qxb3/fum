@@ -4,11 +4,11 @@ title: Getting Started
 
 # Getting Started
 
-To get started with fum. You will need to install fum to your system. {DOC_VERSION}
-
 ---
 
 ## Installation
+
+To get started with fum. You will need to install fum to your system.
 
 ### Arch
 

@@ -1,7 +1,9 @@
 <script lang="ts">
   import { sideBarStore } from '$lib/stores'
 
-  function toggleSideBar() {
+  function toggleSideBar(e: MouseEvent) {
+    e.stopPropagation()
+
     sideBarStore.update(state => !state)
   }
 </script>
