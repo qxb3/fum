@@ -11,7 +11,7 @@
     <h1 class="text-5xl font-bold">
       fum - A fully ricable tui-based mpris music client.
     </h1>
-
+    <h2 class="text-2xl">fum is a tui-based mpris music client designed to provide a simple and efficient way to display and control your music within a tui interface.</h2>
     <a
       class="font-bold border border-fg text-xl px-4 py-2 cursor-pointer hover:bg-primary hover:text-background hover:border-primary duration-300 transition-colors"
       href="/docs/getting_started">
@@ -20,5 +20,10 @@
         <i class="fa-solid fa-arrow-right"></i>
       </span>
     </a>
+    <br/>
+    <h2 class="text-4xl">Demo and Showcase</h2>
+    <img src="/demo.gif" alt="Showcase in rice"  />
+    <img src="/showcase.png" alt="Showcase in rice"  />
+    <br/>
   </div>
 </div>
