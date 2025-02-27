@@ -1,5 +1,6 @@
 ---
 title: Getting Started
+next: /docs/configuring:Configuring
 ---
 
 # Getting Started

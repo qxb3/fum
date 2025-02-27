@@ -1,5 +1,7 @@
 ---
 title: Compability
+prev: /docs/faq:FAQ
+next: /docs/rices:Rices
 ---
 
 # Compability

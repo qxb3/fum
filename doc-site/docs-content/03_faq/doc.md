@@ -1,5 +1,7 @@
 ---
 title: FAQ
+prev: /docs/configuring:Configuring
+next: /docs/compability:Compability
 ---
 
 # FAQ

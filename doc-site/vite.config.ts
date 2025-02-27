@@ -62,10 +62,15 @@ async function getDocs(docsPath: string) {
         }
       })
 
+      const prev = compiledContent.data.fm!.prev?.split(':')
+      const next = compiledContent.data.fm!.next?.split(':')
+
       return {
         url: `/docs/${docPath.slice(3)}`,
         raw: content,
         title: compiledContent.data.fm!.title,
+        prev: prev ? { url: prev[0], title: prev[1] } : undefined,
+        next: next ? { url: next[0], title: next[1] } : undefined,
         html: compiledContent.code
       }
     }))

@@ -1,5 +1,6 @@
 ---
 title: Rices
+prev: /docs/compability:Compability
 ---
 
 # Rices

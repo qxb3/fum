@@ -1,5 +1,7 @@
 ---
 title: Configuring
+prev: /docs/getting_started:Getting Started
+next: /docs/faq:FAQ
 ---
 
 # Configuring

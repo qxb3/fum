@@ -7,4 +7,12 @@ declare const DOCS: {
   raw: string
   title: string
   html: string
+  prev?: {
+    url: string
+    title: string
+  }
+  next?: {
+    url: string
+    title: string
+  }
 }[]
