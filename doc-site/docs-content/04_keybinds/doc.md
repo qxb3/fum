@@ -18,7 +18,7 @@ Example:
 }
 ```
 
-The example above tell fum to **if pressed** esc or q (You can define many key as you want) to run the `quit()` action. See [Actions](./configuring#actions). to see the actions available.
+The example above tell fum to **if pressed** esc or q (You can define many key as you want) to run the `quit()` action. See [#configuring/Actions](./configuring#actions). to see the actions available.
 
 Below is the list of available keys you can use.
 
