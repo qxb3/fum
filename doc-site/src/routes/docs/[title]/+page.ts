@@ -1,4 +1,4 @@
-import type { PageLoad } from './$types'
+import type { PageLoad, EntryGenerator } from './$types'
 
 import { error } from '@sveltejs/kit'
 
@@ -17,3 +17,9 @@ export const load: PageLoad = async ({ params }) => {
     doc
   }
 }
+
+export const entries: EntryGenerator = () => {
+  return DOCS.map(d => ({ title: d.title.toLowerCase().replaceAll(' ', '_') }))
+}
+
+export const prerender = true
