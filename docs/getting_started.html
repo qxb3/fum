@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <link href="https://fonts.googleapis.com/css2?family=Jersey+15&display=swap" rel="stylesheet">
+
+    
+		<link href="../_app/immutable/assets/0.SR1hSA0i.css" rel="stylesheet">
+		<link rel="modulepreload" href="../_app/immutable/entry/start.CHwnXDux.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/BYXO7RB5.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/DFNjw4_i.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/CuJUsSKJ.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/CYgJF_JY.js">
+		<link rel="modulepreload" href="../_app/immutable/entry/app.BTUa2s0b.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/DBoNFlRm.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/BRmKbYT_.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/XeNX5MbG.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/CwgHPtnS.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/0.4Sr3Q9vP.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/D0KubzN6.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/LWKitYLE.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/CGQy_Gbb.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/3.4UQYkd6u.js"><!--[--><!--]--><title>Getting Started</title>
+  </head>
+
+  <body data-sveltekit-preload-data="hover">
+    <!--[--><!--[--><!----><div class="fixed top-0 w-96 h-screen border-r border-r-fg z-50 bg-background transition-all duration-300 -left-96"><div class="relative"><button class="absolute top-0 right-0 m-4 cursor-pointer text-md" aria-label="close sidebar"><i class="fa-solid fa-xmark"></i></button></div> <ul class="h-full list-none mt-4 text-xl space-y-2 px-4"><!--[--><li><a class="hover:text-primary" href="/docs/getting_started">Getting Started</a></li><li><a class="hover:text-primary" href="/docs/configuring">Configuring</a></li><li><a class="hover:text-primary" href="/docs/faq">FAQ</a></li><li><a class="hover:text-primary" href="/docs/compability">Compability</a></li><li><a class="hover:text-primary" href="/docs/rices">Rices</a></li><!--]--></ul></div><!----> <div class="h-full"><nav class="px-4 py-2 bg-background text-fg border-b border-fg"><div class="grid grid-cols-3 text-2xl"><div class="flex items-center justify-start space-x-4"><button class="cursor-pointer transition-colors duration-300 hover:text-primary" aria-label="sidebar button"><i class="fa-solid fa-bars"></i></button></div> <a class="text-center hover:text-primary transition-colors duration-300" href="/"><h1 class="font-bold">fum documentation</h1></a> <div class="list-none flex items-center justify-end space-x-4"><a class="text-background text-lg px-2 bg-fg hover:bg-primary transition-colors duration-300" href="https://github.com/qxb3/fum/releases/tag/v1.3.0" target="_blank" aria-label="doc version">v1.3.0</a> <a class="hover:text-primary transition-colors duration-300" href="https://discord.gg/UfXMeyZ6Zt" target="_blank" aria-label="discord invite"><i class="fa-brands fa-discord"></i></a> <a class="hover:text-primary transition-colors duration-300" href="https://github.com/qxb3/fum" target="_blank" aria-label="github link"><i class="fa-brands fa-github"></i></a></div></div></nav><!----> <!----><main class="doc p-8"><div class="overflow-x-hidden"><!----><script context="module">
+	export const metadata = {"title":"Getting Started","next":"/docs/configuring:Configuring"};
+	const { title, next } = metadata;
+</script>
+
+<h1 id="getting-started"><a href="#getting-started">Getting Started</a></h1>
+<hr>
+<h2 id="installation"><a href="#installation">Installation</a></h2>
+<p>To get started with fum. You will need to install fum to your system.</p>
+<br>
+<p><a href="https://repology.org/project/fum/versions" rel="nofollow"><img
+  src="https://repology.org/badge/vertical-allrepos/fum.svg"
+  alt="Packaging status"
+></a></p>
+<br>
+<h3 id="arch"><a href="#arch">Arch</a></h3>
+<pre class="shiki kanagawa-wave" style="background-color:#1F1F28;color:#DCD7BA" tabindex="0"><code><span class="line"><span style="color:#7AA89F">yay</span><span style="color:#98BB6C"> -S</span><span style="color:#98BB6C"> fum-bin</span></span>
+<span class="line"><span style="color:#727169"># paru -S fum-bin</span></span></code></pre>
+<h3 id="nix-home-manager"><a href="#nix-home-manager">Nix (Home Manager)</a></h3>
+<pre class="shiki kanagawa-wave" style="background-color:#1F1F28;color:#DCD7BA" tabindex="0"><code><span class="line"><span style="color:#9CABCA">&#123;</span><span style="color:#DCD7BA"> pkgs</span><span style="color:#E6C384">,</span><span style="color:#E6C384"> ... </span><span style="color:#9CABCA">&#125;:</span><span style="color:#9CABCA"> &#123;</span></span>
+<span class="line"><span style="color:#957FB8">  home</span><span style="color:#DCD7BA">.</span><span style="color:#957FB8">packages</span><span style="color:#E6C384"> =</span><span style="color:#957FB8"> with</span><span style="color:#DCD7BA"> pkgs; </span><span style="color:#9CABCA">[</span><span style="color:#DCD7BA"> fum </span><span style="color:#9CABCA">];</span></span>
+<span class="line"><span style="color:#9CABCA">&#125;</span></span></code></pre>
+<pre class="shiki kanagawa-wave" style="background-color:#1F1F28;color:#DCD7BA" tabindex="0"><code><span class="line"><span style="color:#7AA89F">home-manager</span><span style="color:#98BB6C"> switch</span></span></code></pre>
+<h3 id="debian-based-systems"><a href="#debian-based-systems">Debian based systems</a></h3>
+<p>Download the latest deb from <a
+  href="https://github.com/qxb3/fum/releases"
+  rel="nofollow"
+>releases</a> first and:</p>
+<pre class="shiki kanagawa-wave" style="background-color:#1F1F28;color:#DCD7BA" tabindex="0"><code><span class="line"><span style="color:#7AA89F">sudo</span><span style="color:#98BB6C"> dpkg</span><span style="color:#98BB6C"> -i</span><span style="color:#98BB6C"> fum-x86-64_v1.3.0.deb</span></span></code></pre>
+<h3 id="rpm-based-systems"><a href="#rpm-based-systems">RPM based systems</a></h3>
+<p>Download the latest rpm from <a
+  href="https://github.com/qxb3/fum/releases"
+  rel="nofollow"
+>releases</a> first and:</p>
+<pre class="shiki kanagawa-wave" style="background-color:#1F1F28;color:#DCD7BA" tabindex="0"><code><span class="line"><span style="color:#7AA89F">sudo</span><span style="color:#98BB6C"> dnf</span><span style="color:#98BB6C"> install</span><span style="color:#98BB6C"> fum-x86-64_v1.3.0.rpm</span></span></code></pre>
+<h3 id="build-from-source"><a href="#build-from-source">Build from source</a></h3>
+<pre class="shiki kanagawa-wave" style="background-color:#1F1F28;color:#DCD7BA" tabindex="0"><code><span class="line"><span style="color:#7AA89F">git</span><span style="color:#98BB6C"> clone</span><span style="color:#98BB6C"> https://github.com/qxb3/fum.git</span></span>
+<span class="line"><span style="color:#7E9CD8">cd</span><span style="color:#98BB6C"> fum</span></span>
+<span class="line"><span style="color:#7AA89F">cargo</span><span style="color:#98BB6C"> build</span><span style="color:#98BB6C"> --release</span></span>
+<span class="line"><span style="color:#727169"># Either copy/move &#96;target/release/yum&#96; to /usr/bin</span></span>
+<span class="line"><span style="color:#727169"># Or add the release path to your system's path</span></span>
+<span class="line"><span style="color:#727169"># Moving fum binary to /usr/bin</span></span>
+<span class="line"><span style="color:#7AA89F">mv</span><span style="color:#98BB6C"> target/release/fum</span><span style="color:#98BB6C"> /usr/bin</span></span></code></pre>
+<h2 id="usage"><a href="#usage">Usage</a></h2>
+<p>NOTE: if it says “No Music” and you don’t use spotify (default), See Below.</p>
+<pre class="shiki kanagawa-wave" style="background-color:#1F1F28;color:#DCD7BA" tabindex="0"><code><span class="line"><span style="color:#7AA89F">fum</span></span></code></pre>
+<h3 id="detecting-other-music-players"><a href="#detecting-other-music-players">Detecting other music players.</a></h3>
+<p>If you use different music player pass it on fum to detect:</p>
+<pre class="shiki kanagawa-wave" style="background-color:#1F1F28;color:#DCD7BA" tabindex="0"><code><span class="line"><span style="color:#7AA89F">fum</span><span style="color:#98BB6C"> --players</span><span style="color:#98BB6C"> player_identity_name,other.player.bus_name</span><span style="color:#727169"> # Seperated by comma and can use identity name or bus name.</span></span></code></pre>
+<h3 id="list-players"><a href="#list-players">List Players</a></h3>
+<p>To check what the music player’s <em>identity</em> or <em>bus</em> name is, use:</p>
+<pre class="shiki kanagawa-wave" style="background-color:#1F1F28;color:#DCD7BA" tabindex="0"><code><span class="line"><span style="color:#7AA89F">fum</span><span style="color:#98BB6C"> list-players</span></span>
+<span class="line"><span style="color:#7AA89F">Active</span><span style="color:#98BB6C"> Players:</span></span>
+<span class="line"><span style="color:#E6C384">*</span><span style="color:#DCD7BA"> spotify </span><span style="color:#E6C384">~></span><span style="color:#DCD7BA"> org.mpris.MediaPlayer2.spotify</span></span></code></pre>
+<h3 id="compatibility"><a href="#compatibility">Compatibility</a></h3>
+<p>Some terminals will have some issues of rendering the image as those don’t support an image protocol yet. See <a
+  href="https://github.com/benjajaja/ratatui-image#compatibility-matrix"
+  rel="nofollow"
+>Compatibility</a> For compatible terminals.</p>
+<!----></div> <hr> <div class="flex justify-between items-center"><!--[!--><div></div><!--]--> <!--[--><a class="font-bold text-fg! text-4xl cursor-pointer hover:text-background duration-300 transition-colors" href="/docs/configuring"><span>Configuring</span> <span><i class="fa-solid fa-chevron-right"></i></span></a><!--]--></div></main><!----><!----></div><!----><!--]--> <!--[!--><!--]--><!--]-->
+			
+			<script>
+				{
+					__sveltekit_1nvhntq = {
+						base: new URL("..", location).pathname.slice(0, -1)
+					};
+
+					const element = document.currentScript.parentElement;
+
+					Promise.all([
+						import("../_app/immutable/entry/start.CHwnXDux.js"),
+						import("../_app/immutable/entry/app.BTUa2s0b.js")
+					]).then(([kit, app]) => {
+						kit.start(app, element, {
+							node_ids: [0, 3],
+							data: [null,null],
+							form: null,
+							error: null
+						});
+					});
+				}
+			</script>
+		
+  </body>
+</html>

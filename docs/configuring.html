@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <link href="https://fonts.googleapis.com/css2?family=Jersey+15&display=swap" rel="stylesheet">
+
+    
+		<link href="../_app/immutable/assets/0.SR1hSA0i.css" rel="stylesheet">
+		<link rel="modulepreload" href="../_app/immutable/entry/start.CHwnXDux.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/BYXO7RB5.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/DFNjw4_i.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/CuJUsSKJ.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/CYgJF_JY.js">
+		<link rel="modulepreload" href="../_app/immutable/entry/app.BTUa2s0b.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/DBoNFlRm.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/BRmKbYT_.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/XeNX5MbG.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/CwgHPtnS.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/0.4Sr3Q9vP.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/D0KubzN6.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/LWKitYLE.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/CGQy_Gbb.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/3.4UQYkd6u.js"><!--[--><!--]--><title>Configuring</title>
+  </head>
+
+  <body data-sveltekit-preload-data="hover">
+    <!--[--><!--[--><!----><div class="fixed top-0 w-96 h-screen border-r border-r-fg z-50 bg-background transition-all duration-300 -left-96"><div class="relative"><button class="absolute top-0 right-0 m-4 cursor-pointer text-md" aria-label="close sidebar"><i class="fa-solid fa-xmark"></i></button></div> <ul class="h-full list-none mt-4 text-xl space-y-2 px-4"><!--[--><li><a class="hover:text-primary" href="/docs/getting_started">Getting Started</a></li><li><a class="hover:text-primary" href="/docs/configuring">Configuring</a></li><li><a class="hover:text-primary" href="/docs/faq">FAQ</a></li><li><a class="hover:text-primary" href="/docs/compability">Compability</a></li><li><a class="hover:text-primary" href="/docs/rices">Rices</a></li><!--]--></ul></div><!----> <div class="h-full"><nav class="px-4 py-2 bg-background text-fg border-b border-fg"><div class="grid grid-cols-3 text-2xl"><div class="flex items-center justify-start space-x-4"><button class="cursor-pointer transition-colors duration-300 hover:text-primary" aria-label="sidebar button"><i class="fa-solid fa-bars"></i></button></div> <a class="text-center hover:text-primary transition-colors duration-300" href="/"><h1 class="font-bold">fum documentation</h1></a> <div class="list-none flex items-center justify-end space-x-4"><a class="text-background text-lg px-2 bg-fg hover:bg-primary transition-colors duration-300" href="https://github.com/qxb3/fum/releases/tag/v1.3.0" target="_blank" aria-label="doc version">v1.3.0</a> <a class="hover:text-primary transition-colors duration-300" href="https://discord.gg/UfXMeyZ6Zt" target="_blank" aria-label="discord invite"><i class="fa-brands fa-discord"></i></a> <a class="hover:text-primary transition-colors duration-300" href="https://github.com/qxb3/fum" target="_blank" aria-label="github link"><i class="fa-brands fa-github"></i></a></div></div></nav><!----> <!----><main class="doc p-8"><div class="overflow-x-hidden"><!----><script context="module">
+	export const metadata = {"title":"Configuring","prev":"/docs/getting_started:Getting Started","next":"/docs/faq:FAQ"};
+	const { title, prev, next } = metadata;
+</script>
+
+<h1 id="configuring"><a href="#configuring">Configuring</a></h1>
+<p>This entire section will be covering how to configure fum.</p>
+<hr>
+<h2 id="overview"><a href="#overview">Overview</a></h2>
+<p>Fum’s configuration is located on <code>$HOME/.config/fum/config.jsonc</code>.
+This config file will be containing all of fum’s functionality, look, and behavior.</p>
+<p>Also take a note that whatever you put in here will be overwritten by the cli.
+So for example you have <code>spotify</code> in the <code>players</code> in the config but have <code>mpd</code>
+in the cli, <code>mpd</code> will be the one in used. Also if you don’t know know <code>jsonc</code> its just a normal json with comments support.</p>
+<hr>
+<h3 id="example-config"><a href="#example-config">Example Config</a></h3>
+<pre class="shiki kanagawa-wave" style="background-color:#1F1F28;color:#DCD7BA" tabindex="0"><code><span class="line"><span style="color:#9CABCA">&#123;</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">players</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#9CABCA"> [</span><span style="color:#98BB6C">"spotify"</span><span style="color:#9CABCA">,</span><span style="color:#98BB6C"> "lollypop"</span><span style="color:#9CABCA">,</span><span style="color:#98BB6C"> "org.mpris.MediaPlayer2.mpv"</span><span style="color:#9CABCA">],</span><span style="color:#727169"> // List of music players to be detected.</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">use_active_player</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#FFA066"> false</span><span style="color:#9CABCA">,</span><span style="color:#727169">                                       // Whether to detect other active mpris player.</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">fps</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#D27E99"> 10</span><span style="color:#9CABCA">,</span><span style="color:#727169">                                                        // Fps of fum.</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">keybinds</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#9CABCA"> &#123;</span><span style="color:#727169">                                                     // Keybinds.</span></span>
+<span class="line"><span style="color:#9CABCA">    "</span><span style="color:#E6C384">esc;q</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "quit()"</span><span style="color:#9CABCA">,</span><span style="color:#727169">                                                // escape or q key to quit.</span></span>
+<span class="line"><span style="color:#9CABCA">    "</span><span style="color:#E6C384">h</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "prev()"</span><span style="color:#9CABCA">,</span><span style="color:#727169">                                                    // h key to previous music.</span></span>
+<span class="line"><span style="color:#9CABCA">    "</span><span style="color:#E6C384">l</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "next()"</span><span style="color:#9CABCA">,</span><span style="color:#727169">                                                    // l key to next music.</span></span>
+<span class="line"><span style="color:#9CABCA">    "</span><span style="color:#9CABCA"> "</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "play_pause()"</span><span style="color:#727169">                                               // space key to play or pause music.</span></span>
+<span class="line"><span style="color:#9CABCA">  &#125;,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">align</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "center"</span><span style="color:#9CABCA">,</span><span style="color:#727169">                                                // Where in the terminal should fum be placed.</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">direction</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "vertical"</span><span style="color:#9CABCA">,</span><span style="color:#727169">                                          // The parent direction of layout.</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">flex</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "start"</span><span style="color:#9CABCA">,</span><span style="color:#727169">                                                  // The parent flex of layout.</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">width</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#D27E99"> 20</span><span style="color:#9CABCA">,</span><span style="color:#727169">                                                      // The width allocated.</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">height</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#D27E99"> 18</span><span style="color:#9CABCA">,</span><span style="color:#727169">                                                     // The height allocated.</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">border</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#FFA066"> false</span><span style="color:#9CABCA">,</span><span style="color:#727169">                                                  // Whether to render a border around.</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">padding</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#9CABCA"> [</span><span style="color:#D27E99">0</span><span style="color:#9CABCA">,</span><span style="color:#D27E99"> 0</span><span style="color:#9CABCA">],</span><span style="color:#727169">                                                // Whether to add horizontal,vertical padding.</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">bg</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "reset"</span><span style="color:#9CABCA">,</span><span style="color:#727169">                                                    // The parent background color.</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">fg</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "reset"</span><span style="color:#9CABCA">,</span><span style="color:#727169">                                                    // The parent foreground color.</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">cover_art_ascii</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "~/.config/fum/ascii.txt"</span><span style="color:#9CABCA">,</span><span style="color:#727169">                     // The ascii art or text to be displayed in place of cover-art if it doesn't exists.</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">layout</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#9CABCA"> []</span><span style="color:#727169">                                                      // Where we define our ui layout.</span></span>
+<span class="line"><span style="color:#9CABCA">&#125;</span></span></code></pre>
+<hr>
+<h3 id="config-properties"><a href="#config-properties">Config Properties</a></h3>
+<h4 id="-players-optional"><a href="#-players-optional">* <code>players</code> (Optional)</a></h4>
+<p>- List of player names that will be detected by fum. This can be the name or the bus_name of the player.
+Note that identity is case insensitive and bus_name are not.</p>
+<br>
+<ul>
+<li>Type: <code>string[]</code></li>
+<li>Default: <code>["spotify"]</code></li>
+</ul>
+<h4 id="-use_active_player-optional"><a href="#-use_active_player-optional">* <code>use_active_player</code> (Optional)</a></h4>
+<p>- Whether to use the most likely active player when there it can’t find players on the players array.</p>
+<br>
+<ul>
+<li>Type: <code>boolean</code></li>
+<li>Default: <code>false</code></li>
+</ul>
+<h4 id="-keybinds-optional"><a href="#-keybinds-optional">* <code>keybinds</code> (Optional)</a></h4>
+<p>- Keybinds to do <a href="#actions">#Actions</a>. Keybinds are defined into <code>key</code> and <code>action</code>.</p>
+<p>The dropdown below is the list of available keys you can use</p>
+<details>
+  <summary>Keys List</summary>
+<ul>
+<li><code>backspace</code></li>
+<li><code>enter</code></li>
+<li><code>left</code> - <code>left arrow key</code></li>
+<li><code>right</code> - <code>right arrow key</code></li>
+<li><code>down</code> - <code>down arrow key</code></li>
+<li><code>up</code> - <code>up arrow key</code></li>
+<li><code>end</code></li>
+<li><code>page_up</code></li>
+<li><code>page_down</code></li>
+<li><code>tab</code></li>
+<li><code>back_tab</code> - <code>shift + tab key</code></li>
+<li><code>delete</code></li>
+<li><code>insert</code></li>
+<li><code>caps</code> - <code>capslock key</code></li>
+<li><code>esc</code></li>
+<li><code>f1</code> to <code>f12</code></li>
+<li><code>a-z, A-Z</code> - <code>alphabetical characters</code></li>
+<li><code>&#123;&#125;[]|;:'"&#96;,.&lt;&gt;/?</code> - <code>keyboard symbols</code>
+</details>
+</li>
+</ul>
+<br>
+<ul>
+<li>Type: <code>Object</code></li>
+<li>Default:</li>
+</ul>
+<pre class="shiki kanagawa-wave" style="background-color:#1F1F28;color:#DCD7BA" tabindex="0"><code><span class="line"><span style="color:#9CABCA">&#123;</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">esc;q</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "quit()"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">h</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "prev()"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">l</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "next()"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#9CABCA"> "</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "play_pause()"</span></span>
+<span class="line"><span style="color:#9CABCA">&#125;</span></span></code></pre>
+<h4 id="-align-optional"><a href="#-align-optional">* <code>align</code> (Optional)</a></h4>
+<p>- Where in the terminal fum will be positioned in.</p>
+<br>
+<ul>
+<li>Type: <code>string</code></li>
+<li>Values:
+<ul>
+<li><code>left</code></li>
+<li><code>top</code></li>
+<li><code>right</code></li>
+<li><code>bottom</code></li>
+<li><code>center</code></li>
+<li><code>top-left</code></li>
+<li><code>top-right</code></li>
+<li><code>bottom-left</code></li>
+<li><code>bottom-right</code></li>
+</ul>
+</li>
+<li>Default: <code>center</code></li>
+</ul>
+<h4 id="-direction-optional"><a href="#-direction-optional">* <code>direction</code> (Optional)</a></h4>
+<p>- See <a href="#direction">#Direction</a>.</p>
+<br>
+<ul>
+<li>Type: <code>string</code></li>
+<li>Default: <code>horizontal</code></li>
+</ul>
+<h4 id="-flex-optional"><a href="#-flex-optional">* <code>flex</code> (Optional)</a></h4>
+<p>- See <a href="#containerflex">#ContainerFlex</a>.</p>
+<br>
+<ul>
+<li>Type: <code>string</code></li>
+<li>Default: <code>start</code></li>
+</ul>
+<h4 id="-width-optional"><a href="#-width-optional">* <code>width</code> (Optional)</a></h4>
+<p>- The allocated width.</p>
+<br>
+<ul>
+<li>Type: <code>number</code></li>
+<li>Default: <code>19</code></li>
+</ul>
+<h4 id="-height-optional"><a href="#-height-optional">* <code>height</code> (Optional)</a></h4>
+<p>- The allocated height.</p>
+<br>
+<ul>
+<li>Type: <code>number</code></li>
+<li>Default: <code>15</code></li>
+</ul>
+<h4 id="-border-optional"><a href="#-border-optional">* <code>border</code> (Optional)</a></h4>
+<p>- Whether to render a border around.</p>
+<br>
+<ul>
+<li>Type: <code>boolean</code></li>
+<li>Default: <code>false</code></li>
+</ul>
+<h4 id="-padding-optional"><a href="#-padding-optional">* <code>padding</code> (Optional)</a></h4>
+<p>- Whether to add horizontal,vertical padding.</p>
+<br>
+<ul>
+<li>Type: <code>[number, number]</code></li>
+<li>Default: <code>[0, 0]</code></li>
+</ul>
+<h4 id="-cover_art_ascii-optional"><a href="#-cover_art_ascii-optional">* <code>cover_art_ascii</code> (Optional)</a></h4>
+<p>- The ascii art or text to be displayed in place of cover-art if it doesn’t exists or there is no current music.</p>
+<br>
+<ul>
+<li>Type: <code>string</code></li>
+<li>Default: <code>""</code></li>
+</ul>
+<h4 id="-layout-optional"><a href="#-layout-optional">* <code>layout</code> (Optional)</a></h4>
+<p>- Layout ui to be rendered. See <a href="#widgets">#Widgets</a> For all the available widgets.</p>
+<br>
+<ul>
+<li>Type: <code>widget[]</code></li>
+<li>Default: <a href="#example-full-config">#Example Full Config</a></li>
+</ul>
+<hr>
+<h3 id="widgets"><a href="#widgets">Widgets</a></h3>
+<p>List of available widgets.</p>
+<h4 id="container"><a href="#container"><code>Container</code></a></h4>
+<p>- A container containing widgets.</p>
+<br>
+<ul>
+<li>Fields:
+<ul>
+<li><code>width</code>: <code>number</code> (optional). Specifies the width of the container. See <a
+  href="#width--height"
+>#Width & Height</a>.</li>
+<li><code>height</code>: <code>number</code> (optional). Specifies the height of the container. See <a
+  href="#width--height"
+>#Width & Height</a>.</li>
+<li><code>border</code>: <code>boolean</code> (Optional). Whether to draw a border around the widget. Default: <code>false</code></li>
+<li><code>padding</code>: <code>[number, number]</code> (Optional). Whether to add padding on the container. Default: <code>[0, 0]</code></li>
+<li><code>direction</code>: <code>string</code> (Optional). Specifies the layout direction of child widgets. See <a
+  href="#direction"
+>#Direction</a>.</li>
+<li><code>flex</code>: <code>string</code> (Optional). Specifies how space is distributed among child widgets. See <a
+  href="#containerflex"
+>#ContainerFlex</a>.</li>
+<li><code>bg</code>: <code>string</code> (Optional). The background color of this container area. See <a
+  href="#bg--fg"
+>#Bg & Fg</a>.</li>
+<li><code>fg</code>: <code>string</code> (Optional). The foreground color of the children. See <a
+  href="#bg--fg"
+>#Bg & Fg</a>.</li>
+<li><code>children</code>: <code>widget[]</code> (Required). The childrens of the container.</li>
+</ul>
+</li>
+</ul>
+<br>
+<ul>
+<li>Example:</li>
+</ul>
+<pre class="shiki kanagawa-wave" style="background-color:#1F1F28;color:#DCD7BA" tabindex="0"><code><span class="line"><span style="color:#9CABCA">&#123;</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">type</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "container"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">width</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#D27E99"> 20</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">height</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#D27E99"> 20</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">border</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#FFA066"> false</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">padding</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#9CABCA"> [</span><span style="color:#D27E99">0</span><span style="color:#9CABCA">,</span><span style="color:#D27E99"> 0</span><span style="color:#9CABCA">],</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">direction</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "vertical"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">flex</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "start"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">bg</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "blue"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">fg</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "black"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">children</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#9CABCA"> [</span></span>
+<span class="line"><span style="color:#9CABCA">    &#123;</span></span>
+<span class="line"><span style="color:#9CABCA">      "</span><span style="color:#E6C384">type</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "empty"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">      "</span><span style="color:#E6C384">size</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#D27E99"> 1</span></span>
+<span class="line"><span style="color:#9CABCA">    &#125;</span></span>
+<span class="line"><span style="color:#9CABCA">  ]</span></span>
+<span class="line"><span style="color:#9CABCA">&#125;</span></span></code></pre>
+<h4 id="coverart"><a href="#coverart"><code>CoverArt</code></a></h4>
+<p>- Displays music cover art.</p>
+<br>
+<ul>
+<li>Fields:
+<ul>
+<li><code>width</code>: <code>number</code> (optional). Specifies the width of the container. See <a
+  href="#width--height"
+>#Width & Height</a>.</li>
+<li><code>height</code>: <code>number</code> (optional). Specifies the height of the container. See <a
+  href="#width--height"
+>#Width & Height</a>.</li>
+<li><code>border</code>: <code>boolean</code> (Optional). Whether to draw a border around the widget. Default: <code>false</code></li>
+<li><code>resize</code>: <code>string</code> (Optional). Specifies which resize method to use.
+<ul>
+<li>Values:
+<ul>
+<li><code>fit</code> - If the width or height is smaller than the area, the image will be resized maintaining proportions.</li>
+<li><code>crop</code> - If the width or height is smaller than the area, the image will be cropped.</li>
+<li><code>scale</code> - Scale the image.</li>
+</ul>
+</li>
+<li>Default: <code>scale</code></li>
+</ul>
+</li>
+<li><code>bg</code>: <code>string</code> (Optional). The background color of this container area. See <a
+  href="#bg--fg"
+>#Bg & Fg</a>.</li>
+<li><code>fg</code>: <code>string</code> (Optional). The foreground color of the children. See <a
+  href="#bg--fg"
+>#Bg & Fg</a>.</li>
+</ul>
+</li>
+</ul>
+<br>
+<ul>
+<li>Example:</li>
+</ul>
+<pre class="shiki kanagawa-wave" style="background-color:#1F1F28;color:#DCD7BA" tabindex="0"><code><span class="line"><span style="color:#9CABCA">&#123;</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">type</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "cover-art"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">width</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#D27E99"> 20</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">height</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#D27E99"> 20</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">border</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#FFA066"> false</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">resize</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "scale"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">bg</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "red"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">fg</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "#000000"</span></span>
+<span class="line"><span style="color:#9CABCA">&#125;</span></span></code></pre>
+<h4 id="label"><a href="#label"><code>Label</code></a></h4>
+<p>- Displays a text label.</p>
+<br>
+<ul>
+<li>Fields:
+<ul>
+<li><code>text</code>: <code>string</code> (Required). The text to display in the label. See <a href="#text">#Text</a>.</li>
+<li><code>align</code>: <code>string</code> (Optional). Specifies the alignment of the text. See <a
+  href="#labelalignment"
+>#LabelAlignment</a>.</li>
+<li><code>truncate</code>: <code>boolean</code> (Optional). Specifies whether to truncate the text if it exceeds the available space.
+<ul>
+<li>Default: <code>true</code></li>
+</ul>
+</li>
+<li><code>bold</code>: <code>boolean</code> (Optional). Makes the label text bold. .
+<ul>
+<li>Default: <code>false</code></li>
+</ul>
+</li>
+<li><code>bg</code>: <code>string</code> (Optional). The background color of the label. See <a href="#bg--fg">#Bg & Fg</a>.</li>
+<li><code>fg</code>: <code>string</code> (Optional). The foreground color of the label. See <a href="#bg--fg">#Bg & Fg</a>.</li>
+</ul>
+</li>
+</ul>
+<br>
+<ul>
+<li>Example:</li>
+</ul>
+<pre class="shiki kanagawa-wave" style="background-color:#1F1F28;color:#DCD7BA" tabindex="0"><code><span class="line"><span style="color:#9CABCA">&#123;</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">type</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "label"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">text</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "$title"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">align</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "center"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">truncate</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#FFA066"> true</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">bold</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#FFA066"> false</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">bg</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "black"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">fg</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "white"</span></span>
+<span class="line"><span style="color:#9CABCA">&#125;</span></span></code></pre>
+<h4 id="button"><a href="#button"><code>Button</code></a></h4>
+<p>- Very similar on <a href="#label">#Label</a> in terms of display but this one is interactable.</p>
+<br>
+<ul>
+<li>Fields:
+<ul>
+<li><code>text</code>: <code>string</code> (Required). The text to display in the button. See <a href="#text">#Text</a>.</li>
+<li><code>action</code>: <code>string</code> (Optional). Specifies an action to perform when the button is clicked. See <a
+  href="#actions"
+>#Actions</a>.</li>
+<li><code>exec</code>: <code>string</code> (Optional). Spawns a shell command to execute when the button is clicked (Note that this will quietly execute and will not notify you if it errors).</li>
+<li><code>bold</code>: <code>boolean</code> (Optional). Makes the label text bold. .
+<ul>
+<li>Default: <code>false</code></li>
+</ul>
+</li>
+<li><code>bg</code>: <code>string</code> (Optional). The background color of the button. See <a href="#bg--fg">#Bg & Fg</a>.</li>
+<li><code>fg</code>: <code>string</code> (Optional). The foreground color of the button. See <a href="#bg--fg">#Bg & Fg</a>.</li>
+</ul>
+</li>
+</ul>
+<br>
+<ul>
+<li>Example:</li>
+</ul>
+<pre class="shiki kanagawa-wave" style="background-color:#1F1F28;color:#DCD7BA" tabindex="0"><code><span class="line"><span style="color:#9CABCA">&#123;</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">type</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "button"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">text</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "$status_icon"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">action</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "play_pause()"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">exec</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "echo hi"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">bold</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#FFA066"> false</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">bg</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "reset"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">fg</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "magenta"</span></span>
+<span class="line"><span style="color:#9CABCA">&#125;</span></span></code></pre>
+<h4 id="progress"><a href="#progress"><code>Progress</code></a></h4>
+<p>- Displays a progress bar.</p>
+<br>
+<ul>
+<li>Fields:
+<ul>
+<li><code>size</code>: <code>number</code> (optional). Specifies the width of the progress bar. See <a
+  href="#width--height"
+>#Width & Height</a>.</li>
+<li><code>direction</code>: <code>string</code> (Optional). Whether to display the progress bar horizontally or vertically. See <a
+  href="#direction"
+>#Direction</a>.</li>
+<li><code>progress</code>: string (Required).
+<ul>
+<li><code>char</code>: The character used to represent the progress portion of the progress bar.</li>
+<li><code>bg</code>: The background color of the progress. See <a href="#bg--fg">#Bg & Fg</a>.</li>
+<li><code>fg</code>: The foreground color of the progress. See <a href="#bg--fg">#Bg & Fg</a>.</li>
+</ul>
+</li>
+<li><code>empty</code>: string (Required).
+<ul>
+<li><code>char</code>: The character used to represent the empty portion of the progress bar.</li>
+<li><code>bg</code>: The background color of the empty. See <a href="#bg--fg">#Bg & Fg</a>.</li>
+<li><code>fg</code>: The foreground color of the empty. See <a href="#bg--fg">#Bg & Fg</a>.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<br>
+<ul>
+<li>Example:</li>
+</ul>
+<pre class="shiki kanagawa-wave" style="background-color:#1F1F28;color:#DCD7BA" tabindex="0"><code><span class="line"><span style="color:#9CABCA">&#123;</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">type</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "progress"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">size</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#D27E99"> 10</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">direction</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "horizontal"</span></span>
+<span class="line"><span style="color:#98BB6C">  "progress"</span><span style="color:#E82424">:</span><span style="color:#9CABCA"> &#123;</span></span>
+<span class="line"><span style="color:#9CABCA">    "</span><span style="color:#E6C384">char</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> ""</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">     "</span><span style="color:#E6C384">fg</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "red"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">     "</span><span style="color:#E6C384">bg</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "blue"</span></span>
+<span class="line"><span style="color:#9CABCA">  &#125;,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">empty</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#9CABCA"> &#123;</span></span>
+<span class="line"><span style="color:#9CABCA">    "</span><span style="color:#E6C384">char</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "-"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">     "</span><span style="color:#E6C384">fg</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "blue"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">     "</span><span style="color:#E6C384">bg</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "red"</span></span>
+<span class="line"><span style="color:#9CABCA">  &#125;</span></span>
+<span class="line"><span style="color:#9CABCA">&#125;</span></span></code></pre>
+<h4 id="volume"><a href="#volume"><code>Volume</code></a></h4>
+<p>- Displays a volume bar.</p>
+<br>
+<ul>
+<li>Fields:
+<ul>
+<li><code>size</code>: <code>number</code> (optional). Specifies the width of the volume bar. See <a
+  href="#width--height"
+>#Width & Height</a>.</li>
+<li><code>direction</code>: <code>string</code> (Optional). Whether to display the volume bar horizontally or vertically. See <a
+  href="#direction"
+>#Direction</a>.</li>
+<li><code>volume</code>: string (Required).
+<ul>
+<li><code>char</code>: The character used to represent the volume portion of the volume bar.</li>
+<li><code>bg</code>: The background color of the volume. See <a href="#bg--fg">#Bg & Fg</a>.</li>
+<li><code>fg</code>: The foreground color of the volume. See <a href="#bg--fg">#Bg & Fg</a>.</li>
+</ul>
+</li>
+<li><code>empty</code>: string (Required).
+<ul>
+<li><code>char</code>: The character used to represent the empty portion of the volume bar.</li>
+<li><code>bg</code>: The background color of the empty. See <a href="#bg--fg">#Bg & Fg</a>.</li>
+<li><code>fg</code>: The foreground color of the empty. See <a href="#bg--fg">#Bg & Fg</a>.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<br>
+<ul>
+<li>Example:</li>
+</ul>
+<pre class="shiki kanagawa-wave" style="background-color:#1F1F28;color:#DCD7BA" tabindex="0"><code><span class="line"><span style="color:#9CABCA">&#123;</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">type</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "volume"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">size</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#D27E99"> 10</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">direction</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "vertical"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">volume</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#9CABCA"> &#123;</span></span>
+<span class="line"><span style="color:#9CABCA">    "</span><span style="color:#E6C384">char</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "/"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">     "</span><span style="color:#E6C384">fg</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "red"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">     "</span><span style="color:#E6C384">bg</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "blue"</span></span>
+<span class="line"><span style="color:#9CABCA">  &#125;,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">empty</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#9CABCA"> &#123;</span></span>
+<span class="line"><span style="color:#9CABCA">    "</span><span style="color:#E6C384">char</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> " "</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">     "</span><span style="color:#E6C384">fg</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "blue"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">     "</span><span style="color:#E6C384">bg</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "red"</span></span>
+<span class="line"><span style="color:#9CABCA">  &#125;</span></span>
+<span class="line"><span style="color:#9CABCA">&#125;</span></span></code></pre>
+<h4 id="empty"><a href="#empty"><code>Empty</code></a></h4>
+<p>- Displays an empty area. Useful for spacing.</p>
+<br>
+<ul>
+<li>Fields:
+<ul>
+<li><code>size</code>: <code>number</code> (optional). Specifies the width of the empty space. See <a
+  href="#width--height"
+>#Width & Height</a>.</li>
+</ul>
+</li>
+</ul>
+<br>
+<ul>
+<li>Example:</li>
+</ul>
+<pre class="shiki kanagawa-wave" style="background-color:#1F1F28;color:#DCD7BA" tabindex="0"><code><span class="line"><span style="color:#9CABCA">&#123;</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">type</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "empty"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">size</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#D27E99"> 1</span></span>
+<span class="line"><span style="color:#9CABCA">&#125;</span></span></code></pre>
+<hr>
+<h3 id="widget-properties"><a href="#widget-properties">Widget Properties</a></h3>
+<p>List of widget properties that will be used on widget fields.</p>
+<h4 id="width--height"><a href="#width--height">Width & Height</a></h4>
+<p>- width and height are often optional properties. When not defined, the widget will automatically fill the remaining available space.</p>
+<h4 id="direction"><a href="#direction">Direction</a></h4>
+<p>- This property specifies the layout direction of the component.</p>
+<br>
+<ul>
+<li>Values:
+<ul>
+<li><code>horizontal</code></li>
+<li><code>vertical</code></li>
+</ul>
+</li>
+<li>Default: <code>horizontal</code></li>
+</ul>
+<h4 id="labelalignment"><a href="#labelalignment">LabelAlignment</a></h4>
+<p>- Specifies the alignment of text within a label.</p>
+<br>
+<ul>
+<li>Values:
+<ul>
+<li><code>left</code></li>
+<li><code>center</code></li>
+<li><code>right</code>
+Default: <code>left</code></li>
+</ul>
+</li>
+</ul>
+<h4 id="containerflex"><a href="#containerflex">ContainerFlex</a></h4>
+<p>- Defines how space is distributed among items in a container.</p>
+<br>
+<ul>
+<li>Values:
+<ul>
+<li><code>start</code></li>
+<li><code>center</code></li>
+<li><code>end</code></li>
+<li><code>space-around</code></li>
+<li><code>space-between</code></li>
+</ul>
+</li>
+<li>Default: <code>start</code></li>
+</ul>
+<h4 id="bg--fg"><a href="#bg--fg">Bg & Fg</a></h4>
+<p>Variants:</p>
+<ul>
+<li><code>reset</code> - The default color.</li>
+<li><code>black</code></li>
+<li><code>white</code></li>
+<li><code>green</code> / <code>lightgreen</code></li>
+<li><code>yellow</code> / <code>lightyellow</code></li>
+<li><code>blue</code> / <code>lightblue</code></li>
+<li><code>red</code> / <code>lightred</code></li>
+<li><code>magenta</code> / <code>lightmagenta</code></li>
+<li><code>cyan</code> / <code>lightcyan</code></li>
+<li><code>gray</code> / <code>darkgray</code></li>
+<li><code>rgb</code> - An RGB color. Example: <code>"fg": &#123;"Rgb": [255, 0, 255]&#125;</code></li>
+<li><code>indexed</code> - An 8-bit 256 color. Example {“fg”: {“Indexed”:10}}</li>
+<li>Default: <code>reset</code></li>
+</ul>
+<h4 id="text"><a href="#text">Text</a></h4>
+<ul>
+<li>
+<p>Available variables:</p>
+<ul>
+<li><code>$title</code> - Title of the music.</li>
+<li><code>$artists</code> - Artists of the music.</li>
+<li><code>$album</code> - Album name of the music.</li>
+<li><code>$status-icon</code> - A single ascii icon that represents the status / playback state.</li>
+<li><code>$status-text</code> - Similar to $status-icon but in text format instead of nerdfonts icon.</li>
+<li><code>$position</code> - The current position / progress of the music.</li>
+<li><code>$position-ext</code> - Same as $position but prepended 0 at the start.</li>
+<li><code>$length</code> - The total length of the music.</li>
+<li><code>$length-ext</code> - Same as $length but prepended 0 at the start.</li>
+<li><code>$remaining-length</code> - The remaining length of the music.</li>
+<li><code>$remaining-length-ext</code> - Same as $remaining-length but prepended 0 at the start.</li>
+<li><code>$volume</code> - The current player volume (0 - 100).
+<br>
+</li>
+</ul>
+</li>
+<li>
+<p>Text functions:</p>
+<ul>
+<li><code>get_meta(key: string)</code> - Get a specific metadata that is not available in the variables above.</li>
+<li><code>var($foo, $length)</code> - Define a mutable variable, where $foo is the variable name & $length is the variable value. You can use toggle() & set() actions to mutate it. See <a
+  href="#actions"
+>#Actions</a>. For those actions.</li>
+</ul>
+</li>
+</ul>
+<h4 id="actions"><a href="#actions">Actions</a></h4>
+<ul>
+<li>Available actions:
+<ul>
+<li><code>quit()</code> - Quits fum.</li>
+<li><code>stop()</code> - Stops the player.</li>
+<li><code>play()</code> - Play the music.</li>
+<li><code>pause()</code> - Pause the music.</li>
+<li><code>prev()</code> - Back the music.</li>
+<li><code>play_pause()</code> - Play / Pause the music.</li>
+<li><code>next()</code> - Skips the music.</li>
+<li><code>shuffle_off()</code> - Turn off the shuffle.</li>
+<li><code>shuffle_toggle()</code> - Toggles the shuffle on / off.</li>
+<li><code>shuffle_on()</code> - Turn on the shuffle.</li>
+<li><code>loop_none()</code> - Set the loop to none.</li>
+<li><code>loop_playlist()</code> - Set the loop to playlist.</li>
+<li><code>loop_track()</code> - Set the loop to track.</li>
+<li><code>loop_cycle()</code> - Cycle loop: none -> playlist -> track -> none.</li>
+<li><code>forward(2500)</code> - Fast forward the music 2500 milliseconds.</li>
+<li><code>backward(2500)</code> - Step backward the music 2500 milliseconds.</li>
+<li><code>forward(-1)</code> - If -1 used in forward(-1) it will go to the end of the track.</li>
+<li><code>backward(-1)</code> - If -1 used in backward(-1) it will go to the start of the track.</li>
+<li><code>volume(+10)</code> - Increases the volume +10.</li>
+<li><code>volume(-10)</code> - Decreases the volume -10.</li>
+<li><code>volume(50)</code> - Sets the volume to 50 (0 - 100).</li>
+<li><code>toggle($foo, $length, $remaining-length)</code> - Toggles the value of a variable, where $foo is the name and $length, $remaining-length is the values that will be toggled.</li>
+<li><code>set($foo, $title)</code> - Set the value of a variable, where $foo is the name and $title is the value to set.</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="example-full-config"><a href="#example-full-config">Example Full Config</a></h3>
+<pre class="shiki kanagawa-wave" style="background-color:#1F1F28;color:#DCD7BA" tabindex="0"><code><span class="line"><span style="color:#9CABCA">&#123;</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">players</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#9CABCA"> [</span><span style="color:#98BB6C">"spotify"</span><span style="color:#9CABCA">,</span><span style="color:#98BB6C"> "lollypop"</span><span style="color:#9CABCA">,</span><span style="color:#98BB6C"> "org.mpris.MediaPlayer2.mpv"</span><span style="color:#9CABCA">],</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">use_active_player</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#FFA066"> false</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">debug</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#FFA066"> false</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">width</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#D27E99"> 20</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">height</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#D27E99"> 18</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">  "</span><span style="color:#D27E99">layout</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#9CABCA"> [</span></span>
+<span class="line"><span style="color:#9CABCA">    &#123;</span><span style="color:#9CABCA"> "</span><span style="color:#E6C384">type</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "cover-art"</span><span style="color:#9CABCA"> &#125;,</span></span>
+<span class="line"><span style="color:#9CABCA">    &#123;</span></span>
+<span class="line"><span style="color:#9CABCA">      "</span><span style="color:#E6C384">type</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "container"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">      "</span><span style="color:#E6C384">direction</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "vertical"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">      "</span><span style="color:#E6C384">children</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#9CABCA"> [</span></span>
+<span class="line"><span style="color:#9CABCA">        &#123;</span><span style="color:#9CABCA"> "</span><span style="color:#FFA066">type</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "label"</span><span style="color:#9CABCA">,</span><span style="color:#9CABCA"> "</span><span style="color:#FFA066">text</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "$title"</span><span style="color:#9CABCA">,</span><span style="color:#9CABCA"> "</span><span style="color:#FFA066">align</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "center"</span><span style="color:#9CABCA"> &#125;,</span></span>
+<span class="line"><span style="color:#9CABCA">        &#123;</span><span style="color:#9CABCA"> "</span><span style="color:#FFA066">type</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "label"</span><span style="color:#9CABCA">,</span><span style="color:#9CABCA"> "</span><span style="color:#FFA066">text</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "$artists"</span><span style="color:#9CABCA">,</span><span style="color:#9CABCA"> "</span><span style="color:#FFA066">align</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "center"</span><span style="color:#9CABCA"> &#125;,</span></span>
+<span class="line"><span style="color:#9CABCA">        &#123;</span><span style="color:#9CABCA"> "</span><span style="color:#FFA066">type</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "empty"</span><span style="color:#9CABCA">,</span><span style="color:#9CABCA"> "</span><span style="color:#FFA066">size</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#D27E99"> 1</span><span style="color:#9CABCA"> &#125;,</span></span>
+<span class="line"><span style="color:#9CABCA">        &#123;</span></span>
+<span class="line"><span style="color:#9CABCA">          "</span><span style="color:#FFA066">type</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "container"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">          "</span><span style="color:#FFA066">height</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#D27E99"> 1</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">          "</span><span style="color:#FFA066">flex</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "space-around"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">          "</span><span style="color:#FFA066">children</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#9CABCA"> [</span></span>
+<span class="line"><span style="color:#9CABCA">            &#123;</span><span style="color:#9CABCA"> "</span><span style="color:#FF5D62">type</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "button"</span><span style="color:#9CABCA">,</span><span style="color:#9CABCA"> "</span><span style="color:#FF5D62">text</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "󰒮"</span><span style="color:#9CABCA">,</span><span style="color:#9CABCA"> "</span><span style="color:#FF5D62">action</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "prev()"</span><span style="color:#9CABCA"> &#125;,</span></span>
+<span class="line"><span style="color:#9CABCA">            &#123;</span><span style="color:#9CABCA"> "</span><span style="color:#FF5D62">type</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "button"</span><span style="color:#9CABCA">,</span><span style="color:#9CABCA"> "</span><span style="color:#FF5D62">text</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "$status-icon"</span><span style="color:#9CABCA">,</span><span style="color:#9CABCA"> "</span><span style="color:#FF5D62">action</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "play_pause()"</span><span style="color:#9CABCA"> &#125;,</span></span>
+<span class="line"><span style="color:#9CABCA">            &#123;</span><span style="color:#9CABCA"> "</span><span style="color:#FF5D62">type</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "button"</span><span style="color:#9CABCA">,</span><span style="color:#9CABCA"> "</span><span style="color:#FF5D62">text</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "󰒭"</span><span style="color:#9CABCA">,</span><span style="color:#9CABCA"> "</span><span style="color:#FF5D62">action</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "next()"</span><span style="color:#9CABCA"> &#125;</span></span>
+<span class="line"><span style="color:#9CABCA">          ]</span></span>
+<span class="line"><span style="color:#9CABCA">        &#125;,</span></span>
+<span class="line"><span style="color:#9CABCA">        &#123;</span><span style="color:#9CABCA"> "</span><span style="color:#FFA066">type</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "empty"</span><span style="color:#9CABCA">,</span><span style="color:#9CABCA"> "</span><span style="color:#FFA066">size</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#D27E99"> 1</span><span style="color:#9CABCA"> &#125;,</span></span>
+<span class="line"><span style="color:#9CABCA">        &#123;</span><span style="color:#9CABCA"> "</span><span style="color:#FFA066">type</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "progress"</span><span style="color:#9CABCA">,</span><span style="color:#9CABCA"> "</span><span style="color:#FFA066">progress</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#9CABCA"> &#123;</span><span style="color:#9CABCA"> "</span><span style="color:#FF5D62">char</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "󰝤"</span><span style="color:#9CABCA"> &#125;,</span><span style="color:#9CABCA"> "</span><span style="color:#FFA066">empty</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#9CABCA"> &#123;</span><span style="color:#9CABCA"> "</span><span style="color:#FF5D62">char</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "󰁱"</span><span style="color:#9CABCA"> &#125;</span><span style="color:#9CABCA"> &#125;,</span></span>
+<span class="line"><span style="color:#9CABCA">        &#123;</span></span>
+<span class="line"><span style="color:#9CABCA">          "</span><span style="color:#FFA066">type</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "container"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">          "</span><span style="color:#FFA066">height</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#D27E99"> 1</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">          "</span><span style="color:#FFA066">flex</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "space-between"</span><span style="color:#9CABCA">,</span></span>
+<span class="line"><span style="color:#9CABCA">          "</span><span style="color:#FFA066">children</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#9CABCA"> [</span></span>
+<span class="line"><span style="color:#9CABCA">            &#123;</span><span style="color:#9CABCA"> "</span><span style="color:#FF5D62">type</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "label"</span><span style="color:#9CABCA">,</span><span style="color:#9CABCA"> "</span><span style="color:#FF5D62">text</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "$position"</span><span style="color:#9CABCA">,</span><span style="color:#9CABCA"> "</span><span style="color:#FF5D62">align</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "left"</span><span style="color:#9CABCA"> &#125;,</span></span>
+<span class="line"><span style="color:#9CABCA">            &#123;</span><span style="color:#9CABCA"> "</span><span style="color:#FF5D62">type</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "label"</span><span style="color:#9CABCA">,</span><span style="color:#9CABCA"> "</span><span style="color:#FF5D62">text</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "$length"</span><span style="color:#9CABCA">,</span><span style="color:#9CABCA"> "</span><span style="color:#FF5D62">align</span><span style="color:#9CABCA">"</span><span style="color:#9CABCA">:</span><span style="color:#98BB6C"> "right"</span><span style="color:#9CABCA"> &#125;</span></span>
+<span class="line"><span style="color:#9CABCA">          ]</span></span>
+<span class="line"><span style="color:#9CABCA">        &#125;</span></span>
+<span class="line"><span style="color:#9CABCA">      ]</span></span>
+<span class="line"><span style="color:#9CABCA">    &#125;</span></span>
+<span class="line"><span style="color:#9CABCA">  ]</span></span>
+<span class="line"><span style="color:#9CABCA">&#125;</span></span></code></pre>
+<!----></div> <hr> <div class="flex justify-between items-center"><!--[--><a class="self-start font-bold text-fg! text-4xl cursor-pointer hover:text-background duration-300 transition-colors" href="/docs/getting_started"><span><i class="fa-solid fa-chevron-left"></i></span> <span>Getting Started</span></a><!--]--> <!--[--><a class="font-bold text-fg! text-4xl cursor-pointer hover:text-background duration-300 transition-colors" href="/docs/faq"><span>FAQ</span> <span><i class="fa-solid fa-chevron-right"></i></span></a><!--]--></div></main><!----><!----></div><!----><!--]--> <!--[!--><!--]--><!--]-->
+			
+			<script>
+				{
+					__sveltekit_1nvhntq = {
+						base: new URL("..", location).pathname.slice(0, -1)
+					};
+
+					const element = document.currentScript.parentElement;
+
+					Promise.all([
+						import("../_app/immutable/entry/start.CHwnXDux.js"),
+						import("../_app/immutable/entry/app.BTUa2s0b.js")
+					]).then(([kit, app]) => {
+						kit.start(app, element, {
+							node_ids: [0, 3],
+							data: [null,null],
+							form: null,
+							error: null
+						});
+					});
+				}
+			</script>
+		
+  </body>
+</html>
