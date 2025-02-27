@@ -71,7 +71,7 @@ Note that identity is case insensitive and bus_name are not.
 
 #### * `keybinds` (Optional)
 
-\- Keybinds to do [#Actions](#Actions). Keybinds are defined into `key` and `action`.
+\- Keybinds to do [#Actions](#actions). Keybinds are defined into `key` and `action`.
 
 The dropdown below is the list of available keys you can use
 
@@ -132,7 +132,7 @@ The dropdown below is the list of available keys you can use
 
 #### * `direction` (Optional)
 
-\- See [#Direction](#Direction).
+\- See [#Direction](#direction).
 <br>
 
 - Type: `string`
@@ -140,7 +140,7 @@ The dropdown below is the list of available keys you can use
 
 #### * `flex` (Optional)
 
-\- See [#ContainerFlex](#ContainerFlex).
+\- See [#ContainerFlex](#containerflex).
 <br>
 
 - Type: `string`
@@ -188,11 +188,11 @@ The dropdown below is the list of available keys you can use
 
 #### * `layout` (Optional)
 
-\- Layout ui to be rendered. See [#Widgets](#Widgets) For all the available widgets.
+\- Layout ui to be rendered. See [#Widgets](#widgets) For all the available widgets.
 <br>
 
 - Type: `widget[]`
-- Default: [#Example Full Config](#Example-Full-Config)
+- Default: [#Example Full Config](#example-full-config)
 
 ---
 
@@ -210,10 +210,10 @@ List of available widgets.
   - `height`: `number` (optional). Specifies the height of the container. See [#Width & Height](#width--height).
   - `border`: `boolean` (Optional). Whether to draw a border around the widget. Default: `false`
   - `padding`: `[number, number]` (Optional). Whether to add padding on the container. Default: `[0, 0]`
-  - `direction`: `string` (Optional). Specifies the layout direction of child widgets. See [#Direction](#Direction).
-  - `flex`: `string` (Optional). Specifies how space is distributed among child widgets. See [#ContainerFlex](#ContainerFlex).
-  - `bg`: `string` (Optional). The background color of this container area. See [#Bg & Fg](#Bg--Fg).
-  - `fg`: `string` (Optional). The foreground color of the children. See [#Bg & Fg](#Bg--Fg).
+  - `direction`: `string` (Optional). Specifies the layout direction of child widgets. See [#Direction](#direction).
+  - `flex`: `string` (Optional). Specifies how space is distributed among child widgets. See [#ContainerFlex](#containerflex).
+  - `bg`: `string` (Optional). The background color of this container area. See [#Bg & Fg](#bg--fg).
+  - `fg`: `string` (Optional). The foreground color of the children. See [#Bg & Fg](#bg--fg).
   - `children`: `widget[]` (Required). The childrens of the container.
 
 <br>
@@ -255,8 +255,8 @@ List of available widgets.
       - `crop` - If the width or height is smaller than the area, the image will be cropped.
       - `scale` - Scale the image.
     - Default: `scale`
-  - `bg`: `string` (Optional). The background color of this container area. See [#Bg & Fg](#Bg--Fg).
-  - `fg`: `string` (Optional). The foreground color of the children. See [#Bg & Fg](#Bg--Fg).
+  - `bg`: `string` (Optional). The background color of this container area. See [#Bg & Fg](#bg--fg).
+  - `fg`: `string` (Optional). The foreground color of the children. See [#Bg & Fg](#bg--fg).
 
 <br>
 
@@ -280,14 +280,14 @@ List of available widgets.
 <br>
 
 - Fields:
-  - `text`: `string` (Required). The text to display in the label. See [#Text](#Text).
-  - `align`: `string` (Optional). Specifies the alignment of the text. See [#LabelAlignment](#LabelAlignment).
+  - `text`: `string` (Required). The text to display in the label. See [#Text](#text).
+  - `align`: `string` (Optional). Specifies the alignment of the text. See [#LabelAlignment](#labelalignment).
   - `truncate`: `boolean` (Optional). Specifies whether to truncate the text if it exceeds the available space.
     - Default: `true`
   - `bold`: `boolean` (Optional). Makes the label text bold. .
     - Default: `false`
-  - `bg`: `string` (Optional). The background color of the label. See [#Bg & Fg](#Bg--Fg).
-  - `fg`: `string` (Optional). The foreground color of the label. See [#Bg & Fg](#Bg--Fg).
+  - `bg`: `string` (Optional). The background color of the label. See [#Bg & Fg](#bg--fg).
+  - `fg`: `string` (Optional). The foreground color of the label. See [#Bg & Fg](#bg--fg).
 
 <br>
 
@@ -307,17 +307,17 @@ List of available widgets.
 
 #### `Button`
 
-\- Very similar on [#Label](#Label) in terms of display but this one is interactable.
+\- Very similar on [#Label](#label) in terms of display but this one is interactable.
 <br>
 
 - Fields:
-  - `text`: `string` (Required). The text to display in the button. See [#Text](#Text).
-  - `action`: `string` (Optional). Specifies an action to perform when the button is clicked. See [#Actions](#Actions).
+  - `text`: `string` (Required). The text to display in the button. See [#Text](#text).
+  - `action`: `string` (Optional). Specifies an action to perform when the button is clicked. See [#Actions](#actions).
   - `exec`: `string` (Optional). Spawns a shell command to execute when the button is clicked (Note that this will quietly execute and will not notify you if it errors).
   - `bold`: `boolean` (Optional). Makes the label text bold. .
     - Default: `false`
-  - `bg`: `string` (Optional). The background color of the button. See [#Bg & Fg](#Bg--Fg).
-  - `fg`: `string` (Optional). The foreground color of the button. See [#Bg & Fg](#Bg--Fg).
+  - `bg`: `string` (Optional). The background color of the button. See [#Bg & Fg](#bg--fg).
+  - `fg`: `string` (Optional). The foreground color of the button. See [#Bg & Fg](#bg--fg).
 
 <br>
 
@@ -342,15 +342,15 @@ List of available widgets.
 
 - Fields:
   - `size`: `number` (optional). Specifies the width of the progress bar. See [#Width & Height](#width--height).
-  - `direction`: `string` (Optional). Whether to display the progress bar horizontally or vertically. See [#Direction](#Direction).
+  - `direction`: `string` (Optional). Whether to display the progress bar horizontally or vertically. See [#Direction](#direction).
   - `progress`: string (Required).
     - `char`: The character used to represent the progress portion of the progress bar.
-    - `bg`: The background color of the progress. See [#Bg & Fg](#Bg--Fg).
-    - `fg`: The foreground color of the progress. See [#Bg & Fg](#Bg--Fg).
+    - `bg`: The background color of the progress. See [#Bg & Fg](#bg--fg).
+    - `fg`: The foreground color of the progress. See [#Bg & Fg](#bg--fg).
   - `empty`: string (Required).
     - `char`: The character used to represent the empty portion of the progress bar.
-    - `bg`: The background color of the empty. See [#Bg & Fg](#Bg--Fg).
-    - `fg`: The foreground color of the empty. See [#Bg & Fg](#Bg--Fg).
+    - `bg`: The background color of the empty. See [#Bg & Fg](#bg--fg).
+    - `fg`: The foreground color of the empty. See [#Bg & Fg](#bg--fg).
 
 <br>
 
@@ -381,15 +381,15 @@ List of available widgets.
 
 - Fields:
   - `size`: `number` (optional). Specifies the width of the volume bar. See [#Width & Height](#width--height).
-  - `direction`: `string` (Optional). Whether to display the volume bar horizontally or vertically. See [#Direction](#Direction).
+  - `direction`: `string` (Optional). Whether to display the volume bar horizontally or vertically. See [#Direction](#direction).
   - `volume`: string (Required).
     - `char`: The character used to represent the volume portion of the volume bar.
-    - `bg`: The background color of the volume. See [#Bg & Fg](#Bg--Fg).
-    - `fg`: The foreground color of the volume. See [#Bg & Fg](#Bg--Fg).
+    - `bg`: The background color of the volume. See [#Bg & Fg](#bg--fg).
+    - `fg`: The foreground color of the volume. See [#Bg & Fg](#bg--fg).
   - `empty`: string (Required).
     - `char`: The character used to represent the empty portion of the volume bar.
-    - `bg`: The background color of the empty. See [#Bg & Fg](#Bg--Fg).
-    - `fg`: The foreground color of the empty. See [#Bg & Fg](#Bg--Fg).
+    - `bg`: The background color of the empty. See [#Bg & Fg](#bg--fg).
+    - `fg`: The foreground color of the empty. See [#Bg & Fg](#bg--fg).
 
 <br>
 
@@ -512,7 +512,7 @@ Variants:
 
 - Text functions:
   - `get_meta(key: string)` - Get a specific metadata that is not available in the variables above.
-  - `var($foo, $length)` - Define a mutable variable, where $foo is the variable name & $length is the variable value. You can use toggle() & set() actions to mutate it. See [#Actions](#Actions). For those actions.
+  - `var($foo, $length)` - Define a mutable variable, where $foo is the variable name & $length is the variable value. You can use toggle() & set() actions to mutate it. See [#Actions](#actions). For those actions.
 
 #### Actions
 
