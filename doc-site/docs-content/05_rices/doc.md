@@ -8,7 +8,7 @@ Compilation of rices / customization of fum.
 
 ---
 
-## danielwerg - lowfi clone
+### * danielwerg - lowfi clone
 
 ![preview](/rices/danielwerg_lowfi_clone.png)
 
@@ -172,10 +172,9 @@ NOTE: Volume bar is never show ([#68](https://github.com/qxb3/fum/issues/68))
   ]
 }
 ```
-
 </details>
 
-## qxb3
+### * qxb3
 
 ![preview](/rices/preconfig_06.png)
 
@@ -252,7 +251,7 @@ NOTE: Volume bar is never show ([#68](https://github.com/qxb3/fum/issues/68))
 
 </details>
 
-## qxb3
+### * qxb3
 
 ![preview](/rices/preconfig_05.png)
 
@@ -302,7 +301,7 @@ NOTE: Volume bar is never show ([#68](https://github.com/qxb3/fum/issues/68))
 
 </details>
 
-## qxb3
+### * qxb3
 
 ![preview](/rices/preconfig_04.png)
 
@@ -335,7 +334,7 @@ NOTE: Volume bar is never show ([#68](https://github.com/qxb3/fum/issues/68))
 
 </details>
 
-## qxb3
+### * qxb3
 
 ![preview](/rices/preconfig_03.png)
 
@@ -385,7 +384,7 @@ NOTE: Volume bar is never show ([#68](https://github.com/qxb3/fum/issues/68))
 
 </details>
 
-## qxb3
+### * qxb3
 
 ![preview](/rices/preconfig_02.png)
 
@@ -450,7 +449,7 @@ NOTE: Volume bar is never show ([#68](https://github.com/qxb3/fum/issues/68))
 
 </details>
 
-## qxb3
+### * qxb3
 
 ![preview](/rices/preconfig_01.png)
 
