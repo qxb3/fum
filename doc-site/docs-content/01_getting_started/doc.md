@@ -10,6 +10,12 @@ title: Getting Started
 
 To get started with fum. You will need to install fum to your system.
 
+<br>
+
+[![Packaging status](https://repology.org/badge/vertical-allrepos/fum.svg)](https://repology.org/project/fum/versions)
+
+<br>
+
 ### Arch
 
 ```bash
@@ -43,6 +49,18 @@ Download the latest rpm from [releases](https://github.com/qxb3/fum/releases) fi
 
 ```bash
 sudo dnf install fum-x86-64_v{DOC_VERSION}.rpm
+```
+
+### Build from source
+
+```bash
+git clone https://github.com/qxb3/fum.git
+cd fum
+cargo build --release
+# Either copy/move `target/release/yum` to /usr/bin
+# Or add the release path to your system's path
+# Moving fum binary to /usr/bin
+mv target/release/fum /usr/bin
 ```
 
 ## Usage
