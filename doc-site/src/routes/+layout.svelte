@@ -4,7 +4,7 @@
   import Nav from '$lib/Nav.svelte'
   import SideBar from '$lib/SideBar.svelte'
 
-  let { children } = $props()
+  const { children } = $props()
 </script>
 
 
