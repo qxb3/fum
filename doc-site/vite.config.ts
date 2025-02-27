@@ -3,8 +3,8 @@ import tailwindcss from '@tailwindcss/vite'
 import { sveltekit } from '@sveltejs/kit/vite'
 import { defineConfig } from 'vite'
 
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 
 import { compile, escapeSvelte } from 'mdsvex'
 import { codeToHtml } from 'shiki'
