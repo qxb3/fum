@@ -1,0 +1,52 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-embed-code:  "Jersey 15", serif;
+  --color-background: #1c1b22;
+  --color-fg:         #defedf;
+  --color-primary:    #40e78a;
+  --color-secondary:  #3a86ff;
+  --color-tertiary:   #9b5de5;
+}
+
+html {
+  @apply scroll-smooth h-full;
+}
+
+body {
+  @apply bg-background text-fg font-embed-code;
+}
+
+.doc p,
+.doc li{ @apply text-2xl; }
+
+.doc h1 { @apply relative text-6xl font-bold my-3; }
+.doc h2 { @apply relative text-5xl font-bold my-3; }
+.doc h3 { @apply relative text-4xl font-bold my-3; }
+.doc h4 { @apply relative text-3xl font-bold my-3; }
+.doc h5 { @apply relative text-2xl font-bold my-3; }
+.doc h6 { @apply relative text-xl font-bold my-3; }
+
+.doc h1,
+.doc h2,
+.doc h3,
+.doc h4,
+.doc h5,
+.doc h6 { @apply text-primary; }
+.doc a:not(h1 a, h2 a, h3 a, h4 a, h5 a, h6 a) { @apply text-secondary; }
+
+.doc ol { @apply list-decimal pl-4; }
+.doc ul { @apply list-disc pl-4; }
+
+.doc table { @apply w-full; }
+.doc thead { @apply bg-primary text-background; }
+.doc th, td { @apply px-4 py-2 border border-fg text-left; }
+
+.doc blockquote { @apply border-l-4 border-gray-400 dark:border-gray-600 pl-4 italic text-gray-700 dark:text-gray-300; }
+
+.doc pre { @apply mb-4 p-2 overflow-x-scroll; }
+.doc code:not(pre code) { @apply bg-[#16161d] font-embed-code px-2; }
+
+.doc summary { @apply text-2xl cursor-pointer hover:text-primary transition-colors duration-300 w-fit; }
+
+.doc hr { @apply my-8; }
