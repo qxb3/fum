@@ -69,7 +69,7 @@ Note that identity is case insensitive and bus_name are not.
 
 #### * `keybinds` (Optional)
 
-\- Keybinds to do [#Actions](#Actions). Keybinds are defined into `key` and `action`.
+\- Keybinds to do [#Actions](#actions). Keybinds are defined into `key` and `action`.
 
 The dropdown below is the list of available keys you can use
 
@@ -310,7 +310,7 @@ List of available widgets.
 
 - Fields:
   - `text`: `string` (Required). The text to display in the button. See [#Text](#Text).
-  - `action`: `string` (Optional). Specifies an action to perform when the button is clicked. See [#Actions](#Actions).
+  - `action`: `string` (Optional). Specifies an action to perform when the button is clicked. See [#Actions](#actions).
   - `exec`: `string` (Optional). Spawns a shell command to execute when the button is clicked (Note that this will quietly execute and will not notify you if it errors).
   - `bold`: `boolean` (Optional). Makes the label text bold. .
     - Default: `false`
@@ -510,7 +510,7 @@ Variants:
 
 - Text functions:
   - `get_meta(key: string)` - Get a specific metadata that is not available in the variables above.
-  - `var($foo, $length)` - Define a mutable variable, where $foo is the variable name & $length is the variable value. You can use toggle() & set() actions to mutate it. See [#Actions](#Actions). For those actions.
+  - `var($foo, $length)` - Define a mutable variable, where $foo is the variable name & $length is the variable value. You can use toggle() & set() actions to mutate it. See [#Actions](#actions). For those actions.
 
 #### Actions
 
