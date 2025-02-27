@@ -70,7 +70,5 @@ async function getDocs(docsPath: string) {
       }
     }))
 
-  console.log(docs[0])
-
   return docs
 }

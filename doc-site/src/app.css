@@ -20,12 +20,12 @@ body {
 .doc p,
 .doc li{ @apply text-2xl; }
 
-.doc h1 { @apply relative text-6xl font-bold mb-2; }
-.doc h2 { @apply relative text-5xl font-bold mb-2; }
-.doc h3 { @apply relative text-4xl font-bold mb-2; }
-.doc h4 { @apply relative text-3xl font-bold mb-2; }
-.doc h5 { @apply relative text-2xl font-bold mb-2; }
-.doc h6 { @apply relative text-xl font-bold mb-2; }
+.doc h1 { @apply relative text-6xl font-bold my-3; }
+.doc h2 { @apply relative text-5xl font-bold my-3; }
+.doc h3 { @apply relative text-4xl font-bold my-3; }
+.doc h4 { @apply relative text-3xl font-bold my-3; }
+.doc h5 { @apply relative text-2xl font-bold my-3; }
+.doc h6 { @apply relative text-xl font-bold my-3; }
 
 .doc h1,
 .doc h2,
@@ -44,7 +44,9 @@ body {
 
 .doc blockquote { @apply border-l-4 border-gray-400 dark:border-gray-600 pl-4 italic text-gray-700 dark:text-gray-300; }
 
-.doc pre { @apply mb-4 p-2; }
-.doc code:not(pre code) { @apply bg-[#1F1F28] text-xl font-embed-code px-1; }
+.doc pre { @apply mb-4 p-2 overflow-x-scroll; }
+.doc code:not(pre code) { @apply bg-[#16161d] font-embed-code px-2; }
+
+.doc summary { @apply text-2xl cursor-pointer hover:text-primary transition-colors duration-300 w-fit; }
 
 .doc hr { @apply my-8; }
