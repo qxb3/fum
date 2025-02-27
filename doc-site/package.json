@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite dev --host",
     "build": "vite build",
+    "deploy": "npm run build && gh-pages -d build -b docs",
     "preview": "vite preview",
     "prepare": "svelte-kit sync || echo ''",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
@@ -17,6 +18,7 @@
     "@sveltejs/vite-plugin-svelte": "^5.0.0",
     "@tailwindcss/vite": "^4.0.0",
     "@types/node": "^22.13.5",
+    "gh-pages": "^6.3.0",
     "mdsvex": "^0.12.3",
     "rehype-autolink-headings": "^7.1.0",
     "rehype-slug": "^6.0.0",
