@@ -29,10 +29,11 @@ export default defineConfig({
 async function getDocs(docsPath: string) {
   const docs = await Promise.all(fs
     .readdirSync(docsPath)
-    .map(async _docPath => {
-      const docPath = path.join(__dirname, docsPath, _docPath, 'doc.md')
-      const raw = fs.readFileSync(docPath, 'utf-8')
-      const compiledContent = await compile(raw, {
+    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+    .map(async docPath => {
+      const mdPath = path.join(__dirname, docsPath, docPath, 'doc.md')
+      const content = fs.readFileSync(mdPath, 'utf-8')
+      const compiledContent = await compile(content, {
         rehypePlugins: [
           rehypeSlug,
           [rehypeAutolinkHeadings, {
@@ -62,13 +63,14 @@ async function getDocs(docsPath: string) {
       })
 
       return {
-        url: `/docs/${_docPath}`,
-        path: docPath,
-        raw,
-        title: compiledContent.data.fm?.title,
+        url: `/docs/${docPath.slice(3)}`,
+        raw: content,
+        title: compiledContent.data.fm!.title,
         html: compiledContent.code
       }
     }))
+
+  console.log(docs[0])
 
   return docs
 }

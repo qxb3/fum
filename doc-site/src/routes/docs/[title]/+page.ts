@@ -7,7 +7,7 @@ export const load: PageLoad = async ({ params }) => {
 
   const doc = DOCS
     .find(d =>
-      d.path.split('/').slice(-2, -1)[0] === title
+      d.title.toLowerCase().replaceAll(' ', '_') === title
     )
 
   if (!doc)

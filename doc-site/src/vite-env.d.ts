@@ -5,6 +5,6 @@ declare const DOCS: {
   url: string
   path: string
   raw: string
-  title?: string
+  title: string
   html: string
 }[]
