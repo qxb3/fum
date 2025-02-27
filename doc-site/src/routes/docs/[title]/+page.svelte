@@ -4,6 +4,10 @@
   const { data }: PageProps = $props()
 </script>
 
+<svelte:head>
+  <title>{data.doc.title}</title>
+</svelte:head>
+
 <main class="doc p-8">
   <div class="overflow-x-hidden">
     {@html data.doc.html}
