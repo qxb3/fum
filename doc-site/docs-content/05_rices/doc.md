@@ -4,6 +4,10 @@ title: Rices
 
 # Rices
 
+Compilation of rices / customization of fum.
+
+---
+
 ## danielwerg - lowfi clone
 
 ![preview](/rices/danielwerg_lowfi_clone.png)
