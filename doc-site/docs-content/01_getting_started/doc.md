@@ -88,3 +88,7 @@ fum list-players
 Active Players:
 * spotify ~> org.mpris.MediaPlayer2.spotify
 ```
+
+### Compatibility
+
+Some terminals will have some issues of rendering the image as those don't support an image protocol yet. See [Compatibility](https://github.com/benjajaja/ratatui-image#compatibility-matrix) For compatible terminals.
