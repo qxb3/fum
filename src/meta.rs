@@ -63,7 +63,7 @@ impl Meta {
         let status_text = Meta::get_status_text(&status);
         let position = Meta::get_position(player)?;
         let length = Meta::get_length(&metadata)?;
-        let volume = Meta::get_voume(player)?;
+        let volume = Meta::get_volume(player).unwrap_or(0.0);
         let cover_art = Meta::get_cover_art(&metadata, picker, current).ok();
 
         let mut changed = false;
@@ -211,7 +211,7 @@ impl Meta {
         Ok(album)
     }
 
-    pub fn get_voume(player: &Player) -> FumResult<f64> {
+    pub fn get_volume(player: &Player) -> FumResult<f64> {
         let volume = player.get_volume()
             .map_err(|err| format!("Failed to get player volume: {err}"))?;
 
