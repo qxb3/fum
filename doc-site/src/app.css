@@ -7,6 +7,7 @@
   --color-primary:    #40e78a;
   --color-secondary:  #3a86ff;
   --color-tertiary:   #9b5de5;
+  --color-subtle:     #727169;
 }
 
 html {
@@ -76,7 +77,7 @@ body {
     }
     & .ready {
       mask-image: url(/icons/copy.svg);
-      background-color: var(--color-fg);
+      background-color: var(--color-subtle);
     }
     & .success {
       display: none;
