@@ -7,7 +7,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 import { compile, escapeSvelte } from 'mdsvex'
-import { codeToHtml } from 'shiki'
+import { codeToHtml, type ShikiTransformer } from 'shiki'
 
 import rehypeSlug from 'rehype-slug'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
@@ -25,6 +25,50 @@ export default defineConfig({
     DOCS: JSON.stringify(DOCS)
   }
 })
+
+interface addCodeblockCopyButtonOptions {
+  /** `3000` by default */
+  ms?: number
+}
+function addCodeblockCopyButton ({
+  ms = 3000
+}: addCodeblockCopyButtonOptions = {}) {
+  return {
+    name: 'shiki-transformer-codeblock-copy-button',
+    pre(node) {
+      node.children.push({
+        type: 'element',
+        tagName: 'button',
+        properties: {
+          className: [ 'copy' ],
+          "data-code": this.source,
+          onClick: `
+            navigator.clipboard.writeText(this.dataset.code);
+            this.setAttribute('disabled', true);
+            this.classList.add('copied');
+            setTimeout(() => {
+              this.classList.remove('copied');
+              this.removeAttribute('disabled');
+            }, ${ms})`
+        },
+        children: [
+          {
+            type: 'element',
+            tagName: 'span',
+            properties: { className: [ 'ready' ] },
+            children: []
+          },
+          {
+            type: 'element',
+            tagName: 'span',
+            properties: { className: [ 'success' ] },
+            children: []
+          }
+        ]
+      });
+    }
+  } satisfies ShikiTransformer;
+}
 
 async function getDocs(docsPath: string) {
   const docs = await Promise.all(fs
@@ -57,7 +101,17 @@ async function getDocs(docsPath: string) {
         ],
         highlight: {
           highlighter: async (code: string, lang: string) => {
-            return escapeSvelte(await codeToHtml(code, { lang, theme: 'kanagawa-wave' }));
+            return escapeSvelte(
+              await codeToHtml(
+                code,
+                {
+                  lang,
+                  theme: 'kanagawa-wave',
+                  transformers: [addCodeblockCopyButton()],
+                  tabindex: -1
+                }
+              )
+            );
           }
         }
       })
