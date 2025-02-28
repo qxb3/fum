@@ -44,9 +44,54 @@ body {
 
 .doc blockquote { @apply border-l-4 border-gray-400 dark:border-gray-600 pl-4 italic text-gray-700 dark:text-gray-300; }
 
-.doc pre { @apply mb-4 p-2 overflow-x-scroll; }
+.doc pre { @apply mb-4 p-2; }
 .doc code:not(pre code) { @apply bg-[#16161d] font-embed-code px-2; }
 
 .doc summary { @apply text-2xl cursor-pointer hover:text-primary transition-colors duration-300 w-fit; }
 
 .doc hr { @apply my-8; }
+
+.doc pre:has(code) {
+  position: relative;
+  display: flex;
+
+  code {
+    overflow-x: scroll;
+  }
+
+  button.copy {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 24px;
+    width: 24px;
+    margin: .5em;
+  
+    & span {
+      display: inline-block;
+      width: 100%;
+      height: 100%;
+      mask-size: cover;
+      cursor: pointer;
+    }
+    & .ready {
+      mask-image: url(/icons/copy.svg);
+      background-color: var(--color-fg);
+    }
+    & .success {
+      display: none;
+      mask-image: url(/icons/check.svg);
+      background-color: var(--color-primary);
+    }
+  
+    &.copied {
+      & .success {
+        display: block;
+      }
+  
+      & .ready {
+        display: none;
+      }
+    }
+  }
+}
