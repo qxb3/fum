@@ -5,7 +5,7 @@ use std::{fmt, str::FromStr};
 pub enum PlaybackStatus {
     Playing,
     Paused,
-    Stopped
+    Stopped,
 }
 
 impl FromStr for PlaybackStatus {
@@ -16,7 +16,7 @@ impl FromStr for PlaybackStatus {
             "Playing" => Ok(PlaybackStatus::Playing),
             "Paused" => Ok(PlaybackStatus::Paused),
             "Stopped" => Ok(PlaybackStatus::Stopped),
-            _ => Err("PlaybackStatus is not Playing,Paused or Stopped.".into())
+            _ => Err("PlaybackStatus is not Playing,Paused or Stopped.".into()),
         }
     }
 }
@@ -42,7 +42,7 @@ impl fmt::Display for PlaybackStatus {
 pub enum LoopStatus {
     None,
     Track,
-    Playlist
+    Playlist,
 }
 
 impl FromStr for LoopStatus {
@@ -53,7 +53,7 @@ impl FromStr for LoopStatus {
             "None" => Ok(LoopStatus::None),
             "Track" => Ok(LoopStatus::Track),
             "Playlist" => Ok(LoopStatus::Playlist),
-            _ => Err("LoopStatus is not None,Track or Playlist.".into())
+            _ => Err("LoopStatus is not None,Track or Playlist.".into()),
         }
     }
 }

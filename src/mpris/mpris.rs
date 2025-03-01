@@ -18,7 +18,7 @@ impl Mpris {
         let connection = Connection::session().await?;
 
         Ok(Self {
-            connection
+            connection,
         })
     }
 
@@ -51,12 +51,10 @@ impl Mpris {
         let bus_names: Vec<String> = proxy.call("ListNames", &()).await?;
 
         // Return the filtered mpris only service bus names.
-        Ok(
-            bus_names
-                .into_iter()
-                .filter(|bus_name| bus_name.starts_with("org.mpris.MediaPlayer2."))
-                .collect::<Vec<String>>()
-        )
+        Ok(bus_names
+            .into_iter()
+            .filter(|bus_name| bus_name.starts_with("org.mpris.MediaPlayer2."))
+            .collect::<Vec<String>>())
     }
 
     // Creates a new D-Bus proxy.
@@ -65,8 +63,9 @@ impl Mpris {
             &self.connection,
             "org.freedesktop.DBus",
             "/org/freedesktop/DBus",
-            "org.freedesktop.DBus"
-        ).await?;
+            "org.freedesktop.DBus",
+        )
+        .await?;
 
         Ok(proxy)
     }

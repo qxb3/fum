@@ -1,6 +1,11 @@
+#![allow(dead_code)]
+
 use std::{collections::HashMap, str::FromStr, time::Duration};
 
-use zbus::{zvariant::{self, ObjectPath}, Connection, Proxy};
+use zbus::{
+    zvariant::{self, ObjectPath},
+    Connection, Proxy,
+};
 
 use crate::FumResult;
 
@@ -22,21 +27,23 @@ impl<'a> Player<'a> {
             connection,
             bus_name.to_string(),
             "/org/mpris/MediaPlayer2",
-            "org.mpris.MediaPlayer2.Player"
-        ).await?;
+            "org.mpris.MediaPlayer2.Player",
+        )
+        .await?;
 
         // Proxy for "org.freedesktop.DBus.Properties" interface.
         let properties_proxy = Proxy::new(
             connection,
             bus_name.to_string(),
             "/org/mpris/MediaPlayer2",
-            "org.freedesktop.DBus.Properties"
-        ).await?;
+            "org.freedesktop.DBus.Properties",
+        )
+        .await?;
 
         Ok(Self {
             player_proxy,
             properties_proxy,
-            bus_name
+            bus_name,
         })
     }
 
@@ -92,14 +99,18 @@ impl<'a> Player<'a> {
 
     /// Seek forward.
     pub async fn seek_forward(&self, offset: Duration) -> FumResult<()> {
-        self.player_proxy.call_method("Seek", &(offset.as_micros() as i64)).await?;
+        self.player_proxy
+            .call_method("Seek", &(offset.as_micros() as i64))
+            .await?;
 
         Ok(())
     }
 
     /// Seek backward.
     pub async fn seek_backward(&self, offset: Duration) -> FumResult<()> {
-        self.player_proxy.call_method("Seek", &(-(offset.as_micros() as i64))).await?;
+        self.player_proxy
+            .call_method("Seek", &(-(offset.as_micros() as i64)))
+            .await?;
 
         Ok(())
     }
@@ -108,7 +119,9 @@ impl<'a> Player<'a> {
     pub async fn set_position(&self, trackid: &str, position: Duration) -> FumResult<()> {
         let trackid = ObjectPath::try_from(trackid)?;
 
-        self.player_proxy.call_method("SetPosition", &(trackid, position.as_micros() as i64)).await?;
+        self.player_proxy
+            .call_method("SetPosition", &(trackid, position.as_micros() as i64))
+            .await?;
 
         Ok(())
     }
@@ -123,8 +136,7 @@ impl<'a> Player<'a> {
 
     /// LoopStatus of player.
     pub async fn loop_status(&self) -> FumResult<LoopStatus> {
-        let loop_status: String =
-            self.player_proxy.get_property("LoopStatus").await?;
+        let loop_status: String = self.player_proxy.get_property("LoopStatus").await?;
 
         Ok(LoopStatus::from_str(&loop_status)?)
     }
@@ -135,7 +147,9 @@ impl<'a> Player<'a> {
             return Err("Cannot set the LoopStatus as CanControl is false".into());
         }
 
-        self.player_proxy.set_property("LoopStatus", loop_status.to_string()).await?;
+        self.player_proxy
+            .set_property("LoopStatus", loop_status.to_string())
+            .await?;
 
         Ok(())
     }
@@ -157,7 +171,10 @@ impl<'a> Player<'a> {
         let max_rate = self.max_playback_rate().await?;
 
         if rate < min_rate || rate > max_rate {
-            return Err("Cannot set the Rate as its passed on MinimumRate or MaximumRate bounds".into());
+            return Err(
+                "Cannot set the Rate as its passed on MinimumRate or MaximumRate bounds"
+                    .into(),
+            );
         }
 
         self.player_proxy.set_property("Rate", rate).await?;
@@ -231,7 +248,8 @@ impl<'a> Player<'a> {
 
     /// Can the player go previous.
     pub async fn can_previous(&self) -> FumResult<bool> {
-        let can_go_previous: bool = self.player_proxy.get_property("CanGoPrevious").await?;
+        let can_go_previous: bool =
+            self.player_proxy.get_property("CanGoPrevious").await?;
 
         Ok(can_go_previous)
     }

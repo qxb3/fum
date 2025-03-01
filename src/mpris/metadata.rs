@@ -9,14 +9,14 @@ pub type MetadataValue<'a> = zvariant::Value<'a>;
 
 #[derive(Debug)]
 pub struct Metadata<'a> {
-    metadata: HashMap<String, MetadataValue<'a>>
+    metadata: HashMap<String, MetadataValue<'a>>,
 }
 
 impl<'a> Metadata<'a> {
     /// Creates a new Metadata.
     pub fn new(metadata: HashMap<String, MetadataValue<'a>>) -> FumResult<Self> {
         Ok(Self {
-            metadata
+            metadata,
         })
     }
 
@@ -73,11 +73,13 @@ impl<'a> Metadata<'a> {
                 MetadataValue::Array(artists) => {
                     let artists: Vec<String> = artists
                         .iter()
-                        .filter_map(|a| a.downcast_ref::<&str>().map(|s| s.to_string()).ok())
+                        .filter_map(|a| {
+                            a.downcast_ref::<&str>().map(|s| s.to_string()).ok()
+                        })
                         .collect();
 
                     Ok(Some(artists))
-                },
+                }
                 _ => Err("xesam:artist is not an array.".into()),
             })
             .unwrap_or(Ok(None))

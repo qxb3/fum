@@ -20,7 +20,9 @@ async fn main() -> FumResult<()> {
         let title = metadata.title()?.unwrap_or("No Title".into());
         let album = metadata.album()?.unwrap_or("No Album".into());
         let artists = metadata.artists()?.unwrap_or(vec!["No Artists".into()]);
-        let length = metadata.length()?.unwrap_or(Duration::from_secs_f32(9999.0));
+        let length = metadata
+            .length()?
+            .unwrap_or(Duration::from_secs_f32(9999.0));
         let art_url = metadata.art_url()?.unwrap_or("No art url".into());
 
         let playback_status = spotify.playback_status().await?;

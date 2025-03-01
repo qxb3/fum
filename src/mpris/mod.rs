@@ -1,9 +1,9 @@
+mod metadata;
 mod mpris;
 mod player;
-mod metadata;
 mod status;
 
+pub use metadata::*;
 pub use mpris::*;
 pub use player::*;
-pub use metadata::*;
 pub use status::*;
