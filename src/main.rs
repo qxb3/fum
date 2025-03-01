@@ -1,4 +1,4 @@
-use std::{error::Error, time::Duration};
+use std::{error::Error, ops::Div, time::Duration};
 
 use mpris::Mpris;
 

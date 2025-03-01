@@ -1,6 +1,6 @@
 use std::{collections::HashMap, time::Duration};
 
-use zbus::{zvariant, Connection, Proxy};
+use zbus::{zvariant::{self, ObjectPath}, Connection, Proxy};
 
 use crate::FumResult;
 
@@ -62,6 +62,71 @@ impl<'a> Player<'a> {
             self.player_proxy.get_property("Metadata").await?;
 
         Ok(Metadata::new(metadata)?)
+    }
+
+    /// Skips to the next track in the tracklist.
+    pub async fn next(&self) -> FumResult<()> {
+        self.player_proxy.call_method("Next", &()).await?;
+
+        Ok(())
+    }
+
+    /// Skips to the previous track in the tracklist.
+    pub async fn previous(&self) -> FumResult<()> {
+        self.player_proxy.call_method("Previous", &()).await?;
+
+        Ok(())
+    }
+
+    /// Pauses playback.
+    pub async fn pause(&self) -> FumResult<()> {
+        self.player_proxy.call_method("Pause", &()).await?;
+
+        Ok(())
+    }
+
+    /// Play Pause playback.
+    pub async fn play_pause(&self) -> FumResult<()> {
+        self.player_proxy.call_method("PlayPause", &()).await?;
+
+        Ok(())
+    }
+
+    /// Stop playback.
+    pub async fn stop(&self) -> FumResult<()> {
+        self.player_proxy.call_method("Stop", &()).await?;
+
+        Ok(())
+    }
+
+    /// Play playback.
+    pub async fn play(&self) -> FumResult<()> {
+        self.player_proxy.call_method("Play", &()).await?;
+
+        Ok(())
+    }
+
+    /// Seek forward.
+    pub async fn seek_forward(&self, offset: Duration) -> FumResult<()> {
+        self.player_proxy.call_method("Seek", &(offset.as_micros() as i64)).await?;
+
+        Ok(())
+    }
+
+    /// Seek backward.
+    pub async fn seek_backward(&self, offset: Duration) -> FumResult<()> {
+        self.player_proxy.call_method("Seek", &(-(offset.as_micros() as i64))).await?;
+
+        Ok(())
+    }
+
+    /// Set playback position.
+    pub async fn set_position(&self, trackid: &str, position: Duration) -> FumResult<()> {
+        let trackid = ObjectPath::try_from(trackid)?;
+
+        self.player_proxy.call_method("SetPosition", &(trackid, position.as_micros() as i64)).await?;
+
+        Ok(())
     }
 
     /// PlaybackStatus of player.
