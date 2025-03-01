@@ -1,5 +1,7 @@
 use std::{error::Error, time::Duration};
 
+use futures::StreamExt;
+
 use mpris::Mpris;
 
 mod mpris;
@@ -12,6 +14,8 @@ async fn main() -> FumResult<()> {
     let mpris = Mpris::new().await?;
 
     let players = mpris.players().await?;
+
+    let (tx, mut rx) = tokio::sync::mpsc::channel::<()>(100);
 
     if let Some(spotify) = players.get("org.mpris.MediaPlayer2.spotify") {
         let metadata = spotify.metadata().await?;
@@ -61,6 +65,12 @@ async fn main() -> FumResult<()> {
         println!("can pause: {can_pause}");
         println!("can seek: {can_seek}");
         println!("can control: {can_control}");
+
+        spotify.watch(tx.clone()).await?;
+
+        while let Some(_) = rx.recv().await {
+            println!("something changed!")
+        }
     }
 
     Ok(())
