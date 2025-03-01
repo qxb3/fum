@@ -1,26 +1,10 @@
-use std::{collections::HashMap, time::Duration};
+use std::{collections::HashMap, str::FromStr, time::Duration};
 
 use zbus::{zvariant::{self, ObjectPath}, Connection, Proxy};
 
 use crate::FumResult;
 
-use super::Metadata;
-
-/// Playback status of player.
-#[derive(Debug)]
-pub enum PlaybackStatus {
-    Playing,
-    Paused,
-    Stopped
-}
-
-/// Loop status of player.
-#[derive(Debug)]
-pub enum LoopStatus {
-    None,
-    Track,
-    Playlist
-}
+use super::{LoopStatus, Metadata, PlaybackStatus};
 
 #[derive(Debug)]
 pub struct Player<'a> {
@@ -134,12 +118,7 @@ impl<'a> Player<'a> {
         let playback_status: String =
             self.player_proxy.get_property("PlaybackStatus").await?;
 
-        match playback_status.as_str() {
-            "Playing" => Ok(PlaybackStatus::Playing),
-            "Paused" => Ok(PlaybackStatus::Paused),
-            "Stopped" => Ok(PlaybackStatus::Stopped),
-            _ => Err("PlaybackStatus is not Playing,Paused or Stopped.".into())
-        }
+        Ok(PlaybackStatus::from_str(&playback_status)?)
     }
 
     /// LoopStatus of player.
@@ -147,12 +126,18 @@ impl<'a> Player<'a> {
         let loop_status: String =
             self.player_proxy.get_property("LoopStatus").await?;
 
-        match loop_status.as_str() {
-            "None" => Ok(LoopStatus::None),
-            "Track" => Ok(LoopStatus::Track),
-            "Playlist" => Ok(LoopStatus::Playlist),
-            _ => Err("PlaybackStatus is not None,Track or Playlist.".into())
+        Ok(LoopStatus::from_str(&loop_status)?)
+    }
+
+    /// Set LoopStatus of player.
+    pub async fn set_loop_status(&self, loop_status: LoopStatus) -> FumResult<()> {
+        if !self.can_control().await? {
+            return Err("Cannot set the LoopStatus as CanControl is false".into());
         }
+
+        self.player_proxy.set_property("LoopStatus", loop_status.to_string()).await?;
+
+        Ok(())
     }
 
     /// Playback Rate of player.
@@ -160,6 +145,24 @@ impl<'a> Player<'a> {
         let rate: f64 = self.player_proxy.get_property("Rate").await?;
 
         Ok(rate)
+    }
+
+    /// Set Playback Rate of player.
+    pub async fn set_playback_rate(&self, rate: f64) -> FumResult<()> {
+        if !self.can_control().await? {
+            return Err("Cannot set the Rate as CanControl is false".into());
+        }
+
+        let min_rate = self.min_playback_rate().await?;
+        let max_rate = self.max_playback_rate().await?;
+
+        if rate < min_rate || rate > max_rate {
+            return Err("Cannot set the Rate as its passed on MinimumRate or MaximumRate bounds".into());
+        }
+
+        self.player_proxy.set_property("Rate", rate).await?;
+
+        Ok(())
     }
 
     /// Minimum Playback Rate of player.
@@ -181,6 +184,17 @@ impl<'a> Player<'a> {
         let volume: f64 = self.player_proxy.get_property("Volume").await?;
 
         Ok(volume)
+    }
+
+    /// Set the Volume of player.
+    pub async fn set_volume(&self, volume: f64) -> FumResult<()> {
+        if !self.can_control().await? {
+            return Err("Cannot set the Volume as CanControl is false".into());
+        }
+
+        self.player_proxy.set_property("Volume", volume).await?;
+
+        Ok(())
     }
 
     /// Position of player.
