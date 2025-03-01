@@ -179,6 +179,24 @@ impl<'a> Player<'a> {
         Ok(max_rate)
     }
 
+    /// Shuffle status of player.
+    pub async fn shuffle(&self) -> FumResult<bool> {
+        let shuffle: bool = self.player_proxy.get_property("Shuffle").await?;
+
+        Ok(shuffle)
+    }
+
+    /// Set Shuffle status of player.
+    pub async fn set_shuffle(&self, shuffle: bool) -> FumResult<()> {
+        if !self.can_control().await? {
+            return Err("Cannot set the Shuffle as CanControl is false".into());
+        }
+
+        self.player_proxy.set_property("Shuffle", shuffle).await?;
+
+        Ok(())
+    }
+
     /// Volume of player.
     pub async fn volume(&self) -> FumResult<f64> {
         let volume: f64 = self.player_proxy.get_property("Volume").await?;

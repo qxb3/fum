@@ -28,6 +28,7 @@ async fn main() -> FumResult<()> {
         let playback_rate = spotify.playback_rate().await?;
         let min_playback_rate = spotify.min_playback_rate().await?;
         let max_playback_rate = spotify.max_playback_rate().await?;
+        let shuffle = spotify.shuffle().await?;
         let volume = spotify.volume().await?;
         let position = spotify.position().await?;
         let can_next = spotify.can_next().await?;
@@ -49,6 +50,7 @@ async fn main() -> FumResult<()> {
         println!("playback rate: {playback_rate}");
         println!("min playback rate: {min_playback_rate}");
         println!("max playback rate: {max_playback_rate}");
+        println!("shuffle: {shuffle}");
         println!("volume: {volume}");
         println!("position: {}", position.as_secs());
         println!("can next: {can_next}");
