@@ -4,14 +4,17 @@ use zbus::zvariant;
 
 use crate::FumResult;
 
+/// Type alias for zvariant::Value<'_>.
+pub type MetadataValue<'a> = zvariant::Value<'a>;
+
 #[derive(Debug)]
 pub struct Metadata<'a> {
-    metadata: HashMap<String, zvariant::Value<'a>>
+    metadata: HashMap<String, MetadataValue<'a>>
 }
 
 impl<'a> Metadata<'a> {
     /// Creates a new Metadata.
-    pub fn new(metadata: HashMap<String, zvariant::Value<'a>>) -> FumResult<Self> {
+    pub fn new(metadata: HashMap<String, MetadataValue<'a>>) -> FumResult<Self> {
         Ok(Self {
             metadata
         })
@@ -25,7 +28,7 @@ impl<'a> Metadata<'a> {
         self.metadata
             .get("mpris:trackid")
             .map(|trackid| match trackid {
-                zvariant::Value::Str(trackid) => Ok(Some(trackid.to_string())),
+                MetadataValue::Str(trackid) => Ok(Some(trackid.to_string())),
                 _ => Err("mpris:trackid is not a string.".into()),
             })
             .unwrap_or(Ok(None))
@@ -39,7 +42,7 @@ impl<'a> Metadata<'a> {
         self.metadata
             .get("xesam:title")
             .map(|title| match title {
-                zvariant::Value::Str(title) => Ok(Some(title.to_string())),
+                MetadataValue::Str(title) => Ok(Some(title.to_string())),
                 _ => Err("xesam:title is not a string.".into()),
             })
             .unwrap_or(Ok(None))
@@ -53,7 +56,7 @@ impl<'a> Metadata<'a> {
         self.metadata
             .get("xesam:album")
             .map(|album| match album {
-                zvariant::Value::Str(album) => Ok(Some(album.to_string())),
+                MetadataValue::Str(album) => Ok(Some(album.to_string())),
                 _ => Err("xesam:album is not a string.".into()),
             })
             .unwrap_or(Ok(None))
@@ -67,7 +70,7 @@ impl<'a> Metadata<'a> {
         self.metadata
             .get("xesam:artist")
             .map(|artists| match artists {
-                zvariant::Value::Array(artists) => {
+                MetadataValue::Array(artists) => {
                     let artists: Vec<String> = artists
                         .iter()
                         .filter_map(|a| a.downcast_ref::<&str>().map(|s| s.to_string()).ok())
@@ -88,7 +91,7 @@ impl<'a> Metadata<'a> {
         self.metadata
             .get("mpris:length")
             .map(|length| match length {
-                zvariant::Value::U64(length) => Ok(Some(Duration::from_micros(*length))),
+                MetadataValue::U64(length) => Ok(Some(Duration::from_micros(*length))),
                 _ => Err("mpris:length is not a string.".into()),
             })
             .unwrap_or(Ok(None))
@@ -102,7 +105,7 @@ impl<'a> Metadata<'a> {
         self.metadata
             .get("mpris:artUrl")
             .map(|art_url| match art_url {
-                zvariant::Value::Str(art_url) => Ok(Some(art_url.to_string())),
+                MetadataValue::Str(art_url) => Ok(Some(art_url.to_string())),
                 _ => Err("mpris:artUrl is not a string.".into()),
             })
             .unwrap_or(Ok(None))
