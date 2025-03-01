@@ -9,7 +9,7 @@ use super::Player;
 
 #[derive(Debug)]
 pub struct Mpris {
-    connection: Connection,
+    pub connection: Connection,
 }
 
 impl Mpris {
