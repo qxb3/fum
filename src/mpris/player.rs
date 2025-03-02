@@ -1,27 +1,51 @@
 #![allow(dead_code)]
 
-use std::{
-    collections::HashMap,
-    str::FromStr,
-    time::Duration
-};
+use std::{collections::HashMap, str::FromStr, time::Duration};
 
 use futures::StreamExt;
-use zbus::{
-    zvariant::ObjectPath,
-    Connection,
-    Proxy
-};
+use zbus::{zvariant::ObjectPath, Connection, Proxy};
 
 use crate::FumResult;
 
 use super::{LoopStatus, Metadata, MetadataValue, PlaybackStatus};
 
+#[derive(Debug)]
 pub enum PlayerEvent {
     PropertiesChanged,
     Seeked,
 }
 
+/// Represents an MPRIS media player instance.
+///
+/// This struct provides an interface to control and retrieve information from an MPRIS-compatible media player.
+/// It uses a D-Bus proxy to communicate with the player and manage playback.
+///
+/// # Example
+///
+/// ```no_run
+/// use mpris::{Mpris, Player};
+///
+/// #[tokio::main]
+/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let mpris = Mpris::new().await?;
+///
+///     // Ideally you should use the one provided by mpris.players()
+///     // but you can just create a player yourself.
+///     let spotify = Player::new(&mpris.connection, "org.mpris.MediaPlayer2.spotify").await?;
+///
+///     let metadata = spotify.metadata().await?;
+///
+///     let title = metadata.title()?.unwrap_or("No Title".into());
+///     println("Current song: {title}");
+///
+///     Ok(())
+/// }
+/// ```
+///
+/// # Fields
+///
+/// * `connection` - A reference to the D-Bus connection.
+/// * `bus_name` - The D-Bus name of the media player.
 #[derive(Debug)]
 pub struct Player<'a> {
     player_proxy: Proxy<'a>,
@@ -33,7 +57,8 @@ pub struct Player<'a> {
 impl<'a> Player<'a> {
     /// Creates a new Player.
     pub async fn new(connection: &'a Connection, bus_name: String) -> FumResult<Self> {
-        let player_proxy = Player::create_player_proxy(&connection, bus_name.to_string()).await?;
+        let player_proxy =
+            Player::create_player_proxy(&connection, bus_name.to_string()).await?;
 
         Ok(Self {
             player_proxy,
@@ -277,20 +302,25 @@ impl<'a> Player<'a> {
         Ok(can_control)
     }
 
-    pub async fn watch(&self, tx: tokio::sync::mpsc::Sender<PlayerEvent>) -> FumResult<()> {
+    pub async fn watch(
+        &self,
+        tx: tokio::sync::mpsc::Sender<PlayerEvent>,
+    ) -> FumResult<()> {
         let connection = self.connection.clone();
         let bus_name = self.bus_name.to_string();
 
         tokio::spawn(async move {
             // Properties proxy.
-            let properties_proxy = Player::create_properties_proxy(&connection, bus_name.to_string())
-                .await
-                .expect("Failed to create properties proxy");
+            let properties_proxy =
+                Player::create_properties_proxy(&connection, bus_name.to_string())
+                    .await
+                    .expect("Failed to create properties proxy");
 
             // Player proxy.
-            let player_proxy = Player::create_player_proxy(&connection, bus_name.to_string())
-                .await
-                .expect("Failed to create player proxy");
+            let player_proxy =
+                Player::create_player_proxy(&connection, bus_name.to_string())
+                    .await
+                    .expect("Failed to create player proxy");
 
             // Creates event stream for PropertiesChanged interface.
             let mut properties_event_stream = properties_proxy
@@ -338,19 +368,26 @@ impl<'a> Player<'a> {
     }
 
     /// Creates a proxy for "org.freedesktop.DBus.Properties".
-    async fn create_properties_proxy(connection: &Connection, bus_name: String) -> FumResult<Proxy<'a>> {
+    async fn create_properties_proxy(
+        connection: &Connection,
+        bus_name: String,
+    ) -> FumResult<Proxy<'a>> {
         let properties_proxy = Proxy::new(
             connection,
             bus_name,
             "/org/mpris/MediaPlayer2",
             "org.freedesktop.DBus.Properties",
-        ).await?;
+        )
+        .await?;
 
         Ok(properties_proxy)
     }
 
     /// Proxy for "org.mpris.MediaPlayer2.Player" interface.
-    async fn create_player_proxy(connection: &Connection, bus_name: String) -> FumResult<Proxy<'a>> {
+    async fn create_player_proxy(
+        connection: &Connection,
+        bus_name: String,
+    ) -> FumResult<Proxy<'a>> {
         let player_proxy = Proxy::new(
             connection,
             bus_name.to_string(),

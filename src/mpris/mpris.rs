@@ -7,6 +7,33 @@ use crate::FumResult;
 
 use super::Player;
 
+/// Represents an MPRIS connection.
+///
+/// This struct provides access to an MPRIS-compatible media player using D-Bus.
+/// It allows sending commands and retrieving properties via the D-Bus connection.
+///
+/// # Example
+///
+/// ```no_run
+/// use mpris::Mpris;
+///
+/// #[tokio::main]
+/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let mpris = Mpris::new().await?;
+///
+///     let players = mpris.players().await?;
+///     println!("{:#?}", players);
+///
+///     if let Some(spotify) = players.get("org.mpris.MediaPlayer2.spotify") {
+///         let metadata = spotify.metadata().await?;
+///
+///         let title = metadata.title()?.unwrap_or("No Title".into());
+///         println("Current song: {title}");
+///     }
+///
+///     Ok(())
+/// }
+/// ```
 #[derive(Debug)]
 pub struct Mpris<'a> {
     pub connection: Connection,
@@ -66,7 +93,7 @@ impl<'a> Mpris<'a> {
             "/org/freedesktop/DBus",
             "org.freedesktop.DBus",
         )
-            .await?;
+        .await?;
 
         Ok(dbus_proxy)
     }

@@ -7,6 +7,10 @@ use crate::FumResult;
 /// Type alias for zvariant::Value<'_>.
 pub type MetadataValue<'a> = zvariant::Value<'a>;
 
+/// Represents the metadata of an MPRIS media player.
+///
+/// This struct stores key-value pairs of metadata properties retrieved from an MPRIS-compatible player.
+/// Metadata includes information such as track title, artist, album, and playback details.
 #[derive(Debug)]
 pub struct Metadata<'a> {
     metadata: HashMap<String, MetadataValue<'a>>,
