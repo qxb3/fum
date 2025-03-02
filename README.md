@@ -10,6 +10,11 @@
   fum is a tui-based mpris music client designed to provide a simple and efficient way to display and control your music within a tui interface.
 </p>
 
+# ❗❗ IMPORTANT ❗❗
+> ⚠️ **Currently in a full codebase rewrite**
+> See [#98](https://github.com/qxb3/fum/issues/98) for the motivations on why.
+
+
 <p align="center">
   <a href="https://discord.gg/UfXMeyZ6Zt">
     <img src="https://img.shields.io/discord/1331325131649454184?style=for-the-badge&logo=discord&logoColor=%23ffffff&label=discord&labelColor=1C1B22&color=DEFEDF" />
