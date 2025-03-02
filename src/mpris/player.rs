@@ -1,10 +1,13 @@
 #![allow(dead_code)]
 
-use std::{collections::HashMap, str::FromStr, time::Duration};
+use std::{
+    collections::HashMap,
+    str::FromStr,
+    time::Duration
+};
 
 use futures::StreamExt;
 use zbus::{
-    proxy::SignalStream,
     zvariant::ObjectPath,
     Connection,
     Proxy
@@ -14,9 +17,14 @@ use crate::FumResult;
 
 use super::{LoopStatus, Metadata, MetadataValue, PlaybackStatus};
 
+pub enum PlayerEvent {
+    PropertiesChanged,
+    Seeked,
+}
+
 #[derive(Debug)]
 pub struct Player<'a> {
-    proxy: Proxy<'a>,
+    player_proxy: Proxy<'a>,
     connection: &'a Connection,
 
     pub bus_name: String,
@@ -25,17 +33,10 @@ pub struct Player<'a> {
 impl<'a> Player<'a> {
     /// Creates a new Player.
     pub async fn new(connection: &'a Connection, bus_name: String) -> FumResult<Self> {
-        // Proxy for "org.mpris.MediaPlayer2.Player" interface.
-        let proxy = Proxy::new(
-            connection,
-            bus_name.to_string(),
-            "/org/mpris/MediaPlayer2",
-            "org.mpris.MediaPlayer2.Player",
-        )
-        .await?;
+        let player_proxy = Player::create_player_proxy(&connection, bus_name.to_string()).await?;
 
         Ok(Self {
-            proxy,
+            player_proxy,
             connection,
             bus_name,
         })
@@ -44,56 +45,56 @@ impl<'a> Player<'a> {
     /// Metadata of player.
     pub async fn metadata(&self) -> FumResult<Metadata> {
         let metadata: HashMap<String, MetadataValue> =
-            self.proxy.get_property("Metadata").await?;
+            self.player_proxy.get_property("Metadata").await?;
 
         Ok(Metadata::new(metadata)?)
     }
 
     /// Skips to the next track in the tracklist.
     pub async fn next(&self) -> FumResult<()> {
-        self.proxy.call_method("Next", &()).await?;
+        self.player_proxy.call_method("Next", &()).await?;
 
         Ok(())
     }
 
     /// Skips to the previous track in the tracklist.
     pub async fn previous(&self) -> FumResult<()> {
-        self.proxy.call_method("Previous", &()).await?;
+        self.player_proxy.call_method("Previous", &()).await?;
 
         Ok(())
     }
 
     /// Pauses playback.
     pub async fn pause(&self) -> FumResult<()> {
-        self.proxy.call_method("Pause", &()).await?;
+        self.player_proxy.call_method("Pause", &()).await?;
 
         Ok(())
     }
 
     /// Play Pause playback.
     pub async fn play_pause(&self) -> FumResult<()> {
-        self.proxy.call_method("PlayPause", &()).await?;
+        self.player_proxy.call_method("PlayPause", &()).await?;
 
         Ok(())
     }
 
     /// Stop playback.
     pub async fn stop(&self) -> FumResult<()> {
-        self.proxy.call_method("Stop", &()).await?;
+        self.player_proxy.call_method("Stop", &()).await?;
 
         Ok(())
     }
 
     /// Play playback.
     pub async fn play(&self) -> FumResult<()> {
-        self.proxy.call_method("Play", &()).await?;
+        self.player_proxy.call_method("Play", &()).await?;
 
         Ok(())
     }
 
     /// Seek forward.
     pub async fn seek_forward(&self, offset: Duration) -> FumResult<()> {
-        self.proxy
+        self.player_proxy
             .call_method("Seek", &(offset.as_micros() as i64))
             .await?;
 
@@ -102,7 +103,7 @@ impl<'a> Player<'a> {
 
     /// Seek backward.
     pub async fn seek_backward(&self, offset: Duration) -> FumResult<()> {
-        self.proxy
+        self.player_proxy
             .call_method("Seek", &(-(offset.as_micros() as i64)))
             .await?;
 
@@ -113,7 +114,7 @@ impl<'a> Player<'a> {
     pub async fn set_position(&self, trackid: &str, position: Duration) -> FumResult<()> {
         let trackid = ObjectPath::try_from(trackid)?;
 
-        self.proxy
+        self.player_proxy
             .call_method("SetPosition", &(trackid, position.as_micros() as i64))
             .await?;
 
@@ -123,14 +124,14 @@ impl<'a> Player<'a> {
     /// PlaybackStatus of player.
     pub async fn playback_status(&self) -> FumResult<PlaybackStatus> {
         let playback_status: String =
-            self.proxy.get_property("PlaybackStatus").await?;
+            self.player_proxy.get_property("PlaybackStatus").await?;
 
         Ok(PlaybackStatus::from_str(&playback_status)?)
     }
 
     /// LoopStatus of player.
     pub async fn loop_status(&self) -> FumResult<LoopStatus> {
-        let loop_status: String = self.proxy.get_property("LoopStatus").await?;
+        let loop_status: String = self.player_proxy.get_property("LoopStatus").await?;
 
         Ok(LoopStatus::from_str(&loop_status)?)
     }
@@ -141,7 +142,7 @@ impl<'a> Player<'a> {
             return Err("Cannot set the LoopStatus as CanControl is false".into());
         }
 
-        self.proxy
+        self.player_proxy
             .set_property("LoopStatus", loop_status.to_string())
             .await?;
 
@@ -150,7 +151,7 @@ impl<'a> Player<'a> {
 
     /// Playback Rate of player.
     pub async fn playback_rate(&self) -> FumResult<f64> {
-        let rate: f64 = self.proxy.get_property("Rate").await?;
+        let rate: f64 = self.player_proxy.get_property("Rate").await?;
 
         Ok(rate)
     }
@@ -171,28 +172,28 @@ impl<'a> Player<'a> {
             );
         }
 
-        self.proxy.set_property("Rate", rate).await?;
+        self.player_proxy.set_property("Rate", rate).await?;
 
         Ok(())
     }
 
     /// Minimum Playback Rate of player.
     pub async fn min_playback_rate(&self) -> FumResult<f64> {
-        let min_rate: f64 = self.proxy.get_property("MinimumRate").await?;
+        let min_rate: f64 = self.player_proxy.get_property("MinimumRate").await?;
 
         Ok(min_rate)
     }
 
     /// Maximum Playback Rate of player.
     pub async fn max_playback_rate(&self) -> FumResult<f64> {
-        let max_rate: f64 = self.proxy.get_property("MaximumRate").await?;
+        let max_rate: f64 = self.player_proxy.get_property("MaximumRate").await?;
 
         Ok(max_rate)
     }
 
     /// Shuffle status of player.
     pub async fn shuffle(&self) -> FumResult<bool> {
-        let shuffle: bool = self.proxy.get_property("Shuffle").await?;
+        let shuffle: bool = self.player_proxy.get_property("Shuffle").await?;
 
         Ok(shuffle)
     }
@@ -203,14 +204,14 @@ impl<'a> Player<'a> {
             return Err("Cannot set the Shuffle as CanControl is false".into());
         }
 
-        self.proxy.set_property("Shuffle", shuffle).await?;
+        self.player_proxy.set_property("Shuffle", shuffle).await?;
 
         Ok(())
     }
 
     /// Volume of player.
     pub async fn volume(&self) -> FumResult<f64> {
-        let volume: f64 = self.proxy.get_property("Volume").await?;
+        let volume: f64 = self.player_proxy.get_property("Volume").await?;
 
         Ok(volume)
     }
@@ -221,21 +222,21 @@ impl<'a> Player<'a> {
             return Err("Cannot set the Volume as CanControl is false".into());
         }
 
-        self.proxy.set_property("Volume", volume).await?;
+        self.player_proxy.set_property("Volume", volume).await?;
 
         Ok(())
     }
 
     /// Position of player.
     pub async fn position(&self) -> FumResult<Duration> {
-        let position: i64 = self.proxy.get_property("Position").await?;
+        let position: i64 = self.player_proxy.get_property("Position").await?;
 
         Ok(Duration::from_micros(position as u64))
     }
 
     /// Can the player go next.
     pub async fn can_next(&self) -> FumResult<bool> {
-        let can_go_next: bool = self.proxy.get_property("CanGoNext").await?;
+        let can_go_next: bool = self.player_proxy.get_property("CanGoNext").await?;
 
         Ok(can_go_next)
     }
@@ -243,63 +244,121 @@ impl<'a> Player<'a> {
     /// Can the player go previous.
     pub async fn can_previous(&self) -> FumResult<bool> {
         let can_go_previous: bool =
-            self.proxy.get_property("CanGoPrevious").await?;
+            self.player_proxy.get_property("CanGoPrevious").await?;
 
         Ok(can_go_previous)
     }
 
     /// Can the player play.
     pub async fn can_play(&self) -> FumResult<bool> {
-        let can_play: bool = self.proxy.get_property("CanPlay").await?;
+        let can_play: bool = self.player_proxy.get_property("CanPlay").await?;
 
         Ok(can_play)
     }
 
     /// Can the player pause.
     pub async fn can_pause(&self) -> FumResult<bool> {
-        let can_pause: bool = self.proxy.get_property("CanPause").await?;
+        let can_pause: bool = self.player_proxy.get_property("CanPause").await?;
 
         Ok(can_pause)
     }
 
     /// Can the player seek.
     pub async fn can_seek(&self) -> FumResult<bool> {
-        let can_seek: bool = self.proxy.get_property("CanSeek").await?;
+        let can_seek: bool = self.player_proxy.get_property("CanSeek").await?;
 
         Ok(can_seek)
     }
 
     /// Can the player be controlled.
     pub async fn can_control(&self) -> FumResult<bool> {
-        let can_control: bool = self.proxy.get_property("CanControl").await?;
+        let can_control: bool = self.player_proxy.get_property("CanControl").await?;
 
         Ok(can_control)
     }
 
-    pub async fn watch(&self, tx: tokio::sync::mpsc::Sender<()>) -> FumResult<()> {
+    pub async fn watch(&self, tx: tokio::sync::mpsc::Sender<PlayerEvent>) -> FumResult<()> {
         let connection = self.connection.clone();
         let bus_name = self.bus_name.to_string();
 
         tokio::spawn(async move {
-            let properties_proxy = Proxy::new(
-                &connection,
-                bus_name,
-                "/org/mpris/MediaPlayer2",
-                "org.freedesktop.DBus.Properties",
-            )
-            .await
-            .expect("dwa");
+            // Properties proxy.
+            let properties_proxy = Player::create_properties_proxy(&connection, bus_name.to_string())
+                .await
+                .expect("Failed to create properties proxy");
 
-            let mut stream = properties_proxy
+            // Player proxy.
+            let player_proxy = Player::create_player_proxy(&connection, bus_name.to_string())
+                .await
+                .expect("Failed to create player proxy");
+
+            // Creates event stream for PropertiesChanged interface.
+            let mut properties_event_stream = properties_proxy
                 .receive_signal("PropertiesChanged")
                 .await
-                .expect("dwa");
+                .expect("Failed to create stream for PropertiesChanged interface");
 
-            while let Some(_) = stream.next().await {
-                tx.send(()).await.unwrap();
-            }
+            let mut seeked_event_stream = player_proxy
+                .receive_signal("Seeked")
+                .await
+                .expect("Failed to create stream for Seeked signal");
+
+            let ptx = tx.clone();
+            tokio::spawn(async move {
+                loop {
+                    tokio::select! {
+                        // Break out of this loop if the channel has been closed.
+                        _ = ptx.closed() => break,
+
+                        // Receive PropertiesChanged events.
+                        Some(_) = properties_event_stream.next() => {
+                            ptx.send(PlayerEvent::PropertiesChanged).await.unwrap();
+                        }
+                    }
+                }
+            });
+
+            let stx = tx.clone();
+            tokio::spawn(async move {
+                loop {
+                    tokio::select! {
+                        // Break out of this loop if the channel has been closed.
+                        _ = stx.closed() => break,
+
+                        // Receive Seeked signal events.
+                        Some(_) = seeked_event_stream.next() => {
+                            stx.send(PlayerEvent::Seeked).await.unwrap();
+                        }
+                    }
+                }
+            });
         });
 
         Ok(())
+    }
+
+    /// Creates a proxy for "org.freedesktop.DBus.Properties".
+    async fn create_properties_proxy(connection: &Connection, bus_name: String) -> FumResult<Proxy<'a>> {
+        let properties_proxy = Proxy::new(
+            connection,
+            bus_name,
+            "/org/mpris/MediaPlayer2",
+            "org.freedesktop.DBus.Properties",
+        ).await?;
+
+        Ok(properties_proxy)
+    }
+
+    /// Proxy for "org.mpris.MediaPlayer2.Player" interface.
+    async fn create_player_proxy(connection: &Connection, bus_name: String) -> FumResult<Proxy<'a>> {
+        let player_proxy = Proxy::new(
+            connection,
+            bus_name.to_string(),
+            "/org/mpris/MediaPlayer2",
+            "org.mpris.MediaPlayer2.Player",
+        )
+        .await?;
+
+        Ok(player_proxy)
     }
 }
