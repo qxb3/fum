@@ -10,25 +10,18 @@ use super::Player;
 #[derive(Debug)]
 pub struct Mpris<'a> {
     pub connection: Connection,
-    pub proxy: Proxy<'a>
+    pub dbus_proxy: Proxy<'a>,
 }
 
 impl<'a> Mpris<'a> {
     /// Creates a new D-Bus connection.
     pub async fn new() -> FumResult<Self> {
         let connection = Connection::session().await?;
-
-        let proxy = Proxy::new(
-            &connection,
-            "org.freedesktop.DBus",
-            "/org/freedesktop/DBus",
-            "org.freedesktop.DBus",
-        )
-        .await?;
+        let dbus_proxy = Mpris::create_dbus_proxy(&connection).await?;
 
         Ok(Self {
             connection,
-            proxy
+            dbus_proxy,
         })
     }
 
@@ -56,12 +49,25 @@ impl<'a> Mpris<'a> {
     /// List out mpris D-Bus bus names.
     pub async fn bus_names(&self) -> FumResult<Vec<String>> {
         // Call "ListNames" to get all of active D-Bus services.
-        let bus_names: Vec<String> = self.proxy.call("ListNames", &()).await?;
+        let bus_names: Vec<String> = self.dbus_proxy.call("ListNames", &()).await?;
 
         // Return the filtered mpris only service bus names.
         Ok(bus_names
             .into_iter()
             .filter(|bus_name| bus_name.starts_with("org.mpris.MediaPlayer2."))
             .collect::<Vec<String>>())
+    }
+
+    /// Creates a D-Bus proxy.
+    pub async fn create_dbus_proxy(connection: &Connection) -> FumResult<Proxy<'a>> {
+        let dbus_proxy = Proxy::new(
+            connection,
+            "org.freedesktop.DBus",
+            "/org/freedesktop/DBus",
+            "org.freedesktop.DBus",
+        )
+            .await?;
+
+        Ok(dbus_proxy)
     }
 }
