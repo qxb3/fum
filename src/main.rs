@@ -1,5 +1,6 @@
 use std::{error::Error, time::Duration};
 
+use futures::future::pending;
 use mpris::{Mpris, PlayerEvent};
 
 mod mpris;
@@ -75,11 +76,14 @@ async fn main() -> FumResult<()> {
                     PlayerEvent::Seeked => {
                         println!("seeked!");
                     }
+                    PlayerEvent::Position(position) => {
+                        println!("position: {}", position.as_secs());
+                    }
                 }
             }
         });
 
-        loop {}
+        pending::<()>().await;
     }
 
     Ok(())

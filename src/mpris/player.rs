@@ -13,6 +13,7 @@ use super::{LoopStatus, Metadata, MetadataValue, PlaybackStatus};
 pub enum PlayerEvent {
     PropertiesChanged,
     Seeked,
+    Position(Duration),
 }
 
 /// Represents an MPRIS media player instance.
@@ -302,6 +303,7 @@ impl<'a> Player<'a> {
         Ok(can_control)
     }
 
+    /// Watch events of player.
     pub async fn watch(
         &self,
         tx: tokio::sync::mpsc::Sender<PlayerEvent>,
@@ -333,6 +335,7 @@ impl<'a> Player<'a> {
                 .await
                 .expect("Failed to create stream for Seeked signal");
 
+            // Handling of PropertiesChanged event.
             let ptx = tx.clone();
             tokio::spawn(async move {
                 loop {
@@ -348,6 +351,7 @@ impl<'a> Player<'a> {
                 }
             });
 
+            // Handling of Seeked event.
             let stx = tx.clone();
             tokio::spawn(async move {
                 loop {
@@ -358,6 +362,42 @@ impl<'a> Player<'a> {
                         // Receive Seeked signal events.
                         Some(_) = seeked_event_stream.next() => {
                             stx.send(PlayerEvent::Seeked).await.unwrap();
+                        }
+                    }
+                }
+            });
+
+            // Handling of position progress event.
+            let potx = tx.clone();
+            tokio::spawn(async move {
+                // Creates a new player based on the player proxy connection above.
+                let player = Player::new(player_proxy.connection(), bus_name.to_string())
+                    .await
+                    .expect("Failed to create Player in handling of position event");
+
+                // Create a ticker that tick each seconds.
+                let mut ticker = tokio::time::interval(Duration::from_secs(1));
+
+                loop {
+                    tokio::select! {
+                        // Break out of this loop if the channel has been closed.
+                        _ = potx.closed() => break,
+
+                        // Tick that tickler!
+                        _ = ticker.tick() => {
+                            if player
+                                .playback_status()
+                                .await
+                                .expect("Failed to get playback status of player in position event") == PlaybackStatus::Playing
+                            {
+                                // Gets the new player position.
+                                let position = player
+                                    .position()
+                                    .await
+                                    .expect("Failed to get position of player in position event");
+
+                                potx.send(PlayerEvent::Position(position)).await.unwrap();
+                            }
                         }
                     }
                 }
@@ -388,13 +428,13 @@ impl<'a> Player<'a> {
         connection: &Connection,
         bus_name: String,
     ) -> FumResult<Proxy<'a>> {
-        let player_proxy = Proxy::new(
-            connection,
-            bus_name.to_string(),
-            "/org/mpris/MediaPlayer2",
-            "org.mpris.MediaPlayer2.Player",
-        )
-        .await?;
+        let player_proxy: Proxy = zbus::proxy::Builder::new(connection)
+            .destination(bus_name.to_string())?
+            .path("/org/mpris/MediaPlayer2")?
+            .interface("org.mpris.MediaPlayer2.Player")?
+            .cache_properties(zbus::proxy::CacheProperties::No)
+            .build()
+            .await?;
 
         Ok(player_proxy)
     }
