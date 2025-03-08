@@ -12,7 +12,7 @@
 
 # ❗❗ IMPORTANT ❗❗
 > ⚠️ **Currently in a full codebase rewrite**
-> See [#98](https://github.com/qxb3/fum/issues/98) for the motivations on why.
+> See [#98](https://github.com/qxb3/fum/issues/98) for the motivations on why. You can still use fum as it is.
 
 
 <p align="center">
