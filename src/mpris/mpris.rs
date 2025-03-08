@@ -7,6 +7,17 @@ use crate::FumResult;
 
 use super::Player;
 
+/// Mpris Events.
+pub enum MprisEvent {
+    /// When there is a new player.
+    // PlayerAttached(&'a Player<'a>),
+    PlayerAttached,
+
+    /// When a player de-attach or quits.
+    // PlayerDetach(&'a Player<'a>)
+    PlayerDetach
+}
+
 /// Represents an MPRIS connection.
 ///
 /// This struct provides access to an MPRIS-compatible media player using D-Bus.
@@ -83,6 +94,49 @@ impl<'a> Mpris<'a> {
             .into_iter()
             .filter(|bus_name| bus_name.starts_with("org.mpris.MediaPlayer2."))
             .collect::<Vec<String>>())
+    }
+
+    /// Watch for mpris events.
+    pub async fn watch(
+        &self,
+        tx: tokio::sync::mpsc::Sender<MprisEvent>
+    ) -> FumResult<()> {
+        let connection = self.connection.clone();
+
+        tokio::spawn(async move {
+            // D-Bus proxy.
+            let dbus_proxy = Mpris::create_dbus_proxy(&connection)
+                .await
+                .expect("Failed to create dbus proxy");
+
+            let mut name_owner_stream = dbus_proxy
+                .receive_signal("NameOwnerChanged")
+                .await
+                .expect("Failed to create stream for NameOwnerChanged signal");
+
+            loop {
+                tokio::select! {
+                    // Break out of this loop if the channel has been closed.
+                    _ = tx.closed() => break,
+
+                    Some(signal) = name_owner_stream.next() => {
+                        if let Ok((name, old_owner, new_owner)) = signal.body().deserialize::<(String, String, String)>() {
+                            if name.starts_with("org.mpris.MediaPlayer2.") {
+                                if old_owner.is_empty() && !new_owner.is_empty() {
+                                    tx.send(MprisEvent::PlayerAttached).await.unwrap();
+                                }
+
+                                if !old_owner.is_empty() && new_owner.is_empty() {
+                                    tx.send(MprisEvent::PlayerDetach).await.unwrap();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        Ok(())
     }
 
     /// Creates a D-Bus proxy.

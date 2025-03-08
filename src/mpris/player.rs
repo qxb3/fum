@@ -9,10 +9,16 @@ use crate::FumResult;
 
 use super::{LoopStatus, Metadata, MetadataValue, PlaybackStatus};
 
+/// Player Events.
 #[derive(Debug)]
 pub enum PlayerEvent {
+    /// When the metadata or properties of the player changed.
     PropertiesChanged,
+
+    /// When a user manually changes the position of the player.
     Seeked,
+
+    /// When the current position of the player changed.
     Position(Duration),
 }
 
