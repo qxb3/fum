@@ -1,3 +1,5 @@
+#![allow(unused_imports)]
+
 mod metadata;
 mod mpris;
 mod player;

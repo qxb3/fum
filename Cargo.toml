@@ -7,14 +7,16 @@ homepage = "https://github.com/qxb3/fum"
 license = "MIT"
 edition = "2021"
 
+[dependencies]
+crossterm = { version = "0.28.1", features = ["event-stream"] }
+futures = "0.3.31"
+ratatui = "0.29.0"
+tokio = { version = "1.43.0", features = ["full"] }
+zbus = { version = "5.5.0", default-features = false, features = ["tokio"] }
+
 [[bin]]
 name = "fum"
 path = "./src/main.rs"
-
-[dependencies]
-futures = "0.3.31"
-tokio = { version = "1.43.0", features = ["full"] }
-zbus = { version = "5.5.0", default-features = false, features = ["tokio"] }
 
 [profile.release]
 opt-level = 3

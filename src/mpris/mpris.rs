@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::collections::HashMap;
 
 use futures::{stream::FuturesUnordered, StreamExt};
@@ -15,7 +17,7 @@ pub enum MprisEvent {
 
     /// When a player de-attach or quits.
     // PlayerDetach(&'a Player<'a>)
-    PlayerDetach
+    PlayerDetach,
 }
 
 /// Represents an MPRIS connection.
@@ -99,7 +101,7 @@ impl<'a> Mpris<'a> {
     /// Watch for mpris events.
     pub async fn watch(
         &self,
-        tx: tokio::sync::mpsc::Sender<MprisEvent>
+        tx: tokio::sync::mpsc::Sender<MprisEvent>,
     ) -> FumResult<()> {
         let connection = self.connection.clone();
 

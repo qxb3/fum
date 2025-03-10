@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::{collections::HashMap, time::Duration};
 
 use zbus::zvariant;
