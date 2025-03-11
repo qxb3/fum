@@ -2,6 +2,7 @@ use std::error::Error;
 
 use fum::Fum;
 
+mod cli;
 mod event;
 mod fum;
 mod mpris;
@@ -13,8 +14,11 @@ type FumResult<T> = Result<T, Box<dyn Error>>;
 
 #[tokio::main]
 async fn main() -> FumResult<()> {
-    let mut fum = Fum::new()?;
-    fum.start().await?;
+    // None variant signifies that we shouldn't start fum tui.
+    if let Some(_) = cli::run().await? {
+        let mut fum = Fum::new().await?;
+        fum.start().await?;
+    }
 
     Ok(())
 }

@@ -1,16 +1,22 @@
 use std::panic;
 
-use ratatui::{prelude::CrosstermBackend, text::Text, Terminal};
+use ratatui::{
+    layout::{Constraint, Layout, Rect},
+    prelude::CrosstermBackend,
+    text::Text,
+    Terminal,
+};
 
 use crate::{
     event::{EventHandler, FumEvent},
+    mpris::Mpris,
     state::State,
     FumResult,
 };
 
 /// Fum TUI App.
 #[derive(Debug)]
-pub struct Fum {
+pub struct Fum<'a> {
     /// ratatui terminal.
     terminal: Terminal<CrosstermBackend<std::io::Stdout>>,
 
@@ -19,11 +25,14 @@ pub struct Fum {
 
     /// Application state.
     state: State,
+
+    /// Mpris D-Bus connection.
+    mpris: Mpris<'a>,
 }
 
-impl Fum {
+impl<'a> Fum<'a> {
     /// Creates new Fum TUI.
-    pub fn new() -> FumResult<Self> {
+    pub async fn new() -> FumResult<Self> {
         // Hook into panics to properly restore the terminal
         // when a panic happened.
         let panic_hook = panic::take_hook();
@@ -39,6 +48,7 @@ impl Fum {
             terminal: ratatui::init(),
             event_handler: EventHandler::new(10),
             state: State::new(),
+            mpris: Mpris::new().await?,
         })
     }
 
@@ -63,8 +73,19 @@ impl Fum {
 
     /// Handle tick event.
     pub async fn tick(&mut self) -> FumResult<()> {
+        // Get current track.
+        let track = self.state.current_track.lock().await;
+
         self.terminal.draw(|frame| {
-            frame.render_widget(Text::from("Fum"), frame.area());
+            let chunks: [Rect; 2] =
+                Layout::vertical([Constraint::Length(1); 2]).areas(frame.area());
+
+            frame.render_widget(
+                Text::from(format!("TrackID: {:?}", track.track_id)),
+                chunks[0],
+            );
+
+            frame.render_widget(Text::from(format!("Title: {}", track.title)), chunks[1]);
         })?;
 
         Ok(())
