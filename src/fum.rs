@@ -4,6 +4,7 @@ use ratatui::{prelude::CrosstermBackend, text::Text, Terminal};
 
 use crate::{
     event::{EventHandler, FumEvent},
+    state::State,
     FumResult,
 };
 
@@ -16,8 +17,8 @@ pub struct Fum {
     /// Event handler.
     event_handler: EventHandler,
 
-    /// Exit state.
-    exit: bool,
+    /// Application state.
+    state: State,
 }
 
 impl Fum {
@@ -36,8 +37,8 @@ impl Fum {
 
         Ok(Self {
             terminal: ratatui::init(),
-            event_handler: EventHandler::new(30),
-            exit: false,
+            event_handler: EventHandler::new(10),
+            state: State::new(),
         })
     }
 
@@ -47,11 +48,13 @@ impl Fum {
         self.event_handler.handle();
 
         // Read events and execute while we running.
-        while !self.exit {
+        while !self.state.exit {
             match self.event_handler.next().await? {
                 FumEvent::Tick => self.tick().await?,
                 FumEvent::KeyPress(key) => self.keypress(key).await?,
-                FumEvent::MouseClick(mouse, button) => self.mouse_click(mouse, button).await?,
+                FumEvent::MouseClick(mouse, button) => {
+                    self.mouse_click(mouse, button).await?
+                }
             }
         }
 
@@ -90,6 +93,6 @@ impl Fum {
     /// Exits out of fum.
     pub fn exit(&mut self) {
         ratatui::restore();
-        self.exit = true;
+        self.state.exit = true;
     }
 }
