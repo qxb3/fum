@@ -1,8 +1,9 @@
 #![allow(dead_code)]
 
-use std::{collections::HashMap, str::FromStr, time::Duration};
+use std::{collections::HashMap, str::FromStr, sync::Arc, time::Duration};
 
 use futures::StreamExt;
+use tokio::sync::Mutex;
 use zbus::{zvariant::ObjectPath, Connection, Proxy};
 
 use crate::FumResult;
@@ -53,23 +54,26 @@ pub enum PlayerEvent {
 ///
 /// * `connection` - A reference to the D-Bus connection.
 /// * `bus_name` - The D-Bus name of the media player.
-#[derive(Debug)]
-pub struct Player<'a> {
-    player_proxy: Proxy<'a>,
-    connection: &'a Connection,
+#[derive(Debug, Clone)]
+pub struct Player {
+    connection: Arc<Mutex<Connection>>,
+    player_proxy: Proxy<'static>,
 
     pub bus_name: String,
 }
 
-impl<'a> Player<'a> {
+impl Player {
     /// Creates a new Player.
-    pub async fn new(connection: &'a Connection, bus_name: String) -> FumResult<Self> {
+    pub async fn new(
+        connection: Arc<Mutex<Connection>>,
+        bus_name: String,
+    ) -> FumResult<Self> {
         let player_proxy =
-            Player::create_player_proxy(&connection, bus_name.to_string()).await?;
+            Player::create_player_proxy(connection.clone(), bus_name.to_string()).await?;
 
         Ok(Self {
-            player_proxy,
             connection,
+            player_proxy,
             bus_name,
         })
     }
@@ -314,19 +318,21 @@ impl<'a> Player<'a> {
         &self,
         tx: tokio::sync::mpsc::Sender<PlayerEvent>,
     ) -> FumResult<()> {
-        let connection = self.connection.clone();
+        let connection_arc = Arc::clone(&self.connection);
         let bus_name = self.bus_name.to_string();
 
         tokio::spawn(async move {
             // Properties proxy.
-            let properties_proxy =
-                Player::create_properties_proxy(&connection, bus_name.to_string())
-                    .await
-                    .expect("Failed to create properties proxy");
+            let properties_proxy = Player::create_properties_proxy(
+                connection_arc.clone(),
+                bus_name.to_string(),
+            )
+            .await
+            .expect("Failed to create properties proxy");
 
             // Player proxy.
             let player_proxy =
-                Player::create_player_proxy(&connection, bus_name.to_string())
+                Player::create_player_proxy(connection_arc.clone(), bus_name.to_string())
                     .await
                     .expect("Failed to create player proxy");
 
@@ -377,7 +383,7 @@ impl<'a> Player<'a> {
             let potx = tx.clone();
             tokio::spawn(async move {
                 // Creates a new player based on the player proxy connection above.
-                let player = Player::new(player_proxy.connection(), bus_name.to_string())
+                let player = Player::new(connection_arc.clone(), bus_name.to_string())
                     .await
                     .expect("Failed to create Player in handling of position event");
 
@@ -391,11 +397,12 @@ impl<'a> Player<'a> {
 
                         // Tick that tickler!
                         _ = ticker.tick() => {
-                            if player
+                            let playback = player
                                 .playback_status()
                                 .await
-                                .expect("Failed to get playback status of player in position event") == PlaybackStatus::Playing
-                            {
+                                .expect("Failed to get playback status of player in position event");
+
+                            if playback == PlaybackStatus::Playing {
                                 // Gets the new player position.
                                 let position = player
                                     .position()
@@ -415,11 +422,13 @@ impl<'a> Player<'a> {
 
     /// Creates a proxy for "org.freedesktop.DBus.Properties".
     async fn create_properties_proxy(
-        connection: &Connection,
+        connection: Arc<Mutex<Connection>>,
         bus_name: String,
-    ) -> FumResult<Proxy<'a>> {
+    ) -> FumResult<Proxy<'static>> {
+        let connection = connection.lock().await;
+
         let properties_proxy = Proxy::new(
-            connection,
+            &*connection,
             bus_name,
             "/org/mpris/MediaPlayer2",
             "org.freedesktop.DBus.Properties",
@@ -431,10 +440,12 @@ impl<'a> Player<'a> {
 
     /// Proxy for "org.mpris.MediaPlayer2.Player" interface.
     async fn create_player_proxy(
-        connection: &Connection,
+        connection: Arc<Mutex<Connection>>,
         bus_name: String,
-    ) -> FumResult<Proxy<'a>> {
-        let player_proxy: Proxy = zbus::proxy::Builder::new(connection)
+    ) -> FumResult<Proxy<'static>> {
+        let connection = connection.lock().await;
+
+        let player_proxy: Proxy = zbus::proxy::Builder::new(&*connection)
             .destination(bus_name.to_string())?
             .path("/org/mpris/MediaPlayer2")?
             .interface("org.mpris.MediaPlayer2.Player")?

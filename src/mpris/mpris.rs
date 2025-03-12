@@ -1,23 +1,22 @@
 #![allow(dead_code)]
 
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use futures::{stream::FuturesUnordered, StreamExt};
+use tokio::sync::Mutex;
 use zbus::{Connection, Proxy};
 
-use crate::FumResult;
+use crate::{fum::Fum, FumResult};
 
-use super::Player;
+use super::{player, Player};
 
 /// Mpris Events.
 pub enum MprisEvent {
     /// When there is a new player.
-    // PlayerAttached(&'a Player<'a>),
-    PlayerAttached,
+    PlayerAttached(Player),
 
-    /// When a player de-attach or quits.
-    // PlayerDetach(&'a Player<'a>)
-    PlayerDetach,
+    /// When a player de-attach or quits..
+    PlayerDetach(String)
 }
 
 /// Represents an MPRIS connection.
@@ -47,9 +46,9 @@ pub enum MprisEvent {
 ///     Ok(())
 /// }
 /// ```
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Mpris<'a> {
-    pub connection: Connection,
+    pub connection: Arc<Mutex<Connection>>,
     pub dbus_proxy: Proxy<'a>,
 }
 
@@ -58,6 +57,16 @@ impl<'a> Mpris<'a> {
     pub async fn new() -> FumResult<Self> {
         let connection = Connection::session().await?;
         let dbus_proxy = Mpris::create_dbus_proxy(&connection).await?;
+
+        Ok(Self {
+            connection: Arc::new(Mutex::new(connection)),
+            dbus_proxy,
+        })
+    }
+
+    /// Creates a new Mpris based on existing Connection.
+    pub async fn from_connection(connection: Arc<Mutex<Connection>>) -> FumResult<Self> {
+        let dbus_proxy = Mpris::create_dbus_proxy(&*connection.lock().await).await?;
 
         Ok(Self {
             connection,
@@ -70,18 +79,13 @@ impl<'a> Mpris<'a> {
         let bus_names = self.bus_names().await?;
 
         // Creates a new Player based on bus names.
-        let players: HashMap<String, Player> = bus_names
-            .into_iter()
-            .map(|bus_name| async move {
-                Player::new(&self.connection, bus_name)
-                    .await
-                    .ok()
-                    .map(|player| (player.bus_name.to_string(), player))
-            })
-            .collect::<FuturesUnordered<_>>()
-            .filter_map(|p| async { p })
-            .collect()
-            .await;
+        let mut players: HashMap<String, Player> = HashMap::new();
+
+        for bus_name in bus_names {
+            let player =
+                Player::new(self.connection.clone(), bus_name.to_string()).await?;
+            players.insert(bus_name, player);
+        }
 
         Ok(players)
     }
@@ -103,15 +107,28 @@ impl<'a> Mpris<'a> {
         &self,
         tx: tokio::sync::mpsc::Sender<MprisEvent>,
     ) -> FumResult<()> {
-        let connection = self.connection.clone();
+        let connection_arc = Arc::clone(&self.connection);
 
         tokio::spawn(async move {
-            // D-Bus proxy.
-            let dbus_proxy = Mpris::create_dbus_proxy(&connection)
+            // Creates a new mpris based on existing connection.
+            let mpris = Mpris::from_connection(connection_arc.clone())
                 .await
-                .expect("Failed to create dbus proxy");
+                .expect("Failed to create mpris based on existing connection");
 
-            let mut name_owner_stream = dbus_proxy
+            // Get already active players to send the PlayerAttached event.
+            let players = mpris
+                .players()
+                .await
+                .expect("Failed to get active players.");
+
+            // Send PlayerAttached event for existing players.
+            for (_, player) in players {
+                tx.send(MprisEvent::PlayerAttached(player)).await.unwrap();
+            }
+
+            // NameOwnerChanged signal event stream.
+            let mut name_owner_stream = mpris
+                .dbus_proxy
                 .receive_signal("NameOwnerChanged")
                 .await
                 .expect("Failed to create stream for NameOwnerChanged signal");
@@ -124,12 +141,21 @@ impl<'a> Mpris<'a> {
                     Some(signal) = name_owner_stream.next() => {
                         if let Ok((name, old_owner, new_owner)) = signal.body().deserialize::<(String, String, String)>() {
                             if name.starts_with("org.mpris.MediaPlayer2.") {
+                                // Get active players.
+                                let players = mpris
+                                    .players()
+                                    .await
+                                    .expect("Failed to get active players.");
+
                                 if old_owner.is_empty() && !new_owner.is_empty() {
-                                    tx.send(MprisEvent::PlayerAttached).await.unwrap();
+                                    // Send PlayerAttached event if name matched to players.
+                                    if let Some(player) = players.get(&name).cloned() {
+                                        tx.send(MprisEvent::PlayerAttached(player)).await.unwrap();
+                                    }
                                 }
 
                                 if !old_owner.is_empty() && new_owner.is_empty() {
-                                    tx.send(MprisEvent::PlayerDetach).await.unwrap();
+                                    tx.send(MprisEvent::PlayerDetach(name)).await.unwrap();
                                 }
                             }
                         }
