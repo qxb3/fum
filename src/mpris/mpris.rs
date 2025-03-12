@@ -16,7 +16,7 @@ pub enum MprisEvent {
     PlayerAttached(Player),
 
     /// When a player de-attach or quits..
-    PlayerDetach(String)
+    PlayerDetached(String)
 }
 
 /// Represents an MPRIS connection.
@@ -155,7 +155,7 @@ impl<'a> Mpris<'a> {
                                 }
 
                                 if !old_owner.is_empty() && new_owner.is_empty() {
-                                    tx.send(MprisEvent::PlayerDetach(name)).await.unwrap();
+                                    tx.send(MprisEvent::PlayerDetached(name)).await.unwrap();
                                 }
                             }
                         }
