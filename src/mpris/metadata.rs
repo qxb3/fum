@@ -100,8 +100,9 @@ impl<'a> Metadata<'a> {
         self.metadata
             .get("mpris:length")
             .map(|length| match length {
+                MetadataValue::I64(length) => Ok(Some(Duration::from_micros(*length as u64))),
                 MetadataValue::U64(length) => Ok(Some(Duration::from_micros(*length))),
-                _ => Err("mpris:length is not a string.".into()),
+                _ => Err("mpris:length is not a i64 / u64.".into()),
             })
             .unwrap_or(Ok(None))
     }
