@@ -2,11 +2,14 @@ use std::sync::Arc;
 
 use tokio::sync::Mutex;
 
-use crate::track::Track;
+use crate::{mpris::Player, track::Track};
 
 /// Contains the application states.
 #[derive(Debug)]
 pub struct State {
+    /// The current player.
+    pub current_player: Arc<Mutex<Option<Player>>>,
+
     /// The current track.
     pub current_track: Arc<Mutex<Track>>,
 
@@ -17,6 +20,7 @@ pub struct State {
 impl Default for State {
     fn default() -> Self {
         Self {
+            current_player: Arc::new(Mutex::new(None)),
             current_track: Arc::new(Mutex::new(Track::new())),
             exit: false,
         }

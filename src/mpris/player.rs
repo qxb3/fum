@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use std::{collections::HashMap, str::FromStr, sync::Arc, time::Duration};
+use std::{collections::HashMap, ops::Deref, str::FromStr, sync::Arc, time::Duration};
 
 use futures::StreamExt;
 use tokio::sync::Mutex;
@@ -428,7 +428,7 @@ impl Player {
         let connection = connection.lock().await;
 
         let properties_proxy = Proxy::new(
-            &*connection,
+            connection.deref(),
             bus_name,
             "/org/mpris/MediaPlayer2",
             "org.freedesktop.DBus.Properties",
@@ -445,7 +445,7 @@ impl Player {
     ) -> FumResult<Proxy<'static>> {
         let connection = connection.lock().await;
 
-        let player_proxy: Proxy = zbus::proxy::Builder::new(&*connection)
+        let player_proxy: Proxy = zbus::proxy::Builder::new(connection.deref())
             .destination(bus_name.to_string())?
             .path("/org/mpris/MediaPlayer2")?
             .interface("org.mpris.MediaPlayer2.Player")?

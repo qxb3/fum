@@ -16,7 +16,7 @@ pub enum MprisEvent {
     PlayerAttached(Player),
 
     /// When a player de-attach or quits..
-    PlayerDetached(String)
+    PlayerDetached(String),
 }
 
 /// Represents an MPRIS connection.

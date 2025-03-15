@@ -1,22 +1,17 @@
 use std::panic;
 
-use ratatui::{
-    layout::{Constraint, Layout, Rect},
-    prelude::CrosstermBackend,
-    text::Text,
-    Terminal,
-};
+use ratatui::{prelude::CrosstermBackend, Terminal};
 
 use crate::{
     event::{EventHandler, FumEvent},
-    mpris::Mpris,
+    mode::{FumMode, MprisMode},
     state::State,
-    FumResult,
+    ui, FumResult,
 };
 
 /// Fum TUI App.
 #[derive(Debug)]
-pub struct Fum<'a> {
+pub struct Fum {
     /// ratatui terminal.
     terminal: Terminal<CrosstermBackend<std::io::Stdout>>,
 
@@ -25,37 +20,47 @@ pub struct Fum<'a> {
 
     /// Application state.
     state: State,
-
-    /// Mpris D-Bus connection.
-    mpris: Mpris<'a>,
 }
 
-impl<'a> Fum<'a> {
+impl Fum {
     /// Creates new Fum TUI.
     pub async fn new() -> FumResult<Self> {
         // Hook into panics to properly restore the terminal
         // when a panic happened.
         let panic_hook = panic::take_hook();
         panic::set_hook(Box::new(move |panic| {
-            ratatui::restore();
+            let _ = Fum::restore();
+
             panic_hook(panic);
         }));
 
         // Enables mouse capture.
         crossterm::execute!(std::io::stdout(), crossterm::event::EnableMouseCapture)?;
 
+        let terminal = ratatui::init();
+        let event_handler = EventHandler::new(10);
+        let state = State::new();
+
         Ok(Self {
-            terminal: ratatui::init(),
-            event_handler: EventHandler::new(10),
-            state: State::new(),
-            mpris: Mpris::new().await?,
+            terminal,
+            event_handler,
+            state,
         })
     }
 
     /// Start Fum.
-    pub async fn start(&mut self) -> FumResult<()> {
+    pub async fn start(&mut self, mode: FumMode) -> FumResult<()> {
         // Start event handler.
         self.event_handler.handle();
+
+        // Handle the corresponding mode.
+        match mode {
+            FumMode::Player => {}
+            FumMode::Mpris => {
+                let mut mpris_mode = MprisMode::new(&mut self.state).await?;
+                mpris_mode.handle().await?;
+            }
+        }
 
         // Read events and execute while we running.
         while !self.state.exit {
@@ -73,20 +78,8 @@ impl<'a> Fum<'a> {
 
     /// Handle tick event.
     pub async fn tick(&mut self) -> FumResult<()> {
-        // Get current track.
-        let track = self.state.current_track.lock().await;
-
-        self.terminal.draw(|frame| {
-            let chunks: [Rect; 2] =
-                Layout::vertical([Constraint::Length(1); 2]).areas(frame.area());
-
-            frame.render_widget(
-                Text::from(format!("TrackID: {:?}", track.track_id)),
-                chunks[0],
-            );
-
-            frame.render_widget(Text::from(format!("Title: {}", track.title)), chunks[1]);
-        })?;
+        // Draws the ui.
+        ui::draw(&mut self.terminal, &self.state).await?;
 
         Ok(())
     }
@@ -94,7 +87,7 @@ impl<'a> Fum<'a> {
     /// Handle keypress event.
     pub async fn keypress(&mut self, key: crossterm::event::KeyEvent) -> FumResult<()> {
         match key.code {
-            crossterm::event::KeyCode::Char('q') => self.exit(),
+            crossterm::event::KeyCode::Char('q') => self.exit()?,
 
             _ => {}
         }
@@ -111,9 +104,23 @@ impl<'a> Fum<'a> {
         Ok(())
     }
 
-    /// Exits out of fum.
-    pub fn exit(&mut self) {
+    /// Restore terminal state.
+    pub fn restore() -> FumResult<()> {
+        // Restore terminal.
         ratatui::restore();
+
+        // Disables mouse capture.
+        crossterm::execute!(std::io::stdout(), crossterm::event::DisableMouseCapture)?;
+
+        Ok(())
+    }
+
+    /// Exits out of fum.
+    pub fn exit(&mut self) -> FumResult<()> {
+        Fum::restore()?;
+
         self.state.exit = true;
+
+        Ok(())
     }
 }

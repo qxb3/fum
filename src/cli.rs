@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 
-use crate::{mpris::Mpris, FumResult};
+use crate::{mode::FumMode, mpris::Mpris, FumResult};
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -29,19 +29,15 @@ enum Commands {
 }
 
 /// Run the cli.
-pub async fn run() -> FumResult<Option<()>> {
+pub async fn run() -> FumResult<Option<(FumMode,)>> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Player {} => {
-            return Ok(Some(()));
-        }
+        Commands::Player {} => Ok(Some((FumMode::Player,))),
 
         Commands::Mpris {
             ..
-        } => {
-            return Ok(Some(()));
-        }
+        } => Ok(Some((FumMode::Mpris,))),
 
         Commands::ListPlayers => {
             let mpris = Mpris::new().await?;
@@ -53,7 +49,7 @@ pub async fn run() -> FumResult<Option<()>> {
                 println!("* {bus_name}");
             }
 
-            return Ok(None);
+            Ok(None)
         }
     }
 }
