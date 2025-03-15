@@ -68,10 +68,11 @@ impl<'a> MprisMode<'a> {
                         // Update the track metadata as soon as the player attached.
                         {
                             // Creates a track metadata of player.
-                            let track = player.track().await.expect(&format!(
-                                "Failed to create track for: {}",
-                                &player.bus_name
-                            ));
+                            let track =
+                                Track::from_player(&player).await.expect(&format!(
+                                    "Failed to create track for: {}",
+                                    &player.bus_name
+                                ));
 
                             // Update the track metadata.
                             let mut current_track = current_track.lock().await;
@@ -111,8 +112,7 @@ impl<'a> MprisMode<'a> {
                                             // Update the track metadata when the player properties changed.
                                             PlayerEvent::PropertiesChanged => {
                                                 // Creates a track metadata of player.
-                                                let track = player
-                                                    .track()
+                                                let track = Track::from_player(&player)
                                                     .await
                                                     .expect(&format!("Failed to create track for: {}", &player.bus_name));
 
