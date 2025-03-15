@@ -1,7 +1,10 @@
 use std::sync::Arc;
 
 use crate::{
-    mpris::{Mpris, MprisEvent, PlayerEvent}, state::State, track::Track, FumResult
+    mpris::{Mpris, MprisEvent, PlayerEvent},
+    state::State,
+    track::Track,
+    FumResult,
 };
 
 /// MprisMode.
@@ -65,10 +68,10 @@ impl<'a> MprisMode<'a> {
                         // Update the track metadata as soon as the player attached.
                         {
                             // Creates a track metadata of player.
-                            let track = player
-                                .track()
-                                .await
-                                .expect(&format!("Failed to create track for: {}", &player.bus_name));
+                            let track = player.track().await.expect(&format!(
+                                "Failed to create track for: {}",
+                                &player.bus_name
+                            ));
 
                             // Update the track metadata.
                             let mut current_track = current_track.lock().await;
