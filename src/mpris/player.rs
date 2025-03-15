@@ -6,7 +6,7 @@ use futures::StreamExt;
 use tokio::sync::Mutex;
 use zbus::{zvariant::ObjectPath, Connection, Proxy};
 
-use crate::FumResult;
+use crate::{track::Track, FumResult};
 
 use super::{LoopStatus, Metadata, MetadataValue, PlaybackStatus};
 
@@ -75,6 +75,42 @@ impl Player {
             connection,
             player_proxy,
             bus_name,
+        })
+    }
+
+    /// Creates a Track struct metadata of the player.
+    pub async fn track(&self) -> FumResult<Track> {
+        let metadata = self.metadata().await?;
+
+        // Comes from the metadata.
+        let track_id = metadata.trackid()?;
+        let title = metadata.title()?.unwrap_or("No Music".into());
+        let album = metadata.album()?.unwrap_or("Album".into());
+        let artists = metadata.artists()?.unwrap_or(vec!["Artist".into()]);
+        let length = metadata.length()?.unwrap_or(Duration::from_secs(0));
+        let art_url = metadata.art_url()?;
+
+        // Comes from the player.
+        let playback_status = self
+            .playback_status()
+            .await
+            .unwrap_or(PlaybackStatus::Stopped);
+
+        let shuffle = self.shuffle().await.unwrap_or(false);
+        let volume = self.volume().await.unwrap_or(0.0);
+        let position = self.position().await.unwrap_or(Duration::from_secs(0));
+
+        Ok(Track {
+            track_id,
+            title,
+            album,
+            artists,
+            length,
+            art_url,
+            playback_status,
+            shuffle,
+            volume,
+            position,
         })
     }
 

@@ -1,9 +1,7 @@
 use std::sync::Arc;
 
 use crate::{
-    mpris::{Mpris, MprisEvent, PlayerEvent},
-    state::State,
-    FumResult,
+    mpris::{Mpris, MprisEvent, PlayerEvent}, state::State, track::Track, FumResult
 };
 
 /// MprisMode.
@@ -64,6 +62,19 @@ impl<'a> MprisMode<'a> {
                         let current_player = Arc::clone(&current_player);
                         let current_track = Arc::clone(&current_track);
 
+                        // Update the track metadata as soon as the player attached.
+                        {
+                            // Creates a track metadata of player.
+                            let track = player
+                                .track()
+                                .await
+                                .expect(&format!("Failed to create track for: {}", &player.bus_name));
+
+                            // Update the track metadata.
+                            let mut current_track = current_track.lock().await;
+                            *current_track = track;
+                        }
+
                         tokio::spawn(async move {
                             // Channel for player events.
                             let (player_tx, mut player_rx) =
@@ -81,10 +92,11 @@ impl<'a> MprisMode<'a> {
                                     // then we break out of this loop.
                                     Ok(bus_name) = detached_rx.recv() => {
                                         if bus_name == player.bus_name {
-                                            // Update the current_track metadata to default / none values.
+                                            // Resets the current_track metadata to their default values.
                                             let mut current_track = current_track.lock().await;
-                                            current_track.track_id = None;
-                                            current_track.title = "No Music".into();
+
+                                            let track = Track::default();
+                                            *current_track = track;
 
                                             break;
                                         }
@@ -95,26 +107,35 @@ impl<'a> MprisMode<'a> {
                                         match event {
                                             // Update the track metadata when the player properties changed.
                                             PlayerEvent::PropertiesChanged => {
-                                                let metadata = player.metadata()
+                                                // Creates a track metadata of player.
+                                                let track = player
+                                                    .track()
                                                     .await
-                                                    .expect(&format!("Failed to get metadata of: {}", &player.bus_name));
+                                                    .expect(&format!("Failed to create track for: {}", &player.bus_name));
 
-                                                let trackid = metadata
-                                                    .trackid()
-                                                    .expect(&format!("Failed to get the trackid of: {}", &player.bus_name));
-
-                                                let title = metadata
-                                                    .title()
-                                                    .expect(&format!("Failed to get the title of: {}", &player.bus_name))
-                                                    .unwrap_or("No Music".into());
-
-                                                // Update current_track.
+                                                // Update the track metadata.
                                                 let mut current_track = current_track.lock().await;
-                                                current_track.track_id = trackid;
-                                                current_track.title = title;
+                                                *current_track = track;
                                             },
 
-                                            _ => {}
+                                            // Update the position the current track when seeked.
+                                            PlayerEvent::Seeked => {
+                                                let mut current_track = current_track.lock().await;
+
+                                                // Get the updated recent position.
+                                                let position = player
+                                                    .position()
+                                                    .await
+                                                    .expect(&format!("Failed to get the player position for: {}", &player.bus_name));
+
+                                                current_track.position = position;
+                                            },
+
+                                            // Update the position the current track when the the track position progress.
+                                            PlayerEvent::Position(position) => {
+                                                let mut current_track = current_track.lock().await;
+                                                current_track.position = position;
+                                            },
                                         }
                                     }
                                 }
