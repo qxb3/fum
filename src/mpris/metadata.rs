@@ -2,7 +2,7 @@
 
 use std::{collections::HashMap, time::Duration};
 
-use zbus::zvariant;
+use zbus::zvariant::{self, ObjectPath};
 
 use crate::FumResult;
 
@@ -35,7 +35,8 @@ impl<'a> Metadata<'a> {
             .get("mpris:trackid")
             .map(|trackid| match trackid {
                 MetadataValue::Str(trackid) => Ok(Some(trackid.to_string())),
-                _ => Err("mpris:trackid is not a string.".into()),
+                MetadataValue::ObjectPath(trackid) => Ok(Some(trackid.to_string())),
+                _ => Err("mpris:trackid is not a object path / string.".into()),
             })
             .unwrap_or(Ok(None))
     }
