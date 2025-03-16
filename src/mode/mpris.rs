@@ -65,14 +65,26 @@ impl<'a> MprisMode<'a> {
                         let current_player = Arc::clone(&current_player);
                         let current_track = Arc::clone(&current_track);
 
+                        // We update the current_player to the player
+                        {
+                            let mut current_player = current_player.lock().await;
+                            *current_player = Some(player);
+                        }
+
                         // Update the track metadata as soon as the player attached.
                         {
+                            let current_player = current_player.lock().await;
+                            let current_player = current_player
+                                .as_ref()
+                                .expect("Tried to update track metadata for the player but current player is None somehow");
+
                             // Creates a track metadata of player.
-                            let track =
-                                Track::from_player(&player).await.expect(&format!(
+                            let track = Track::from_player(current_player).await.expect(
+                                &format!(
                                     "Failed to create track for: {}",
-                                    &player.bus_name
-                                ));
+                                    current_player.bus_name
+                                ),
+                            );
 
                             // Update the track metadata.
                             let mut current_track = current_track.lock().await;
@@ -84,23 +96,40 @@ impl<'a> MprisMode<'a> {
                             let (player_tx, mut player_rx) =
                                 tokio::sync::mpsc::channel::<PlayerEvent>(10);
 
-                            // Watch player events.
-                            player.watch(player_tx.clone()).await.expect(&format!(
-                                "Failed to watch player: {} events",
-                                &player.bus_name
-                            ));
+                            // For watching the events of current player.
+                            {
+                                let current_player = current_player.lock().await;
+                                let current_player = current_player
+                                    .as_ref()
+                                    .expect("Tried to watch event for player but current player is somehow None");
+
+                                // Watch player events.
+                                current_player.watch(player_tx.clone()).await.expect(
+                                    &format!(
+                                        "Failed to watch player: {} events",
+                                        current_player.bus_name
+                                    ),
+                                );
+                            }
 
                             loop {
                                 tokio::select! {
                                     // If received an detached event and if the bus_name matched to the player
                                     // then we break out of this loop.
                                     Ok(bus_name) = detached_rx.recv() => {
-                                        if bus_name == player.bus_name {
-                                            // Resets the current_track metadata to their default values.
-                                            let mut current_track = current_track.lock().await;
+                                        let mut current_player = current_player.lock().await;
+                                        let curr_player = current_player
+                                            .as_ref()
+                                            .expect("Tried to reset the track metadata for the player but current player is None somehow");
 
+                                        if bus_name == curr_player.bus_name {
+                                            // Resets the current track metadata to their default values.
+                                            let mut current_track = current_track.lock().await;
                                             let track = Track::default();
                                             *current_track = track;
+
+                                            // Set the current player to None.
+                                            *current_player = None;
 
                                             break;
                                         }
@@ -111,10 +140,15 @@ impl<'a> MprisMode<'a> {
                                         match event {
                                             // Update the track metadata when the player properties changed.
                                             PlayerEvent::PropertiesChanged => {
+                                                let current_player = current_player.lock().await;
+                                                let current_player = current_player
+                                                    .as_ref()
+                                                    .expect("Tried to update track metadata for the player but current player is None somehow");
+
                                                 // Creates a track metadata of player.
-                                                let track = Track::from_player(&player)
+                                                let track = Track::from_player(current_player)
                                                     .await
-                                                    .expect(&format!("Failed to create track for: {}", &player.bus_name));
+                                                    .expect(&format!("Failed to create track for: {}", current_player.bus_name));
 
                                                 // Update the track metadata.
                                                 let mut current_track = current_track.lock().await;
@@ -123,14 +157,18 @@ impl<'a> MprisMode<'a> {
 
                                             // Update the position the current track when seeked.
                                             PlayerEvent::Seeked => {
-                                                let mut current_track = current_track.lock().await;
+                                                let current_player = current_player.lock().await;
+                                                let current_player = current_player
+                                                    .as_ref()
+                                                    .expect("Tried to update track position for the player but current player is None somehow");
 
                                                 // Get the updated recent position.
-                                                let position = player
+                                                let position = current_player
                                                     .position()
                                                     .await
-                                                    .expect(&format!("Failed to get the player position for: {}", &player.bus_name));
+                                                    .expect(&format!("Failed to get the player position for: {}", current_player.bus_name));
 
+                                                let mut current_track = current_track.lock().await;
                                                 current_track.position = position;
                                             },
 
@@ -143,11 +181,6 @@ impl<'a> MprisMode<'a> {
                                     }
                                 }
                             }
-
-                            // We update the current_player to the player
-                            // in-case we needed it somewhere like rendering the player name or something.
-                            let mut current_player = current_player.lock().await;
-                            *current_player = Some(player);
                         });
                     }
 

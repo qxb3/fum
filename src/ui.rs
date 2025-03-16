@@ -11,13 +11,13 @@ pub async fn draw(
     terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
     state: &State,
 ) -> FumResult<()> {
-    // Get current track.
+    let player = state.current_player.lock().await;
     let track = state.current_track.lock().await;
 
     // Drawing part.
     terminal.draw(|frame| {
-        let chunks: [Rect; 10] =
-            Layout::vertical([Constraint::Length(1); 10]).areas(frame.area());
+        let chunks: [Rect; 11] =
+            Layout::vertical([Constraint::Length(1); 11]).areas(frame.area());
 
         frame.render_widget(
             Text::from(format!("TrackID: {:?}", track.track_id)),
@@ -56,6 +56,13 @@ pub async fn draw(
             Text::from(format!("position: {}", track.position.as_secs())),
             chunks[9],
         );
+
+        if let Some(player) = player.as_ref() {
+            frame.render_widget(
+                Text::from(format!("player: {}", player.identity)),
+                chunks[10],
+            );
+        }
     })?;
 
     Ok(())

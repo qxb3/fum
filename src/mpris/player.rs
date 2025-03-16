@@ -60,6 +60,7 @@ pub struct Player {
     player_proxy: Proxy<'static>,
 
     pub bus_name: String,
+    pub identity: String,
 }
 
 impl Player {
@@ -71,10 +72,17 @@ impl Player {
         let player_proxy =
             Player::create_player_proxy(connection.clone(), bus_name.to_string()).await?;
 
+        let identity = bus_name
+            .split('.')
+            .nth(3)
+            .ok_or("Failed to get player identity, bus_name might not be formatted correctly")?
+            .to_string();
+
         Ok(Self {
             connection,
             player_proxy,
             bus_name,
+            identity,
         })
     }
 
@@ -318,21 +326,19 @@ impl Player {
         &self,
         tx: tokio::sync::mpsc::Sender<PlayerEvent>,
     ) -> FumResult<()> {
-        let connection_arc = Arc::clone(&self.connection);
+        let connection = Arc::clone(&self.connection);
         let bus_name = self.bus_name.to_string();
 
         tokio::spawn(async move {
             // Properties proxy.
-            let properties_proxy = Player::create_properties_proxy(
-                connection_arc.clone(),
-                bus_name.to_string(),
-            )
-            .await
-            .expect("Failed to create properties proxy");
+            let properties_proxy =
+                Player::create_properties_proxy(connection.clone(), bus_name.to_string())
+                    .await
+                    .expect("Failed to create properties proxy");
 
             // Player proxy.
             let player_proxy =
-                Player::create_player_proxy(connection_arc.clone(), bus_name.to_string())
+                Player::create_player_proxy(connection.clone(), bus_name.to_string())
                     .await
                     .expect("Failed to create player proxy");
 
@@ -383,7 +389,7 @@ impl Player {
             let potx = tx.clone();
             tokio::spawn(async move {
                 // Creates a new player based on the player proxy connection above.
-                let player = Player::new(connection_arc.clone(), bus_name.to_string())
+                let player = Player::new(connection.clone(), bus_name.to_string())
                     .await
                     .expect("Failed to create Player in handling of position event");
 
