@@ -10,7 +10,6 @@ use crate::{
 };
 
 /// Fum TUI App.
-#[derive(Debug)]
 pub struct Fum {
     /// ratatui terminal.
     terminal: Terminal<CrosstermBackend<std::io::Stdout>>,
