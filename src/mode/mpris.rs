@@ -1,6 +1,8 @@
-use std::sync::Arc;
+use std::{fs, str::FromStr, sync::Arc};
 
+use base64::{prelude::BASE64_STANDARD, Engine};
 use ratatui_image::{picker::Picker, protocol::StatefulProtocol};
+use reqwest::Url;
 use tokio::sync::Mutex;
 
 use crate::{
@@ -179,18 +181,18 @@ impl<'a> MprisMode<'a> {
                                                 let mut current_track = current_track.lock().await;
 
                                                 // If the new art_url doesn't match the current art url means that its been changed,
-                                                if let Some(current_art_url) = &current_track.art_url {
-                                                    if let Some(track_art_url) = &track.art_url {
-                                                        if current_art_url != track_art_url {
-                                                            // Update current cover.
-                                                            MprisMode::update_cover(
-                                                                track_art_url.to_string(),
-                                                                picker.clone(),
-                                                                current_cover.clone()
-                                                            );
-                                                        }
-                                                    }
-                                                }
+                                                // if let Some(current_art_url) = &current_track.art_url {
+                                                //     if let Some(track_art_url) = &track.art_url {
+                                                //         if current_art_url != track_art_url {
+                                                //             // Update current cover.
+                                                //             MprisMode::update_cover(
+                                                //                 track_art_url.to_string(),
+                                                //                 picker.clone(),
+                                                //                 current_cover.clone()
+                                                //             );
+                                                //         }
+                                                //     }
+                                                // }
 
                                                 // Update the track metadata.
                                                 *current_track = track;
@@ -245,34 +247,92 @@ impl<'a> MprisMode<'a> {
         current_cover: Arc<Mutex<Option<StatefulProtocol>>>,
     ) {
         tokio::spawn(async move {
-            // Request to get the cover image.
-            let client = reqwest::Client::new();
-            let response = client
-                .get(art_url)
-                .header(reqwest::header::RANGE, "bytes=0-1048576") // Only fetch 1mb of bytes for perf reason.
-                .send()
-                .await
-                .expect("Failed to fetch cover art");
+            // Handle if art url is file:// scheme.
+            if art_url.starts_with("file://") {
+                // Parse the path of the url.
+                let path = Url::from_str(&art_url)
+                    .expect("Failed to parse cover art url")
+                    .to_file_path()
+                    .expect("Failed to covert cover art url to Path");
 
-            // Get bytes of cover image.
-            let bytes = response
-                .bytes()
-                .await
-                .expect("Failed to get cover art image bytes");
+                // Get bytes of cover image.
+                let bytes = fs::read(&path)
+                    .expect("Failed to get cover art image bytes");
 
-            // Decode cover image to image.
-            let cover = image::ImageReader::new(std::io::Cursor::new(bytes))
-                .with_guessed_format()
-                .expect("Unknown cover art image file type")
-                .decode()
-                .expect("Failed to decode cover art image");
+                // Decode cover image.
+                let cover = image::ImageReader::new(std::io::Cursor::new(bytes))
+                    .with_guessed_format()
+                    .expect("Unknown cover art image file type")
+                    .decode()
+                    .expect("Failed to decode cover art image");
 
-            // Creates a image StatefulProtocol.
-            let protocol = picker.new_resize_protocol(cover);
+                // Creates a image StatefulProtocol.
+                let protocol = picker.new_resize_protocol(cover);
 
-            // Updates the current cover.
-            let mut current_cover = current_cover.lock().await;
-            *current_cover = Some(protocol);
+                // Updates the current cover.
+                let mut current_cover = current_cover.lock().await;
+                *current_cover = Some(protocol);
+            }
+
+            // Handle if the art url is base64.
+            else if art_url.starts_with("data:") {
+                // Only get the data of the image.
+                let image_data = art_url
+                    .split_once("base64,")
+                    .expect("Invalid base64 cover url format")
+                    .1;
+
+                // Get bytes of base64 cover art.
+                let bytes = BASE64_STANDARD
+                    .decode(image_data)
+                    .expect("Failed to get cover art image bytes");
+
+                // Decode cover image.
+                let cover = image::ImageReader::new(std::io::Cursor::new(bytes))
+                    .with_guessed_format()
+                    .expect("Unknown cover art image file type")
+                    .decode()
+                    .expect("Failed to decode cover art image");
+
+                // Creates a image StatefulProtocol.
+                let protocol = picker.new_resize_protocol(cover);
+
+                // Updates the current cover.
+                let mut current_cover = current_cover.lock().await;
+                *current_cover = Some(protocol);
+            }
+
+            // Handle normal cover art url.
+            else {
+                // Request to get the cover image.
+                let client = reqwest::Client::new();
+                let response = client
+                    .get(art_url)
+                    .header(reqwest::header::RANGE, "bytes=0-1048576") // Only fetch 1mb of bytes for perf reason.
+                    .send()
+                    .await
+                    .expect("Failed to fetch cover art");
+
+                // Get bytes of cover image.
+                let bytes = response
+                    .bytes()
+                    .await
+                    .expect("Failed to get cover art image bytes");
+
+                // Decode cover image.
+                let cover = image::ImageReader::new(std::io::Cursor::new(bytes))
+                    .with_guessed_format()
+                    .expect("Unknown cover art image file type")
+                    .decode()
+                    .expect("Failed to decode cover art image");
+
+                // Creates a image StatefulProtocol.
+                let protocol = picker.new_resize_protocol(cover);
+
+                // Updates the current cover.
+                let mut current_cover = current_cover.lock().await;
+                *current_cover = Some(protocol);
+            }
         });
     }
 }
