@@ -181,18 +181,18 @@ impl<'a> MprisMode<'a> {
                                                 let mut current_track = current_track.lock().await;
 
                                                 // If the new art_url doesn't match the current art url means that its been changed,
-                                                // if let Some(current_art_url) = &current_track.art_url {
-                                                //     if let Some(track_art_url) = &track.art_url {
-                                                //         if current_art_url != track_art_url {
-                                                //             // Update current cover.
-                                                //             MprisMode::update_cover(
-                                                //                 track_art_url.to_string(),
-                                                //                 picker.clone(),
-                                                //                 current_cover.clone()
-                                                //             );
-                                                //         }
-                                                //     }
-                                                // }
+                                                if let Some(current_art_url) = &current_track.art_url {
+                                                    if let Some(track_art_url) = &track.art_url {
+                                                        if current_art_url != track_art_url {
+                                                            // Update current cover.
+                                                            MprisMode::update_cover(
+                                                                track_art_url.to_string(),
+                                                                picker.clone(),
+                                                                current_cover.clone()
+                                                            );
+                                                        }
+                                                    }
+                                                }
 
                                                 // Update the track metadata.
                                                 *current_track = track;
@@ -303,12 +303,13 @@ impl<'a> MprisMode<'a> {
             }
 
             // Handle normal cover art url.
-            else {
+            else if art_url.starts_with("http://") || art_url.starts_with("https://") {
                 // Request to get the cover image.
                 let client = reqwest::Client::new();
                 let response = client
                     .get(art_url)
-                    .header(reqwest::header::RANGE, "bytes=0-1048576") // Only fetch 1mb of bytes for perf reason.
+                    // Only fetch 1mb of bytes for perf reason (its being rendered in the terminal u wouldn't know).
+                    .header(reqwest::header::RANGE, "bytes=0-1048576")
                     .send()
                     .await
                     .expect("Failed to fetch cover art");

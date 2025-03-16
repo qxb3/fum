@@ -12,7 +12,7 @@ mod track;
 mod ui;
 
 /// Type alias for Result.
-type FumResult<T> = Result<T, Box<dyn Error>>;
+type FumResult<T> = Result<T, Box<dyn Error + Send + Sync>>;
 
 #[tokio::main]
 async fn main() -> FumResult<()> {
