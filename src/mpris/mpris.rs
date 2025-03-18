@@ -107,11 +107,11 @@ impl<'a> Mpris<'a> {
         &self,
         tx: tokio::sync::mpsc::Sender<MprisEvent>,
     ) -> FumResult<()> {
-        let connection_arc = Arc::clone(&self.connection);
+        let connection = Arc::clone(&self.connection);
 
         tokio::spawn(async move {
             // Creates a new mpris based on existing connection.
-            let mpris = Mpris::from_connection(connection_arc.clone())
+            let mpris = Mpris::from_connection(connection)
                 .await
                 .expect("Failed to create mpris based on existing connection");
 

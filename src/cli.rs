@@ -45,8 +45,8 @@ pub async fn run() -> FumResult<Option<(FumMode,)>> {
 
             println!("Active Players:");
 
-            for (bus_name, _) in players.iter() {
-                println!("* {bus_name}");
+            for (_, player) in players.iter() {
+                println!("* {} ~> {}", &player.identity, &player.bus_name);
             }
 
             Ok(None)
