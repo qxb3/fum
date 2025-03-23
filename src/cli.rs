@@ -1,45 +1,72 @@
+use std::{env, path::PathBuf};
+
 use clap::{Parser, Subcommand};
 
 use crate::{mode::FumMode, mpris::Mpris, FumResult};
 
+/// Fum cli.
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Cli {
+    /// Config path.
+    #[arg(short, long, value_name = "path")]
+    pub config: Option<PathBuf>,
+
+    /// How many fps should fum render.
+    #[arg(long, value_name = "number", default_value = "30")]
+    pub fps: u64,
+
+    /// Executed command.
     #[command(subcommand)]
-    command: Commands,
+    command: Command,
 }
 
+/// Fum available commands.
 #[derive(Subcommand, Debug)]
-enum Commands {
-    /// Start fum in mp3 player mode.
-    Player {},
+enum Command {
+    /// Start fum in mp3 player mode. (alias: pl)
+    #[command(alias = "pl")]
+    Player,
 
-    /// Start fum in mpris mode.
-    Mpris {
-        #[arg(short, long, value_name = "string[]", value_delimiter = ',')]
-        players: Option<Vec<String>>,
+    /// Start fum in mpris mode. (alias: mp)
+    #[command(alias = "mp")]
+    Mpris,
 
-        #[arg(long, value_name = "number")]
-        fps: Option<u64>,
-    },
-
-    /// List out active players (alias: ls)
+    /// List out active players. (alias: ls)
     #[command(alias = "ls")]
     ListPlayers,
 }
 
+pub struct CliArgs {
+    pub config: PathBuf,
+    pub fps: u64,
+    pub mode: FumMode
+}
+
 /// Run the cli.
-pub async fn run() -> FumResult<Option<(FumMode,)>> {
-    let cli = Cli::parse();
+pub async fn run() -> FumResult<Option<CliArgs>> {
+    let mut cli = Cli::parse();
+
+    // If config path is not specified use default path.
+    if cli.config.is_none() {
+        let config_path = get_config_path()?;
+        cli.config = Some(config_path);
+    }
 
     match cli.command {
-        Commands::Player {} => Ok(Some((FumMode::Player,))),
+        Command::Player => Ok(Some(CliArgs {
+            config: cli.config.expect("Expected config path to be Some but got None"),
+            fps: cli.fps,
+            mode: FumMode::Player,
+        })),
 
-        Commands::Mpris {
-            ..
-        } => Ok(Some((FumMode::Mpris,))),
+        Command::Mpris => Ok(Some(CliArgs {
+            config: cli.config.expect("Expected config path to be Some but got None"),
+            fps: cli.fps,
+            mode: FumMode::Mpris,
+        })),
 
-        Commands::ListPlayers => {
+        Command::ListPlayers => {
             let mpris = Mpris::new().await?;
             let players = mpris.players().await?;
 
@@ -51,5 +78,21 @@ pub async fn run() -> FumResult<Option<(FumMode,)>> {
 
             Ok(None)
         }
+    }
+}
+
+/// A utility function to get the config path of fum.
+/// If `$XDG_CONFIG_HOME` exists it will use that, otherwise
+/// it will fallback to using `~/.config/fum`.
+fn get_config_path() -> FumResult<PathBuf> {
+    if let Ok(xdg_config_home) = env::var("XDG_CONFIG_HOME") {
+        Ok(PathBuf::from(xdg_config_home).join("fum"))
+    } else if let Ok(home) = env::var("HOME") {
+        Ok(PathBuf::from(home).join(".config/fum"))
+    } else {
+        Err(Box::new(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            "Could not determine fum config path",
+        )))
     }
 }

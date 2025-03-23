@@ -17,9 +17,9 @@ type FumResult<T> = Result<T, Box<dyn Error + Send + Sync>>;
 #[tokio::main]
 async fn main() -> FumResult<()> {
     // None variant signifies that we shouldn't start fum tui.
-    if let Some((mode,)) = cli::run().await? {
+    if let Some(cli_args) = cli::run().await? {
         let mut fum = Fum::new().await?;
-        fum.start(mode).await?;
+        fum.start(cli_args.mode).await?;
     }
 
     Ok(())

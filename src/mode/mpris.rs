@@ -256,8 +256,7 @@ impl<'a> MprisMode<'a> {
                     .expect("Failed to covert cover art url to Path");
 
                 // Get bytes of cover image.
-                let bytes = fs::read(&path)
-                    .expect("Failed to get cover art image bytes");
+                let bytes = fs::read(&path).expect("Failed to get cover art image bytes");
 
                 // Decode cover image.
                 let cover = image::ImageReader::new(std::io::Cursor::new(bytes))
@@ -273,7 +272,6 @@ impl<'a> MprisMode<'a> {
                 let mut current_cover = current_cover.lock().await;
                 *current_cover = Some(protocol);
             }
-
             // Handle if the art url is base64.
             else if art_url.starts_with("data:") {
                 // Only get the data of the image.
@@ -301,7 +299,6 @@ impl<'a> MprisMode<'a> {
                 let mut current_cover = current_cover.lock().await;
                 *current_cover = Some(protocol);
             }
-
             // Handle normal cover art url.
             else if art_url.starts_with("http://") || art_url.starts_with("https://") {
                 // Request to get the cover image.

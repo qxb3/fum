@@ -1,6 +1,7 @@
 use std::panic;
 
 use ratatui::{prelude::CrosstermBackend, Terminal};
+use rhai::Engine;
 
 use crate::{
     event::{EventHandler, FumEvent},
@@ -19,6 +20,9 @@ pub struct Fum {
 
     /// Application state.
     state: State,
+
+    /// Rhai engine.
+    engine: Engine,
 }
 
 impl Fum {
@@ -39,11 +43,13 @@ impl Fum {
         let terminal = ratatui::init();
         let event_handler = EventHandler::new(10);
         let state = State::new();
+        let engine = Engine::new();
 
         Ok(Self {
             terminal,
             event_handler,
             state,
+            engine,
         })
     }
 
