@@ -37,10 +37,11 @@ enum Command {
     ListPlayers,
 }
 
+/// Cli arguments.
 pub struct CliArgs {
-    pub config: PathBuf,
+    pub config_path: PathBuf,
     pub fps: u64,
-    pub mode: FumMode
+    pub mode: FumMode,
 }
 
 /// Run the cli.
@@ -55,13 +56,17 @@ pub async fn run() -> FumResult<Option<CliArgs>> {
 
     match cli.command {
         Command::Player => Ok(Some(CliArgs {
-            config: cli.config.expect("Expected config path to be Some but got None"),
+            config_path: cli
+                .config
+                .expect("Expected config path to be Some but got None"),
             fps: cli.fps,
             mode: FumMode::Player,
         })),
 
         Command::Mpris => Ok(Some(CliArgs {
-            config: cli.config.expect("Expected config path to be Some but got None"),
+            config_path: cli
+                .config
+                .expect("Expected config path to be Some but got None"),
             fps: cli.fps,
             mode: FumMode::Mpris,
         })),
@@ -71,6 +76,10 @@ pub async fn run() -> FumResult<Option<CliArgs>> {
             let players = mpris.players().await?;
 
             println!("Active Players:");
+
+            if players.is_empty() {
+                println!("* No active players.");
+            }
 
             for (_, player) in players.iter() {
                 println!("* {} ~> {}", &player.identity, &player.bus_name);
@@ -86,9 +95,9 @@ pub async fn run() -> FumResult<Option<CliArgs>> {
 /// it will fallback to using `~/.config/fum`.
 fn get_config_path() -> FumResult<PathBuf> {
     if let Ok(xdg_config_home) = env::var("XDG_CONFIG_HOME") {
-        Ok(PathBuf::from(xdg_config_home).join("fum"))
+        Ok(PathBuf::from(xdg_config_home).join("fum/config.rhai"))
     } else if let Ok(home) = env::var("HOME") {
-        Ok(PathBuf::from(home).join(".config/fum"))
+        Ok(PathBuf::from(home).join(".config/fum/config.rhai"))
     } else {
         Err(Box::new(std::io::Error::new(
             std::io::ErrorKind::Other,

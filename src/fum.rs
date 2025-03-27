@@ -1,17 +1,17 @@
-use std::panic;
+use std::{panic, path::PathBuf};
 
 use ratatui::{prelude::CrosstermBackend, Terminal};
-use rhai::Engine;
 
 use crate::{
     event::{EventHandler, FumEvent},
     mode::{FumMode, MprisMode},
+    script::Script,
     state::State,
     ui, FumResult,
 };
 
 /// Fum TUI App.
-pub struct Fum {
+pub struct Fum<'a> {
     /// ratatui terminal.
     terminal: Terminal<CrosstermBackend<std::io::Stdout>>,
 
@@ -21,13 +21,13 @@ pub struct Fum {
     /// Application state.
     state: State,
 
-    /// Rhai engine.
-    engine: Engine,
+    /// Config script.
+    script: Script<'a>,
 }
 
-impl Fum {
+impl<'a> Fum<'a> {
     /// Creates new Fum TUI.
-    pub async fn new() -> FumResult<Self> {
+    pub async fn new(config_path: &PathBuf) -> FumResult<Self> {
         // Hook into panics to properly restore the terminal
         // when a panic happened.
         let panic_hook = panic::take_hook();
@@ -43,13 +43,13 @@ impl Fum {
         let terminal = ratatui::init();
         let event_handler = EventHandler::new(10);
         let state = State::new();
-        let engine = Engine::new();
+        let script = Script::new(config_path)?;
 
         Ok(Self {
             terminal,
             event_handler,
             state,
-            engine,
+            script,
         })
     }
 
@@ -82,15 +82,15 @@ impl Fum {
     }
 
     /// Handle tick event.
-    pub async fn tick(&mut self) -> FumResult<()> {
+    async fn tick(&mut self) -> FumResult<()> {
         // Draws the ui.
-        ui::draw(&mut self.terminal, &self.state).await?;
+        // ui::draw(&mut self.terminal, &self.state).await?;
 
         Ok(())
     }
 
     /// Handle keypress event.
-    pub async fn keypress(&mut self, key: crossterm::event::KeyEvent) -> FumResult<()> {
+    async fn keypress(&mut self, key: crossterm::event::KeyEvent) -> FumResult<()> {
         match key.code {
             crossterm::event::KeyCode::Char('q') => self.exit()?,
 
@@ -101,7 +101,7 @@ impl Fum {
     }
 
     /// Handle mouse click event.
-    pub async fn mouse_click(
+    async fn mouse_click(
         &mut self,
         _mouse: crossterm::event::MouseEvent,
         _button: crossterm::event::MouseButton,
@@ -110,7 +110,7 @@ impl Fum {
     }
 
     /// Restore terminal state.
-    pub fn restore() -> FumResult<()> {
+    fn restore() -> FumResult<()> {
         // Restore terminal.
         ratatui::restore();
 
@@ -121,7 +121,7 @@ impl Fum {
     }
 
     /// Exits out of fum.
-    pub fn exit(&mut self) -> FumResult<()> {
+    fn exit(&mut self) -> FumResult<()> {
         Fum::restore()?;
 
         self.state.exit = true;
