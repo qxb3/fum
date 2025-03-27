@@ -49,14 +49,15 @@ impl<'a> Script<'a> {
             .ok_or("ui needs to be an array of widget objects")?;
 
         for widget in widget_arr {
-            Script::build_ui(widget, &mut widgets)?;
+            let widget = Script::build_ui(widget)?;
+            widgets.push(widget);
         }
 
         Ok(widgets)
     }
 
     /// A helper function for building the ui.
-    fn build_ui(widget: rhai::Dynamic, widgets: &mut Vec<Widget>) -> FumResult<()> {
+    fn build_ui(widget: rhai::Dynamic) -> FumResult<Widget> {
         // Turns the dynamic type into a map.
         let widget = widget
             .as_map_ref()
@@ -83,14 +84,13 @@ impl<'a> Script<'a> {
                 let mut children: Vec<Widget> = Vec::new();
 
                 for child in children_arr {
-                    Script::build_ui(child, &mut children)?;
+                    let child = Script::build_ui(child)?;
+                    children.push(child);
                 }
 
-                let container = Widget::Container {
-                    children,
-                };
-
-                widgets.push(container);
+                Ok(Widget::Container {
+                    children
+                })
             }
 
             // If the `type` is label.
@@ -102,20 +102,16 @@ impl<'a> Script<'a> {
                     .map_err(|_| "label widget `text` needs to be a string")?
                     .to_string();
 
-                let label = Widget::Label {
+                Ok(Widget::Label {
                     text,
-                };
-
-                widgets.push(label);
+                })
             }
 
             _ => {
-                return Err(
+                Err(
                     format!("Unknown widget type: {}", widget_type.to_string()).into()
                 )
             }
         }
-
-        Ok(())
     }
 }
