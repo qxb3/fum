@@ -2,7 +2,7 @@ use std::vec;
 
 use crate::widget::Widget;
 
-use super::{ScriptEventSender, ScriptErr, ScriptEvent};
+use super::{ScriptErr, ScriptEvent, ScriptEventSender};
 
 /// FUM_UI() function to set or update the ui.
 pub fn fum_ui(tx: ScriptEventSender) -> impl Fn(rhai::Array) {
