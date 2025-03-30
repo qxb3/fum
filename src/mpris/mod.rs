@@ -65,20 +65,14 @@ impl<'a> Mpris<'a> {
         let connection = Connection::session().await?;
         let dbus_proxy = Mpris::create_dbus_proxy(&connection).await?;
 
-        Ok(Self {
-            connection: Arc::new(Mutex::new(connection)),
-            dbus_proxy,
-        })
+        Ok(Self { connection: Arc::new(Mutex::new(connection)), dbus_proxy })
     }
 
     /// Creates a new Mpris based on existing Connection.
     pub async fn from_connection(connection: Arc<Mutex<Connection>>) -> FumResult<Self> {
         let dbus_proxy = Mpris::create_dbus_proxy(&*connection.lock().await).await?;
 
-        Ok(Self {
-            connection,
-            dbus_proxy,
-        })
+        Ok(Self { connection, dbus_proxy })
     }
 
     /// Gets all the active players.

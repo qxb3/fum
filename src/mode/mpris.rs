@@ -39,11 +39,7 @@ impl<'a> MprisMode<'a> {
         let mpris = Arc::new(Mpris::new().await?);
         let picker = Arc::new(Picker::from_query_stdio()?);
 
-        Ok(Self {
-            mpris,
-            picker,
-            state,
-        })
+        Ok(Self { mpris, picker, state })
     }
 
     /// Handle mpris mode.

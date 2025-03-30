@@ -39,11 +39,7 @@ impl EventHandler {
         // Create tick_rate Duration that will be converted from fps to millis.
         let tick_rate = Duration::from_millis(1000 / fps);
 
-        Self {
-            sender,
-            receiver,
-            tick_rate,
-        }
+        Self { sender, receiver, tick_rate }
     }
 
     /// Starts listening and sending out events.

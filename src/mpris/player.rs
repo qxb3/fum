@@ -78,12 +78,7 @@ impl Player {
             .ok_or("Failed to get player identity, bus_name might not be formatted correctly")?
             .to_string();
 
-        Ok(Self {
-            connection,
-            player_proxy,
-            bus_name,
-            identity,
-        })
+        Ok(Self { connection, player_proxy, bus_name, identity })
     }
 
     /// Metadata of player.

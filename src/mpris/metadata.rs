@@ -21,9 +21,7 @@ pub struct Metadata<'a> {
 impl<'a> Metadata<'a> {
     /// Creates a new Metadata.
     pub fn new(metadata: HashMap<String, MetadataValue<'a>>) -> FumResult<Self> {
-        Ok(Self {
-            metadata,
-        })
+        Ok(Self { metadata })
     }
 
     /// Metadata mpris:trackid.
