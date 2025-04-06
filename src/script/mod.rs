@@ -1,63 +1,64 @@
-use std::path::PathBuf;
+use std::{
+    path::PathBuf,
+    sync::{Arc, Mutex},
+};
 
-use rhai::{Engine, AST};
+use ratatui::layout::Rect;
+use rhai::{Engine, Scope, AST};
+use taffy::TaffyTree;
 
-use crate::{widget::Widget, FumResult};
+use crate::{widget::FumWidget, FumResult};
 
 mod functions;
 
-/// Errors that can happen on the script.
-#[derive(Debug, Clone)]
-pub enum ScriptErr {
-    /// When a type is not what is expected to be.
-    InvalidType(String),
-}
+/// Type alias for TaffyTree wrapped on arc mutex.
+pub type ScriptTaffy = Arc<Mutex<TaffyTree<FumWidget>>>;
 
-/// Events that can happen on the script.
-#[derive(Debug, Clone)]
-pub enum ScriptEvent {
-    /// When the script calles the FUM_UI() function.
-    UiUpdate(Vec<Widget>),
-}
-
-/// Type alias for script event result.
-pub type ScriptEventResult = Result<ScriptEvent, ScriptErr>;
-
-/// Type alias for script event channel sender.
-pub type ScriptEventSender = tokio::sync::mpsc::UnboundedSender<ScriptEventResult>;
-
-/// Type alias for script event channel receiver.
-pub type ScriptEventReceiver = tokio::sync::mpsc::UnboundedReceiver<ScriptEventResult>;
+/// Type alias for the script ui state.
+pub type ScriptUi = Arc<Mutex<Vec<(Rect, FumWidget)>>>;
 
 /// Fum script.
-pub struct Script {
-    /// Event channel sender.
-    sender: ScriptEventSender,
-
-    /// Event channel receiver,
-    receiver: ScriptEventReceiver,
-
+pub struct Script<'a> {
     /// Rhai engine.
     pub engine: Engine,
 
+    /// Script scope where global variables be put.
+    pub scope: Scope<'a>,
+
     /// Script ast.
     pub ast: AST,
+
+    /// Taffy layout engine.
+    pub taffy: ScriptTaffy,
+
+    /// Script ui.
+    pub ui: ScriptUi,
 }
 
-impl Script {
+impl<'a> Script<'a> {
     /// Creates a new script, loading from file.
-    pub fn new<P: Into<PathBuf>>(config_path: P) -> FumResult<Self> {
-        // Creates a new unbounded event channel.
-        let (sender, receiver) = tokio::sync::mpsc::unbounded_channel();
-
-        // rhai engine.
+    pub fn from_file<P: Into<PathBuf>>(config_path: P) -> FumResult<Self> {
+        // Rhai engine.
         let mut engine = Engine::new();
+
+        // Script scope.
+        let mut scope = Scope::new();
+
+        // Push stuff into the scope.
+        scope.push("VERTICAL", taffy::FlexDirection::Column);
+        scope.push("HORIZONTAL", taffy::FlexDirection::Row);
+
+        // Taffy layout engine.
+        let taffy = Arc::new(Mutex::new(TaffyTree::new()));
+
+        // Script ui.
+        let ui = Arc::new(Mutex::new(Vec::new()));
 
         // Register stuff into the engine.
         engine
-            .register_type_with_name::<Widget>("Widget")
-            .register_fn("FUM_UI", functions::fum_ui(sender.clone()))
-            .register_fn("Container", functions::container(sender.clone()))
+            .register_type_with_name::<FumWidget>("Widget")
+            .register_fn("FUM_UI", functions::fum_ui(taffy.clone(), ui.clone()))
+            .register_fn("Container", functions::container())
             .register_fn("Label", functions::label());
 
         // Compile the script into ast.
@@ -65,27 +66,15 @@ impl Script {
             .compile_file(config_path.into())
             .map_err(|err| format!("Error parsing config script: {err}"))?;
 
-        // Run the script and put all the stuff in the scope.
-        engine
-            .run_ast(&ast)
-            .map_err(|err| format!("Error executing config script: {err}"))?;
-
-        Ok(Self {
-            sender,
-            receiver,
-            engine,
-            ast,
-        })
+        Ok(Self { engine, scope, ast, taffy, ui })
     }
 
-    /// Receive script events.
-    pub async fn next(&mut self) -> FumResult<ScriptEventResult> {
-        self.receiver
-            .recv()
-            .await
-            .ok_or(Box::new(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                "Failed to receive an event",
-            )))
+    // Executes the script.
+    pub fn execute(&mut self) -> FumResult<()> {
+        self.engine
+            .run_ast_with_scope(&mut self.scope, &self.ast)
+            .map_err(|err| format!("Error executing config script: {err}"))?;
+
+        Ok(())
     }
 }

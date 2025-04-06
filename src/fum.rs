@@ -1,13 +1,16 @@
-use std::{panic, path::PathBuf};
+use std::{ops::Deref, panic, path::PathBuf, sync::Arc};
 
-use ratatui::{prelude::CrosstermBackend, Terminal};
+use ratatui::{layout::Rect, prelude::CrosstermBackend, Terminal};
+use taffy::prelude::TaffyMinContent;
 
 use crate::{
     event::{EventHandler, FumEvent},
     mode::{FumMode, MprisMode},
     script::Script,
     state::State,
-    ui, FumResult,
+    ui,
+    widget::FumWidget,
+    FumResult,
 };
 
 /// Fum TUI App.
@@ -43,20 +46,18 @@ impl<'a> Fum<'a> {
         let terminal = ratatui::init();
         let event_handler = EventHandler::new(10);
         let state = State::new();
-        let script = Script::new(config_path)?;
+        let script = Script::from_file(config_path)?;
 
-        Ok(Self {
-            terminal,
-            event_handler,
-            state,
-            script,
-        })
+        Ok(Self { terminal, event_handler, state, script })
     }
 
     /// Start Fum.
     pub async fn start(&mut self, mode: FumMode) -> FumResult<()> {
         // Start event handler.
         self.event_handler.handle();
+
+        // Execute the script at start.
+        self.script.execute()?;
 
         // Handle the corresponding mode.
         match mode {
@@ -83,8 +84,18 @@ impl<'a> Fum<'a> {
 
     /// Handle tick event.
     async fn tick(&mut self) -> FumResult<()> {
+        let ui_arc = Arc::clone(&self.script.ui);
+        let ui = ui_arc
+            .lock()
+            .map_err(|err| format!("Failed to acquire lock for ui: {err}"))?;
+
         // Draws the ui.
-        // ui::draw(&mut self.terminal, &self.state).await?;
+        ui::draw(
+            &mut self.terminal,
+            &mut self.state,
+            ui.deref(),
+        )
+        .await?;
 
         Ok(())
     }
