@@ -66,7 +66,6 @@ async fn main() -> FumResult<()> {
         //     println!("CHILDREN = {:#?}", children_rects);
         // }
 
-
         let mut fum = Fum::new(&args.config_path).await?;
         fum.start(args.mode).await?;
     }

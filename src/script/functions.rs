@@ -48,10 +48,12 @@ pub fn fum_ui(taffy: ScriptTaffy, ui: ScriptUi) -> impl Fn(rhai::Array) -> FnRes
             .compute_layout(root_node, taffy::Size::MIN_CONTENT)
             .map_err(|err| format!("Failed to compute the layout: {err}"))?;
 
-        let root_layout = taffy.layout(root_node)
+        let root_layout = taffy
+            .layout(root_node)
             .map_err(|err| format!("Failed to get the layout of root node: {err}"))?;
 
-        let root_children = taffy.children(root_node)
+        let root_children = taffy
+            .children(root_node)
             .map_err(|err| format!("Failed to get the children of root node: {err}"))?;
 
         // Creates the root rect.
@@ -59,18 +61,15 @@ pub fn fum_ui(taffy: ScriptTaffy, ui: ScriptUi) -> impl Fn(rhai::Array) -> FnRes
             root_layout.location.x as u16,
             root_layout.location.y as u16,
             root_layout.size.width as u16,
-            root_layout.size.height as u16
+            root_layout.size.height as u16,
         );
 
         // Builds rects.
         let mut rects = Vec::new();
         for child in root_children {
-            FumWidget::build_rects(
-                &mut rects,
-                &*taffy,
-                &root_rect,
-                child
-            ).map_err(|err| format!("Failed to build rect on node: {:?} - {err}", child))?;
+            FumWidget::build_rects(&mut rects, &*taffy, &root_rect, child).map_err(
+                |err| format!("Failed to build rect on node: {:?} - {err}", child),
+            )?;
         }
 
         // Updates the ui.

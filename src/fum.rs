@@ -48,7 +48,12 @@ impl<'a> Fum<'a> {
         let state = State::new();
         let script = Script::from_file(config_path)?;
 
-        Ok(Self { terminal, event_handler, state, script })
+        Ok(Self {
+            terminal,
+            event_handler,
+            state,
+            script,
+        })
     }
 
     /// Start Fum.
@@ -90,12 +95,7 @@ impl<'a> Fum<'a> {
             .map_err(|err| format!("Failed to acquire lock for ui: {err}"))?;
 
         // Draws the ui.
-        ui::draw(
-            &mut self.terminal,
-            &mut self.state,
-            ui.deref(),
-        )
-        .await?;
+        ui::draw(&mut self.terminal, &mut self.state, ui.deref()).await?;
 
         Ok(())
     }

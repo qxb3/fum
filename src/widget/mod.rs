@@ -41,7 +41,9 @@ impl FumWidget {
         widget: &FumWidget,
     ) -> FumResult<NodeId> {
         match widget {
-            FumWidget::Container { children, direction, .. } => {
+            FumWidget::Container {
+                children, direction, ..
+            } => {
                 // Where the node children of this container will be stored.
                 let mut children_nodes = Vec::new();
 
@@ -108,17 +110,12 @@ impl FumWidget {
                     container_layout.location.x as u16 + parent_rect.x,
                     container_layout.location.y as u16 + parent_rect.y,
                     container_layout.size.width as u16,
-                    container_layout.size.height as u16
+                    container_layout.size.height as u16,
                 );
 
                 // Recursively builds rects.
                 for child in container_children {
-                    FumWidget::build_rects(
-                        rects,
-                        taffy,
-                        &container_rect,
-                        child
-                    )?;
+                    FumWidget::build_rects(rects, taffy, &container_rect, child)?;
                 }
             }
 
@@ -130,7 +127,7 @@ impl FumWidget {
                     label_layout.location.x as u16 + parent_rect.x,
                     label_layout.location.y as u16 + parent_rect.y,
                     label_layout.size.width as u16,
-                    label_layout.size.height as u16
+                    label_layout.size.height as u16,
                 );
 
                 rects.push((label_rect, widget));

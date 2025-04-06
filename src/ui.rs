@@ -1,6 +1,4 @@
-use ratatui::{
-    layout::Rect, prelude::CrosstermBackend, text::Text, Terminal
-};
+use ratatui::{layout::Rect, prelude::CrosstermBackend, text::Text, Terminal};
 
 use crate::{state::State, widget::FumWidget, FumResult};
 

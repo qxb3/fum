@@ -28,9 +28,6 @@ pub struct Script<'a> {
     /// Script ast.
     pub ast: AST,
 
-    /// Taffy layout engine.
-    pub taffy: ScriptTaffy,
-
     /// Script ui.
     pub ui: ScriptUi,
 }
@@ -66,7 +63,12 @@ impl<'a> Script<'a> {
             .compile_file(config_path.into())
             .map_err(|err| format!("Error parsing config script: {err}"))?;
 
-        Ok(Self { engine, scope, ast, taffy, ui })
+        Ok(Self {
+            engine,
+            scope,
+            ast,
+            ui,
+        })
     }
 
     // Executes the script.
