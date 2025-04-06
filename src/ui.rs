@@ -4,7 +4,7 @@ use crate::{state::State, widget::FumWidget, FumResult};
 
 pub async fn draw(
     terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
-    state: &mut State,
+    _state: &mut State,
     ui: &Vec<(Rect, FumWidget)>,
 ) -> FumResult<()> {
     // Drawing part.

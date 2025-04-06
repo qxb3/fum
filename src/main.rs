@@ -1,10 +1,6 @@
-use std::{error::Error, sync::Arc};
+use std::error::Error;
 
 use fum::Fum;
-use ratatui::layout::Rect;
-use script::Script;
-use taffy::prelude::TaffyMinContent;
-use widget::FumWidget;
 
 mod cli;
 mod event;

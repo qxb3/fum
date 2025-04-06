@@ -1,7 +1,6 @@
 use std::{ops::Deref, panic, path::PathBuf, sync::Arc};
 
-use ratatui::{layout::Rect, prelude::CrosstermBackend, Terminal};
-use taffy::prelude::TaffyMinContent;
+use ratatui::{prelude::CrosstermBackend, Terminal};
 
 use crate::{
     event::{EventHandler, FumEvent},
@@ -9,7 +8,6 @@ use crate::{
     script::Script,
     state::State,
     ui,
-    widget::FumWidget,
     FumResult,
 };
 
