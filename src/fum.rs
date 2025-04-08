@@ -3,12 +3,7 @@ use std::{ops::Deref, panic, path::PathBuf, sync::Arc};
 use ratatui::{prelude::CrosstermBackend, Terminal};
 
 use crate::{
-    event::{EventHandler, FumEvent},
-    mode::{FumMode, MprisMode},
-    script::Script,
-    state::State,
-    ui,
-    FumResult,
+    cli::CliArgs, event::{EventHandler, FumEvent}, mode::{FumMode, MprisMode}, script::Script, state::State, ui, FumResult
 };
 
 /// Fum TUI App.
@@ -28,7 +23,7 @@ pub struct Fum<'a> {
 
 impl<'a> Fum<'a> {
     /// Creates new Fum TUI.
-    pub async fn new(config_path: &PathBuf) -> FumResult<Self> {
+    pub async fn new(args: &CliArgs) -> FumResult<Self> {
         // Hook into panics to properly restore the terminal
         // when a panic happened.
         let panic_hook = panic::take_hook();
@@ -42,9 +37,9 @@ impl<'a> Fum<'a> {
         crossterm::execute!(std::io::stdout(), crossterm::event::EnableMouseCapture)?;
 
         let terminal = ratatui::init();
-        let event_handler = EventHandler::new(10);
+        let event_handler = EventHandler::new(args.fps);
         let state = State::new();
-        let script = Script::from_file(config_path)?;
+        let script = Script::from_file(&args.config_path)?;
 
         Ok(Self {
             terminal,
