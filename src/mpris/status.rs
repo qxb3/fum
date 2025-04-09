@@ -1,7 +1,7 @@
 use std::{fmt, str::FromStr};
 
 /// Playback status of player.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum PlaybackStatus {
     Playing,
     Paused,

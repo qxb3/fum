@@ -5,16 +5,25 @@ use tokio::sync::Mutex;
 
 use crate::{mpris::Player, track::Track};
 
+/// Type alias for current player state.
+pub type CurrentPlayerState = Arc<Mutex<Option<Player>>>;
+
+/// Type alias for current track state.
+pub type CurrentTrackState = Arc<Mutex<Track>>;
+
+/// Type alias for current track state.
+pub type CurrentCoverState = Arc<Mutex<Option<StatefulProtocol>>>;
+
 /// Contains the application states.
 pub struct State {
     /// The current player.
-    pub current_player: Arc<Mutex<Option<Player>>>,
+    pub current_player: CurrentPlayerState,
 
     /// The current track.
-    pub current_track: Arc<Mutex<Track>>,
+    pub current_track: CurrentTrackState,
 
     /// The current cover art.
-    pub current_cover: Arc<Mutex<Option<StatefulProtocol>>>,
+    pub current_cover: CurrentCoverState,
 
     /// Exit state.
     pub exit: bool,

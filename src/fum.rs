@@ -1,9 +1,14 @@
-use std::{ops::Deref, panic, path::PathBuf, sync::Arc};
+use std::{ops::Deref, panic, sync::Arc};
 
 use ratatui::{prelude::CrosstermBackend, Terminal};
 
 use crate::{
-    cli::CliArgs, event::{EventHandler, FumEvent}, mode::{FumMode, MprisMode}, script::Script, state::State, ui, FumResult
+    cli::CliArgs,
+    event::{EventHandler, FumEvent},
+    mode::{FumMode, MprisMode, MprisModeEvent},
+    script::Script,
+    state::State,
+    ui, FumResult,
 };
 
 /// Fum TUI App.
@@ -39,7 +44,12 @@ impl<'a> Fum<'a> {
         let terminal = ratatui::init();
         let event_handler = EventHandler::new(args.fps);
         let state = State::new();
-        let script = Script::from_file(&args.config_path)?;
+
+        // Get the current track to be passed into the script.
+        let current_track_arc = Arc::clone(&state.current_track);
+        let current_track = current_track_arc.lock().await;
+
+        let script = Script::from_file(&args.config_path, current_track.deref())?;
 
         Ok(Self {
             terminal,
@@ -57,22 +67,54 @@ impl<'a> Fum<'a> {
         // Execute the script at start.
         self.script.execute()?;
 
+        let mut mpris_mode = MprisMode::new(
+            Arc::clone(&self.state.current_player),
+            Arc::clone(&self.state.current_track),
+            Arc::clone(&self.state.current_cover),
+        )
+        .await?;
+
         // Handle the corresponding mode.
         match mode {
             FumMode::Player => {}
             FumMode::Mpris => {
-                let mut mpris_mode = MprisMode::new(&mut self.state).await?;
                 mpris_mode.handle().await?;
             }
         }
 
         // Read events and execute while we running.
         while !self.state.exit {
-            match self.event_handler.next().await? {
-                FumEvent::Tick => self.tick().await?,
-                FumEvent::KeyPress(key) => self.keypress(key).await?,
-                FumEvent::MouseClick(mouse, button) => {
-                    self.mouse_click(mouse, button).await?
+            tokio::select! {
+                // Read crossterm terminal events.
+                term_event = self.event_handler.next() => {
+                    match term_event? {
+                        FumEvent::Tick => self.tick().await?,
+                        FumEvent::KeyPress(key) => self.keypress(key).await?,
+                        FumEvent::MouseClick(mouse, button) => {
+                            self.mouse_click(mouse, button).await?
+                        }
+                    }
+                }
+
+                // Read Mpris mode events.
+                mpris_mode_event = mpris_mode.next() => {
+                    match mpris_mode_event? {
+                        // Updates the script track variables when the track metadata changes.
+                        MprisModeEvent::PlayerTrackMetaChanged => {
+                            let current_track_arc = Arc::clone(&self.state.current_track);
+                            let current_track = current_track_arc.lock().await;
+
+                            self.script.update_track(current_track.deref())?;
+                        }
+
+                        // Updates the script track POSITION variable when the track position changes.
+                        MprisModeEvent::PlayerPositionChanged => {
+                            let current_track_arc = Arc::clone(&self.state.current_track);
+                            let current_track = current_track_arc.lock().await;
+
+                            self.script.update_position(current_track.position.clone())?;
+                        }
+                    }
                 }
             }
         }

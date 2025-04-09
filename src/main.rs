@@ -11,6 +11,7 @@ mod script;
 mod state;
 mod track;
 mod ui;
+mod utils;
 mod widget;
 
 /// Type alias for Result.
