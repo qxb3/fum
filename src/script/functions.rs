@@ -115,8 +115,10 @@ pub fn container() -> impl Fn(taffy::FlexDirection, rhai::Array) -> FnResult<Fum
 }
 
 /// Label() widget function.
-pub fn label() -> impl Fn(&str) -> FnResult<FumWidget> {
-    move |text: &str| -> FnResult<FumWidget> {
+pub fn label() -> impl Fn(rhai::Dynamic) -> FnResult<FumWidget> {
+    move |text: rhai::Dynamic| -> FnResult<FumWidget> {
+        let text = text.to_string();
+
         Ok(FumWidget::Label {
             text: text.to_string(),
             width: text.len() as u16,
