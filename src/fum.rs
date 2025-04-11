@@ -67,17 +67,19 @@ impl<'a> Fum<'a> {
         // Execute the script at start.
         self.script.execute()?;
 
-        let mut mpris_mode = MprisMode::new(
-            Arc::clone(&self.state.current_player),
-            Arc::clone(&self.state.current_track),
-            Arc::clone(&self.state.current_cover),
-        )
-        .await?;
+        let (mpris_mode_tx, mut mpris_mode_rx) = tokio::sync::mpsc::channel(10);
 
         // Handle the corresponding mode.
         match mode {
             FumMode::Player => {}
             FumMode::Mpris => {
+                let mut mpris_mode = MprisMode::new(
+                    mpris_mode_tx.clone(),
+                    Arc::clone(&self.state.current_player),
+                    Arc::clone(&self.state.current_track),
+                    Arc::clone(&self.state.current_cover),
+                ).await?;
+
                 mpris_mode.handle().await?;
             }
         }
@@ -92,13 +94,18 @@ impl<'a> Fum<'a> {
                         FumEvent::KeyPress(key) => self.keypress(key).await?,
                         FumEvent::MouseClick(mouse, button) => {
                             self.mouse_click(mouse, button).await?
-                        }
+                        },
+                        FumEvent::Resize(_, _) => {
+                            // Re-execute the script when the terminal resized so the ui positioning updates.
+                            // TODO: instead of reexecuting the entire script on resize, just re-compute.
+                            self.script.execute()?;
+                        },
                     }
                 }
 
                 // Read Mpris mode events.
-                mpris_mode_event = mpris_mode.next() => {
-                    match mpris_mode_event? {
+                Some(mpris_mode_event) = mpris_mode_rx.recv() => {
+                    match mpris_mode_event {
                         // Updates the script track variables when the track metadata changes.
                         MprisModeEvent::PlayerTrackMetaChanged => {
                             let current_track_arc = Arc::clone(&self.state.current_track);

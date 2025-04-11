@@ -49,21 +49,18 @@ pub struct MprisMode {
 
     /// Sender for mpris mode event.
     sender: tokio::sync::mpsc::Sender<MprisModeEvent>,
-
-    /// Reciever for mpris mode event.
-    receiver: tokio::sync::mpsc::Receiver<MprisModeEvent>,
 }
 
 impl MprisMode {
     /// Creates new MprisMode.
     pub async fn new(
+        sender: tokio::sync::mpsc::Sender<MprisModeEvent>,
         current_player: CurrentPlayerState,
         current_track: CurrentTrackState,
         current_cover: CurrentCoverState,
     ) -> FumResult<Self> {
         let mpris = Arc::new(Mpris::new().await?);
         let picker = Arc::new(Picker::from_query_stdio()?);
-        let (sender, receiver) = tokio::sync::mpsc::channel(10);
 
         Ok(Self {
             mpris,
@@ -72,7 +69,6 @@ impl MprisMode {
             current_track,
             current_cover,
             sender,
-            receiver,
         })
     }
 
@@ -386,16 +382,5 @@ impl MprisMode {
                 *current_cover = Some(protocol);
             }
         });
-    }
-
-    /// Receive events from handle thread.
-    pub async fn next(&mut self) -> FumResult<MprisModeEvent> {
-        self.receiver
-            .recv()
-            .await
-            .ok_or(Box::new(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                "Failed to receive an event from EventHandler.",
-            )))
     }
 }

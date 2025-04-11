@@ -1,6 +1,5 @@
 use ratatui::layout::Rect;
 use rhai::EvalAltResult;
-use taffy::prelude::TaffyMinContent;
 
 use crate::widget::FumWidget;
 
@@ -31,7 +30,7 @@ pub fn fum_ui(taffy: ScriptTaffy, ui: ScriptUi) -> impl Fn(rhai::Array) -> FnRes
             widget_nodes.push(node);
         }
 
-        // Creates the very root node of the ui.
+        // Creates the root node that will contain the ui layout.
         let root_node = taffy
             .new_with_children(
                 taffy::Style {
@@ -43,10 +42,34 @@ pub fn fum_ui(taffy: ScriptTaffy, ui: ScriptUi) -> impl Fn(rhai::Array) -> FnRes
             )
             .map_err(|err| format!("Failed to create root node for the ui: {err}"))?;
 
+        // Fetch the cols & rows of the terminal.
+        let (width, height) = crossterm::terminal::size()
+            .map_err(|err| format!("Failed to fetch the terminal width & height: {err}"))?;
+
+        // Creates the terminal node for positioning where in the terminal should fum be displayed.
+        let window_node = taffy
+            .new_with_children(
+                taffy::Style {
+                    display: taffy::Display::Flex,
+                    align_items: Some(taffy::AlignItems::Center),
+                    justify_content: Some(taffy::JustifyContent::Center),
+                    size: taffy::Size {
+                        width: taffy::Dimension::length(width.into()),
+                        height: taffy::Dimension::length(height.into()),
+                    },
+                    ..Default::default()
+                },
+                &[root_node]
+            )
+            .map_err(|err| format!("Failed to create foo node for the ui: {err}"))?;
+
         // Compute the layout
         taffy
-            .compute_layout(root_node, taffy::Size::MIN_CONTENT)
+            .compute_layout(window_node, taffy::Size { width: taffy::AvailableSpace::Definite(186.0), height: taffy::AvailableSpace::Definite(35.0) })
             .map_err(|err| format!("Failed to compute the layout: {err}"))?;
+
+        // println!("{:#?}", taffy.layout(foo));
+        // println!("{:#?}", taffy.layout(root_node));
 
         let root_layout = taffy
             .layout(root_node)

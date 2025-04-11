@@ -16,6 +16,9 @@ pub enum FumEvent {
 
     /// Mouse event.
     MouseClick(crossterm::event::MouseEvent, crossterm::event::MouseButton),
+
+    /// Resize event.
+    Resize(u16, u16),
 }
 
 /// Terminal event handler.
@@ -83,6 +86,11 @@ impl EventHandler {
 
                                     _ => {}
                                 }
+                            },
+
+                            // Handle resize event.
+                            crossterm::event::Event::Resize(width, height) => {
+                                sender.send(FumEvent::Resize(width, height)).unwrap();
                             },
 
                             // Ignore the rest of the terminal events.

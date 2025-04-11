@@ -6,7 +6,7 @@ use std::{
 
 use ratatui::layout::Rect;
 use rhai::{Engine, Scope, AST};
-use taffy::TaffyTree;
+use taffy::{NodeId, TaffyTree};
 
 use crate::{
     track::Track, utils::duration::format_duration, widget::FumWidget, FumResult,

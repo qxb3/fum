@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use ratatui::{layout::Rect, prelude::CrosstermBackend, text::Text, Terminal};
+use ratatui::{layout::Rect, prelude::CrosstermBackend, style::{Color, Stylize}, text::Text, widgets::Block, Terminal};
 use ratatui_image::StatefulImage;
 
 use crate::{state::State, widget::FumWidget, FumResult};
@@ -20,6 +20,7 @@ pub async fn draw(
             match widget {
                 FumWidget::CoverImage { .. } => {
                     if let Some(cover) = current_cover.as_mut() {
+                        frame.render_widget(Block::new().bg(Color::Red), *rect);
                         frame.render_stateful_widget(
                             StatefulImage::default(),
                             *rect,
