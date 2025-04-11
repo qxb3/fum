@@ -13,7 +13,7 @@ struct Cli {
     pub config: Option<PathBuf>,
 
     /// How many fps should fum render.
-    #[arg(long, value_name = "number", default_value = "30")]
+    #[arg(long, value_name = "number", default_value = "10")]
     pub fps: u64,
 
     /// Executed command.
