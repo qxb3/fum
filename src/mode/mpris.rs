@@ -38,8 +38,13 @@ pub struct MprisMode {
     /// Picker for image rendering.
     picker: Arc<Picker>,
 
+    /// A reference to the current player state.
     current_player: CurrentPlayerState,
+
+    /// A reference to the current track state.
     current_track: CurrentTrackState,
+
+    /// A reference to the current cover state.
     current_cover: CurrentCoverState,
 
     /// Sender for mpris mode event.

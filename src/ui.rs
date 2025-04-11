@@ -1,21 +1,39 @@
+use std::sync::Arc;
+
 use ratatui::{layout::Rect, prelude::CrosstermBackend, text::Text, Terminal};
+use ratatui_image::StatefulImage;
 
 use crate::{state::State, widget::FumWidget, FumResult};
 
 pub async fn draw(
     terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
-    _state: &mut State,
+    state: &mut State,
     ui: &Vec<(Rect, FumWidget)>,
 ) -> FumResult<()> {
+    // Gets the current cover state.
+    let current_cover_arc = Arc::clone(&state.current_cover);
+    let mut current_cover = current_cover_arc.lock().await;
+
     // Drawing part.
     terminal.draw(|frame| {
         for (rect, widget) in ui {
             match widget {
+                FumWidget::CoverImage { .. } => {
+                    if let Some(cover) = current_cover.as_mut() {
+                        frame.render_stateful_widget(
+                            StatefulImage::default(),
+                            *rect,
+                            cover,
+                        );
+                    }
+                }
+
                 FumWidget::Label { text, .. } => {
                     frame.render_widget(Text::from(text.as_str()), *rect);
                 }
 
-                _ => {}
+                // Ignores the container widget since it will not be on the ui state.
+                FumWidget::Container { .. } => unreachable!(),
             }
         }
     })?;

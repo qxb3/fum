@@ -114,6 +114,16 @@ pub fn container() -> impl Fn(taffy::FlexDirection, rhai::Array) -> FnResult<Fum
     }
 }
 
+/// CoverImage() widget function.
+pub fn cover_image() -> impl Fn(rhai::INT, rhai::INT) -> FnResult<FumWidget> {
+    move |width: rhai::INT, height: rhai::INT| -> FnResult<FumWidget> {
+        Ok(FumWidget::CoverImage {
+            width: width as u16,
+            height: height as u16,
+        })
+    }
+}
+
 /// Label() widget function.
 pub fn label() -> impl Fn(rhai::Dynamic) -> FnResult<FumWidget> {
     move |text: rhai::Dynamic| -> FnResult<FumWidget> {

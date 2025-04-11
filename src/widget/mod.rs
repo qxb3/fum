@@ -21,7 +21,16 @@ pub enum FumWidget {
         height: u16,
     },
 
-    /// Used for displaying texts.
+    /// For displaying the cover art image of a track.
+    CoverImage {
+        /// Cover image width.
+        width: u16,
+
+        /// Cover image height.
+        height: u16,
+    },
+
+    /// For displaying texts.
     Label {
         /// Label text content.
         text: String,
@@ -41,9 +50,8 @@ impl FumWidget {
         widget: &FumWidget,
     ) -> FumResult<NodeId> {
         match widget {
-            FumWidget::Container {
-                children, direction, ..
-            } => {
+            #[rustfmt::skip]
+            FumWidget::Container { children, direction, .. } => {
                 // Where the node children of this container will be stored.
                 let mut children_nodes = Vec::new();
 
@@ -67,6 +75,22 @@ impl FumWidget {
                 taffy.set_node_context(parent_node, Some(widget.clone()))?;
 
                 Ok(parent_node)
+            }
+
+            FumWidget::CoverImage { width, height } => {
+                // Creates the cover image node.
+                let cover_img_node = taffy.new_leaf(taffy::Style {
+                    size: taffy::Size {
+                        width: taffy::Dimension::length(*width as f32),
+                        height: taffy::Dimension::length(*height as f32),
+                    },
+                    ..Default::default()
+                })?;
+
+                // Attach widget on this node as a context.
+                taffy.set_node_context(cover_img_node, Some(widget.clone()))?;
+
+                Ok(cover_img_node)
             }
 
             FumWidget::Label { width, height, .. } => {
@@ -119,6 +143,20 @@ impl FumWidget {
                 }
             }
 
+            FumWidget::CoverImage { .. } => {
+                let cover_img_layout = taffy.layout(node)?;
+
+                // Creates a rect out of cover image layout with adjusted location based on parent rect.
+                let cover_img_rect = Rect::new(
+                    cover_img_layout.location.x as u16 + parent_rect.x,
+                    cover_img_layout.location.y as u16 + parent_rect.y,
+                    cover_img_layout.size.width as u16,
+                    cover_img_layout.size.height as u16,
+                );
+
+                rects.push((cover_img_rect, widget));
+            }
+
             FumWidget::Label { .. } => {
                 let label_layout = taffy.layout(node)?;
 
@@ -143,6 +181,8 @@ impl FumWidget {
             #[rustfmt::skip]
             FumWidget::Container { width, .. } => *width,
             #[rustfmt::skip]
+            FumWidget::CoverImage { width, .. } => *width,
+            #[rustfmt::skip]
             FumWidget::Label { width, .. } => *width,
         }
     }
@@ -152,6 +192,8 @@ impl FumWidget {
         match self {
             #[rustfmt::skip]
             FumWidget::Container { height, .. } => *height,
+            #[rustfmt::skip]
+            FumWidget::CoverImage { height, .. } => *height,
             #[rustfmt::skip]
             FumWidget::Label { height, .. } => *height,
         }

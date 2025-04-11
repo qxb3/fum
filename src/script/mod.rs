@@ -94,6 +94,7 @@ impl<'a> Script<'a> {
             // Register ui functions.
             .register_fn("FUM_UI", functions::fum_ui(taffy.clone(), ui.clone()))
             .register_fn("Container", functions::container())
+            .register_fn("CoverImage", functions::cover_image())
             .register_fn("Label", functions::label());
 
         // Compile the script into ast.
