@@ -85,12 +85,13 @@ impl<'a> Script<'a> {
             .register_fn("as_nanos", |duration: &mut Duration| duration.as_nanos())
             .register_fn("as_secs", |duration: &mut Duration| duration.as_secs())
             .register_fn("is_zero", |duration: &mut Duration| duration.is_zero())
-            .register_fn("format", |duration: &mut Duration| {
+            .register_fn("fmt", |duration: &mut Duration| {
                 format_duration(duration, false)
             })
-            .register_fn("format_extend", |duration: &mut Duration| {
+            .register_fn("fmt_ext", |duration: &mut Duration| {
                 format_duration(duration, true)
             })
+
             // Register ui functions.
             .register_fn("FUM_UI", functions::fum_ui(taffy.clone(), ui.clone()))
             .register_fn("Container", functions::container())
