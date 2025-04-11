@@ -43,8 +43,9 @@ pub fn fum_ui(taffy: ScriptTaffy, ui: ScriptUi) -> impl Fn(rhai::Array) -> FnRes
             .map_err(|err| format!("Failed to create root node for the ui: {err}"))?;
 
         // Fetch the cols & rows of the terminal.
-        let (width, height) = crossterm::terminal::size()
-            .map_err(|err| format!("Failed to fetch the terminal width & height: {err}"))?;
+        let (width, height) = crossterm::terminal::size().map_err(|err| {
+            format!("Failed to fetch the terminal width & height: {err}")
+        })?;
 
         // Creates the terminal node for positioning where in the terminal should fum be displayed.
         let window_node = taffy
@@ -59,13 +60,19 @@ pub fn fum_ui(taffy: ScriptTaffy, ui: ScriptUi) -> impl Fn(rhai::Array) -> FnRes
                     },
                     ..Default::default()
                 },
-                &[root_node]
+                &[root_node],
             )
             .map_err(|err| format!("Failed to create foo node for the ui: {err}"))?;
 
         // Compute the layout
         taffy
-            .compute_layout(window_node, taffy::Size { width: taffy::AvailableSpace::Definite(186.0), height: taffy::AvailableSpace::Definite(35.0) })
+            .compute_layout(
+                window_node,
+                taffy::Size {
+                    width: taffy::AvailableSpace::Definite(186.0),
+                    height: taffy::AvailableSpace::Definite(35.0),
+                },
+            )
             .map_err(|err| format!("Failed to compute the layout: {err}"))?;
 
         // println!("{:#?}", taffy.layout(foo));

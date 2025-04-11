@@ -91,7 +91,6 @@ impl<'a> Script<'a> {
             .register_fn("fmt_ext", |duration: &mut Duration| {
                 format_duration(duration, true)
             })
-
             // Register ui functions.
             .register_fn("FUM_UI", functions::fum_ui(taffy.clone(), ui.clone()))
             .register_fn("Container", functions::container())

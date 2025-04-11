@@ -78,7 +78,8 @@ impl<'a> Fum<'a> {
                     Arc::clone(&self.state.current_player),
                     Arc::clone(&self.state.current_track),
                     Arc::clone(&self.state.current_cover),
-                ).await?;
+                )
+                .await?;
 
                 mpris_mode.handle().await?;
             }
@@ -97,7 +98,6 @@ impl<'a> Fum<'a> {
                         },
                         FumEvent::Resize(_, _) => {
                             // Re-execute the script when the terminal resized so the ui positioning updates.
-                            // TODO: instead of reexecuting the entire script on resize, just re-compute.
                             self.script.execute()?;
                         },
                     }
