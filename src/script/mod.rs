@@ -58,22 +58,22 @@ impl<'a> Script<'a> {
         let ui = Arc::new(Mutex::new(Vec::new()));
 
         // Register stuff into the engine.
+
+        // Register FumWidget type.
+        engine.register_type_with_name::<FumWidget>("Widget");
+
+        // Register std Duration along with some of it functions & custom one.
         engine
-            // Register FumWidget type.
-            .register_type_with_name::<FumWidget>("Widget")
-            // Register std Duration along with some of it functions & custom one.
             .register_type_with_name::<Duration>("Duration")
             .register_fn("as_millis", |duration: &mut Duration| duration.as_millis())
             .register_fn("as_nanos", |duration: &mut Duration| duration.as_nanos())
             .register_fn("as_secs", |duration: &mut Duration| duration.as_secs())
             .register_fn("is_zero", |duration: &mut Duration| duration.is_zero())
-            .register_fn("fmt", |duration: &mut Duration| {
-                format_duration(duration, false)
-            })
-            .register_fn("fmt_ext", |duration: &mut Duration| {
-                format_duration(duration, true)
-            })
-            // Register ui functions.
+            .register_fn("fmt", |d: &mut Duration| format_duration(d, false))
+            .register_fn("fmt_ext", |d: &mut Duration| format_duration(d, true));
+
+        // Register ui functions.
+        engine
             .register_fn("FUM_UI", functions::fum_ui(taffy.clone(), ui.clone()))
             .register_fn("Container", functions::container())
             .register_fn("CoverImage", functions::cover_image())
