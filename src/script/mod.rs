@@ -6,7 +6,7 @@ use std::{
 
 use ratatui::layout::Rect;
 use rhai::{Engine, Scope, AST};
-use taffy::{NodeId, TaffyTree};
+use taffy::TaffyTree;
 
 use crate::{
     track::Track, utils::duration::format_duration, widget::FumWidget, FumResult,
@@ -49,25 +49,7 @@ impl<'a> Script<'a> {
         scope.push("HORIZONTAL", taffy::FlexDirection::Row);
 
         // Push track metadata into the scope.
-        let title = track.title.to_string();
-        let album = track.album.to_string();
-        let artists = track.artists.join(", ");
-        let length = track.length.clone();
-        let art_url = track.art_url.clone().unwrap_or("".into());
-        let playback_status = track.playback_status.to_string();
-        let shuffle = track.shuffle.clone();
-        let volume = track.volume.clone();
-        let position = track.position.clone();
-
-        scope.set_value("TITLE", title);
-        scope.set_value("ALBUM", album);
-        scope.set_value("ARTISTS", artists);
-        scope.set_value("LENGTH", length);
-        scope.set_value("ART_URL", art_url);
-        scope.set_value("PLAYBACK_STATUS", playback_status);
-        scope.set_value("SHUFFLE", shuffle);
-        scope.set_value("VOLUME", volume);
-        scope.set_value("POSITION", position);
+        update_scope_track_meta(&mut scope, track);
 
         // Taffy layout engine.
         let taffy = Arc::new(Mutex::new(TaffyTree::new()));
@@ -112,25 +94,7 @@ impl<'a> Script<'a> {
 
     /// Updates the track variables from the script.
     pub fn update_track(&mut self, track: &Track) -> FumResult<()> {
-        let title = track.title.to_string();
-        let album = track.album.to_string();
-        let artists = track.artists.join(", ");
-        let length = track.length.clone();
-        let art_url = track.art_url.clone().unwrap_or("".into());
-        let playback_status = track.playback_status.to_string();
-        let shuffle = track.shuffle.clone();
-        let volume = track.volume.clone();
-        let position = track.position.clone();
-
-        self.scope.set_value("TITLE", title);
-        self.scope.set_value("ALBUM", album);
-        self.scope.set_value("ARTISTS", artists);
-        self.scope.set_value("LENGTH", length);
-        self.scope.set_value("ART_URL", art_url);
-        self.scope.set_value("PLAYBACK_STATUS", playback_status);
-        self.scope.set_value("SHUFFLE", shuffle);
-        self.scope.set_value("VOLUME", volume);
-        self.scope.set_value("POSITION", position);
+        update_scope_track_meta(&mut self.scope, track);
 
         // Re-execute the script.
         self.execute()?;
@@ -156,4 +120,27 @@ impl<'a> Script<'a> {
 
         Ok(())
     }
+}
+
+/// A helper function to update the track variables from the script.
+fn update_scope_track_meta(scope: &mut Scope, track: &Track) {
+    let title = track.title.to_string();
+    let album = track.album.to_string();
+    let artists = track.artists.join(", ");
+    let length = track.length.clone();
+    let art_url = track.art_url.clone().unwrap_or("".into());
+    let playback_status = track.playback_status.to_string();
+    let shuffle = track.shuffle.clone();
+    let volume = track.volume.clone();
+    let position = track.position.clone();
+
+    scope.set_value("TITLE", title);
+    scope.set_value("ALBUM", album);
+    scope.set_value("ARTISTS", artists);
+    scope.set_value("LENGTH", length);
+    scope.set_value("ART_URL", art_url);
+    scope.set_value("PLAYBACK_STATUS", playback_status);
+    scope.set_value("SHUFFLE", shuffle);
+    scope.set_value("VOLUME", volume);
+    scope.set_value("POSITION", position);
 }

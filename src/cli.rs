@@ -12,10 +12,6 @@ struct Cli {
     #[arg(short, long, value_name = "path")]
     pub config: Option<PathBuf>,
 
-    /// How many fps should fum render.
-    #[arg(long, value_name = "number", default_value = "10")]
-    pub fps: u64,
-
     /// Executed command.
     #[command(subcommand)]
     command: Command,
@@ -40,7 +36,6 @@ enum Command {
 /// Cli arguments.
 pub struct CliArgs {
     pub config_path: PathBuf,
-    pub fps: u64,
     pub mode: FumMode,
 }
 
@@ -54,20 +49,17 @@ pub async fn run() -> FumResult<Option<CliArgs>> {
         cli.config = Some(config_path);
     }
 
+    // Its ok to unwrap here since the above.
+    let config_path = cli.config.unwrap();
+
     match cli.command {
         Command::Player => Ok(Some(CliArgs {
-            config_path: cli
-                .config
-                .expect("Expected config path to be Some but got None"),
-            fps: cli.fps,
+            config_path,
             mode: FumMode::Player,
         })),
 
         Command::Mpris => Ok(Some(CliArgs {
-            config_path: cli
-                .config
-                .expect("Expected config path to be Some but got None"),
-            fps: cli.fps,
+            config_path,
             mode: FumMode::Mpris,
         })),
 

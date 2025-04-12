@@ -41,15 +41,21 @@ impl<'a> Fum<'a> {
         // Enables mouse capture.
         crossterm::execute!(std::io::stdout(), crossterm::event::EnableMouseCapture)?;
 
-        let terminal = ratatui::init();
-        let event_handler = EventHandler::new(args.fps);
+        // Creates a new state.
         let state = State::new();
 
         // Get the current track to be passed into the script.
         let current_track_arc = Arc::clone(&state.current_track);
         let current_track = current_track_arc.lock().await;
 
+        // Creates a script from file.
         let script = Script::from_file(&args.config_path, current_track.deref())?;
+
+        // Initialize ratatui.
+        let terminal = ratatui::init();
+
+        // Creates terminal event handler.
+        let event_handler = EventHandler::new(10);
 
         Ok(Self {
             terminal,
