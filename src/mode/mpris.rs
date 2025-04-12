@@ -149,6 +149,7 @@ impl MprisMode {
                                 .send(MprisModeEvent::PlayerTrackMetaChanged)
                                 .await
                                 .unwrap();
+
                             mode_tx
                                 .send(MprisModeEvent::PlayerPositionChanged)
                                 .await
@@ -198,6 +199,17 @@ impl MprisMode {
 
                                             // Set the current cover to None.
                                             *current_cover = None;
+
+                                            // Sends out both the PlayerTrackMetaChanged & PlayerPositionChanged event.
+                                            mode_tx
+                                                .send(MprisModeEvent::PlayerTrackMetaChanged)
+                                                .await
+                                                .unwrap();
+
+                                            mode_tx
+                                                .send(MprisModeEvent::PlayerPositionChanged)
+                                                .await
+                                                .unwrap();
 
                                             break;
                                         }
