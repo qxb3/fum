@@ -37,7 +37,7 @@ pub struct Script<'a> {
 
 impl<'a> Script<'a> {
     /// Creates a new script, loading from file.
-    pub fn from_file<P: Into<PathBuf>>(config_path: P, track: &Track) -> FumResult<Self> {
+    pub fn from_file<P: Into<PathBuf>>(config_path: P) -> FumResult<Self> {
         // Rhai engine.
         let mut engine = Engine::new();
 
@@ -48,8 +48,8 @@ impl<'a> Script<'a> {
         scope.push("VERTICAL", taffy::FlexDirection::Column);
         scope.push("HORIZONTAL", taffy::FlexDirection::Row);
 
-        // Push track metadata into the scope.
-        update_scope_track_meta(&mut scope, track);
+        // Push the default track metadata into the scope.
+        update_scope_track_meta(&mut scope, &Track::new());
 
         // Taffy layout engine.
         let taffy = Arc::new(Mutex::new(TaffyTree::new()));

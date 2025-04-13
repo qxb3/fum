@@ -1,5 +1,6 @@
 use ratatui::layout::Rect;
 use rhai::EvalAltResult;
+use taffy::prelude::TaffyAuto;
 
 use crate::widget::FumWidget;
 
@@ -9,8 +10,13 @@ use super::{ScriptTaffy, ScriptUi};
 type FnResult<T> = Result<T, Box<EvalAltResult>>;
 
 /// FUM_UI() function to set or update the ui.
-pub fn fum_ui(taffy: ScriptTaffy, ui: ScriptUi) -> impl Fn(rhai::Array) -> FnResult<()> {
-    move |widgets: rhai::Array| -> FnResult<()> {
+pub fn fum_ui(taffy: ScriptTaffy, ui: ScriptUi) -> impl Fn(rhai::Map, rhai::Array) -> FnResult<()> {
+    move |opts: rhai::Map, widgets: rhai::Array| -> FnResult<()> {
+        // Extract width & height from opts.
+        let width = opts.get("width").cloned();
+        let height = opts.get("height").cloned();
+
+        // Acquire lock for taffy.
         let mut taffy = taffy
             .lock()
             .map_err(|err| format!("Failed to acquire lock for taffy: {err}"))?;
@@ -18,6 +24,7 @@ pub fn fum_ui(taffy: ScriptTaffy, ui: ScriptUi) -> impl Fn(rhai::Array) -> FnRes
         // Where the children of the root nodes will be stored.
         let mut widget_nodes = Vec::new();
 
+        // Build taffy tree.
         for widget in widgets {
             let widget = widget
                 .try_cast_result::<FumWidget>()
@@ -30,12 +37,40 @@ pub fn fum_ui(taffy: ScriptTaffy, ui: ScriptUi) -> impl Fn(rhai::Array) -> FnRes
             widget_nodes.push(node);
         }
 
+        // Default to auto width if there is no width in the opts.
+        let root_node_width = match width {
+            Some(width) => {
+                let width = width
+                    .as_int()
+                    .map_err(|_| format!("FUM_UI width needs to be a valid number"))?;
+
+                taffy::Dimension::length(width as f32)
+            },
+            None => taffy::Dimension::AUTO
+        };
+
+        // Default to auto height if there is no height in the opts.
+        let root_node_height = match height {
+            Some(height) => {
+                let height = height
+                    .as_int()
+                    .map_err(|_| format!("FUM_UI height needs to be a valid number"))?;
+
+                taffy::Dimension::length(height as f32)
+            },
+            None => taffy::Dimension::AUTO
+        };
+
         // Creates the root node that will contain the ui layout.
         let root_node = taffy
             .new_with_children(
                 taffy::Style {
                     display: taffy::Display::Flex,
                     flex_direction: taffy::FlexDirection::Column,
+                    max_size: taffy::Size {
+                        width: root_node_width,
+                        height: root_node_height,
+                    },
                     ..Default::default()
                 },
                 &widget_nodes,
@@ -43,7 +78,7 @@ pub fn fum_ui(taffy: ScriptTaffy, ui: ScriptUi) -> impl Fn(rhai::Array) -> FnRes
             .map_err(|err| format!("Failed to create root node for the ui: {err}"))?;
 
         // Fetch the cols & rows of the terminal.
-        let (width, height) = crossterm::terminal::size().map_err(|err| {
+        let (term_cols, term_rows) = crossterm::terminal::size().map_err(|err| {
             format!("Failed to fetch the terminal width & height: {err}")
         })?;
 
@@ -54,9 +89,9 @@ pub fn fum_ui(taffy: ScriptTaffy, ui: ScriptUi) -> impl Fn(rhai::Array) -> FnRes
                     display: taffy::Display::Flex,
                     align_items: Some(taffy::AlignItems::Center),
                     justify_content: Some(taffy::JustifyContent::Center),
-                    size: taffy::Size {
-                        width: taffy::Dimension::length(width.into()),
-                        height: taffy::Dimension::length(height.into()),
+                    min_size: taffy::Size {
+                        width: taffy::Dimension::length(term_cols.into()),
+                        height: taffy::Dimension::length(term_rows.into()),
                     },
                     ..Default::default()
                 },
@@ -69,16 +104,18 @@ pub fn fum_ui(taffy: ScriptTaffy, ui: ScriptUi) -> impl Fn(rhai::Array) -> FnRes
             .compute_layout(
                 window_node,
                 taffy::Size {
-                    width: taffy::AvailableSpace::Definite(width.into()),
-                    height: taffy::AvailableSpace::Definite(height.into()),
+                    width: taffy::AvailableSpace::Definite(term_cols.into()),
+                    height: taffy::AvailableSpace::Definite(term_rows.into()),
                 },
             )
             .map_err(|err| format!("Failed to compute the layout: {err}"))?;
 
+        // Layout of the root node.
         let root_layout = taffy
             .layout(root_node)
             .map_err(|err| format!("Failed to get the layout of root node: {err}"))?;
 
+        // Children of the root node.
         let root_children = taffy
             .children(root_node)
             .map_err(|err| format!("Failed to get the children of root node: {err}"))?;
