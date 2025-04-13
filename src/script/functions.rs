@@ -10,15 +10,8 @@ use super::{ScriptTaffy, ScriptUi};
 type FnResult<T> = Result<T, Box<EvalAltResult>>;
 
 /// FUM_UI() function to set or update the ui.
-pub fn fum_ui(
-    taffy: ScriptTaffy,
-    ui: ScriptUi,
-) -> impl Fn(rhai::Map, rhai::Array) -> FnResult<()> {
-    move |opts: rhai::Map, widgets: rhai::Array| -> FnResult<()> {
-        // Extract width & height from opts.
-        let width = opts.get("width").cloned();
-        let height = opts.get("height").cloned();
-
+pub fn fum_ui(taffy: ScriptTaffy, ui: ScriptUi) -> impl Fn(rhai::Array) -> FnResult<()> {
+    move |widgets: rhai::Array| -> FnResult<()> {
         // Acquire lock for taffy.
         let mut taffy = taffy
             .lock()
@@ -40,39 +33,15 @@ pub fn fum_ui(
             widget_nodes.push(node);
         }
 
-        // Default to auto width if there is no width in the opts.
-        let root_node_width = match width {
-            Some(width) => {
-                let width = width
-                    .as_int()
-                    .map_err(|_| "FUM_UI width needs to be a valid number")?;
-
-                taffy::Dimension::length(width as f32)
-            }
-            None => taffy::Dimension::AUTO,
-        };
-
-        // Default to auto height if there is no height in the opts.
-        let root_node_height = match height {
-            Some(height) => {
-                let height = height
-                    .as_int()
-                    .map_err(|_| "FUM_UI height needs to be a valid number")?;
-
-                taffy::Dimension::length(height as f32)
-            }
-            None => taffy::Dimension::AUTO,
-        };
-
         // Creates the root node that will contain the ui layout.
         let root_node = taffy
             .new_with_children(
                 taffy::Style {
                     display: taffy::Display::Flex,
                     flex_direction: taffy::FlexDirection::Column,
-                    max_size: taffy::Size {
-                        width: root_node_width,
-                        height: root_node_height,
+                    size: taffy::Size {
+                        width: taffy::Dimension::AUTO,
+                        height: taffy::Dimension::AUTO,
                     },
                     ..Default::default()
                 },

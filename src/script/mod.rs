@@ -80,8 +80,8 @@ impl<'a> Script<'a> {
         // Register ui functions.
         engine
             .register_fn("FUM_UI", functions::fum_ui(taffy.clone(), ui.clone()))
-            .register_fn("Container", functions::container())           // Container without opts.
-            .register_fn("Container", functions::container_opts())      // Container with opts.
+            .register_fn("Container", functions::container()) // Container without opts.
+            .register_fn("Container", functions::container_opts()) // Container with opts.
             .register_fn("CoverImage", functions::cover_image())
             .register_fn("Label", functions::label());
 
