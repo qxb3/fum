@@ -44,14 +44,25 @@ impl<'a> Script<'a> {
         // Script scope.
         let mut scope = Scope::new();
 
+        // FUM_UI() function location variables.
+        scope.push("TOP", UiLocation::Top);
+        scope.push("TOP_LEFT", UiLocation::TopLeft);
+        scope.push("TOP_RIGHT", UiLocation::TopRight);
+        scope.push("BOTTOM", UiLocation::Bottom);
+        scope.push("BOTTOM_LEFT", UiLocation::BottomLeft);
+        scope.push("BOTTOM_RIGHT", UiLocation::BottomRight);
+        scope.push("LEFT", UiLocation::Left);
+        scope.push("RIGHT", UiLocation::Right);
+        scope.push("CENTER", UiLocation::Center);
+
         // Container direction variables.
         scope.push("VERTICAL", taffy::FlexDirection::Column);
         scope.push("HORIZONTAL", taffy::FlexDirection::Row);
 
         // Container alignment variables.
-        scope.push("START", taffy::AlignItems::Start);
-        scope.push("CENTER", taffy::AlignItems::Center);
-        scope.push("END", taffy::AlignItems::End);
+        scope.push("ALIGN_START", taffy::AlignItems::Start);
+        scope.push("ALIGN_CENTER", taffy::AlignItems::Center);
+        scope.push("ALIGN_END", taffy::AlignItems::End);
 
         // Push the default track metadata into the scope.
         update_scope_track_meta(&mut scope, &Track::new());
