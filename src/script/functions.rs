@@ -10,7 +10,7 @@ use super::{location::UiLocation, ScriptTaffy, ScriptUi};
 /// Type alias for Result at script function calls.
 type FnResult<T> = Result<T, Box<EvalAltResult>>;
 
-/// FUM_UI() function to set or update the ui.
+/// UI() function to set or update the ui.
 pub fn fum_ui(
     taffy: ScriptTaffy,
     ui: ScriptUi,
@@ -28,7 +28,7 @@ pub fn fum_ui(
         for widget in widgets {
             let widget = widget
                 .try_cast_result::<FumWidget>()
-                .map_err(|_| "The values of FUM_UI() function needs to be a widget")?;
+                .map_err(|_| "The values of UI() function needs to be a widget")?;
 
             // Build the widget node.
             let node = FumWidget::build_taffy_tree(&mut *taffy, &widget)

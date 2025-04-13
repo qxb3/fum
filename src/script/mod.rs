@@ -47,7 +47,7 @@ impl<'a> Script<'a> {
         // Script scope.
         let mut scope = Scope::new();
 
-        // FUM_UI() function location variables.
+        // UI() function location variables.
         scope.push("TOP", UiLocation::Top);
         scope.push("TOP_LEFT", UiLocation::TopLeft);
         scope.push("TOP_RIGHT", UiLocation::TopRight);
@@ -93,7 +93,7 @@ impl<'a> Script<'a> {
 
         // Register ui functions.
         engine
-            .register_fn("FUM_UI", functions::fum_ui(taffy.clone(), ui.clone()))
+            .register_fn("UI", functions::fum_ui(taffy.clone(), ui.clone()))
             .register_fn("Container", functions::container()) // Container without opts.
             .register_fn("Container", functions::container_opts()) // Container with opts.
             .register_fn("CoverImage", functions::cover_image())
