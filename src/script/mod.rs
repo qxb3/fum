@@ -4,6 +4,7 @@ use std::{
     time::Duration,
 };
 
+use location::UiLocation;
 use ratatui::layout::Rect;
 use rhai::{Engine, Scope, AST};
 use taffy::TaffyTree;
@@ -12,7 +13,9 @@ use crate::{
     track::Track, utils::duration::format_duration, widget::FumWidget, FumResult,
 };
 
+mod config;
 mod functions;
+mod location;
 
 /// Type alias for TaffyTree wrapped on arc mutex.
 pub type ScriptTaffy = Arc<Mutex<TaffyTree<FumWidget>>>;

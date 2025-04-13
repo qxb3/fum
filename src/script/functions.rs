@@ -5,14 +5,17 @@ use unicode_width::UnicodeWidthStr;
 
 use crate::widget::FumWidget;
 
-use super::{ScriptTaffy, ScriptUi};
+use super::{location::UiLocation, ScriptTaffy, ScriptUi};
 
 /// Type alias for Result at script function calls.
 type FnResult<T> = Result<T, Box<EvalAltResult>>;
 
 /// FUM_UI() function to set or update the ui.
-pub fn fum_ui(taffy: ScriptTaffy, ui: ScriptUi) -> impl Fn(rhai::Array) -> FnResult<()> {
-    move |widgets: rhai::Array| -> FnResult<()> {
+pub fn fum_ui(
+    taffy: ScriptTaffy,
+    ui: ScriptUi,
+) -> impl Fn(UiLocation, rhai::Array) -> FnResult<()> {
+    move |location: UiLocation, widgets: rhai::Array| -> FnResult<()> {
         // Acquire lock for taffy.
         let mut taffy = taffy
             .lock()
@@ -55,13 +58,17 @@ pub fn fum_ui(taffy: ScriptTaffy, ui: ScriptUi) -> impl Fn(rhai::Array) -> FnRes
             format!("Failed to fetch the terminal width & height: {err}")
         })?;
 
+        // Resolve the location on where fum should be located.
+        let (window_node_align_items, window_node_justify_content) =
+            location.resolve_location();
+
         // Creates the terminal node for positioning where in the terminal should fum be displayed.
         let window_node = taffy
             .new_with_children(
                 taffy::Style {
                     display: taffy::Display::Flex,
-                    align_items: Some(taffy::AlignItems::Center),
-                    justify_content: Some(taffy::JustifyContent::Center),
+                    align_items: Some(window_node_align_items),
+                    justify_content: Some(window_node_justify_content),
                     min_size: taffy::Size {
                         width: taffy::Dimension::length(term_cols.into()),
                         height: taffy::Dimension::length(term_rows.into()),
