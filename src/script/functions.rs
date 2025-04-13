@@ -69,14 +69,11 @@ pub fn fum_ui(taffy: ScriptTaffy, ui: ScriptUi) -> impl Fn(rhai::Array) -> FnRes
             .compute_layout(
                 window_node,
                 taffy::Size {
-                    width: taffy::AvailableSpace::Definite(186.0),
-                    height: taffy::AvailableSpace::Definite(35.0),
+                    width: taffy::AvailableSpace::Definite(width.into()),
+                    height: taffy::AvailableSpace::Definite(height.into()),
                 },
             )
             .map_err(|err| format!("Failed to compute the layout: {err}"))?;
-
-        // println!("{:#?}", taffy.layout(foo));
-        // println!("{:#?}", taffy.layout(root_node));
 
         let root_layout = taffy
             .layout(root_node)
