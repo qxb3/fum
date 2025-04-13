@@ -10,7 +10,10 @@ use super::{ScriptTaffy, ScriptUi};
 type FnResult<T> = Result<T, Box<EvalAltResult>>;
 
 /// FUM_UI() function to set or update the ui.
-pub fn fum_ui(taffy: ScriptTaffy, ui: ScriptUi) -> impl Fn(rhai::Map, rhai::Array) -> FnResult<()> {
+pub fn fum_ui(
+    taffy: ScriptTaffy,
+    ui: ScriptUi,
+) -> impl Fn(rhai::Map, rhai::Array) -> FnResult<()> {
     move |opts: rhai::Map, widgets: rhai::Array| -> FnResult<()> {
         // Extract width & height from opts.
         let width = opts.get("width").cloned();
@@ -45,8 +48,8 @@ pub fn fum_ui(taffy: ScriptTaffy, ui: ScriptUi) -> impl Fn(rhai::Map, rhai::Arra
                     .map_err(|_| format!("FUM_UI width needs to be a valid number"))?;
 
                 taffy::Dimension::length(width as f32)
-            },
-            None => taffy::Dimension::AUTO
+            }
+            None => taffy::Dimension::AUTO,
         };
 
         // Default to auto height if there is no height in the opts.
@@ -57,8 +60,8 @@ pub fn fum_ui(taffy: ScriptTaffy, ui: ScriptUi) -> impl Fn(rhai::Map, rhai::Arra
                     .map_err(|_| format!("FUM_UI height needs to be a valid number"))?;
 
                 taffy::Dimension::length(height as f32)
-            },
-            None => taffy::Dimension::AUTO
+            }
+            None => taffy::Dimension::AUTO,
         };
 
         // Creates the root node that will contain the ui layout.

@@ -29,7 +29,7 @@ pub async fn draw(
                     frame.render_widget(Text::from(text.as_str()), *rect);
                 }
 
-                _ => unreachable!()
+                _ => unreachable!(),
             }
         }
     })?;
