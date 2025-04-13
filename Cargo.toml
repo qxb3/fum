@@ -19,6 +19,7 @@ reqwest = "0.12.14"
 rhai = "1.21.0"
 taffy = "0.8.0"
 tokio = { version = "1.43.0", features = ["full"] }
+unicode-width = "0.2.0"
 zbus = { version = "5.5.0", default-features = false, features = ["tokio"] }
 
 [[bin]]

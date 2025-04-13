@@ -1,6 +1,7 @@
 use ratatui::layout::Rect;
 use rhai::EvalAltResult;
 use taffy::prelude::TaffyAuto;
+use unicode_width::UnicodeWidthStr;
 
 use crate::widget::FumWidget;
 
@@ -224,7 +225,7 @@ pub fn label() -> impl Fn(rhai::Dynamic) -> FnResult<FumWidget> {
 
         Ok(FumWidget::Label {
             text: text.to_string(),
-            width: text.len() as u16,
+            width: UnicodeWidthStr::width(text.as_str()) as u16,
             height: 1,
         })
     }
