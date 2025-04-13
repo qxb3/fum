@@ -1,4 +1,4 @@
-use std::{ops::Deref, panic, sync::Arc};
+use std::{panic, sync::Arc};
 
 use ratatui::{prelude::CrosstermBackend, Terminal};
 
@@ -110,17 +110,13 @@ impl<'a> Fum<'a> {
                     match mpris_mode_event {
                         // Updates the script track variables when the track metadata changes.
                         MprisModeEvent::PlayerTrackMetaChanged => {
-                            let current_track_arc = Arc::clone(&self.state.current_track);
-                            let current_track = current_track_arc.lock().await;
-
-                            self.script.update_track(current_track.deref())?;
+                            let current_track = self.state.current_track.lock().await;
+                            self.script.update_track(&*current_track)?;
                         }
 
                         // Updates the script track POSITION variable when the track position changes.
                         MprisModeEvent::PlayerPositionChanged => {
-                            let current_track_arc = Arc::clone(&self.state.current_track);
-                            let current_track = current_track_arc.lock().await;
-
+                            let current_track = self.state.current_track.lock().await;
                             self.script.update_position(current_track.position.clone())?;
                         }
                     }
@@ -133,13 +129,14 @@ impl<'a> Fum<'a> {
 
     /// Handle tick event.
     async fn tick(&mut self) -> FumResult<()> {
-        let ui_arc = Arc::clone(&self.script.ui);
-        let ui = ui_arc
+        let ui = self
+            .script
+            .ui
             .lock()
             .map_err(|err| format!("Failed to acquire lock for ui: {err}"))?;
 
         // Draws the ui.
-        ui::draw(&mut self.terminal, &mut self.state, ui.deref()).await?;
+        ui::draw(&mut self.terminal, &mut self.state, &*ui).await?;
 
         Ok(())
     }
