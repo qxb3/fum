@@ -44,9 +44,14 @@ impl<'a> Script<'a> {
         // Script scope.
         let mut scope = Scope::new();
 
-        // Push stuff into the scope.
+        // Container direction variables.
         scope.push("VERTICAL", taffy::FlexDirection::Column);
         scope.push("HORIZONTAL", taffy::FlexDirection::Row);
+
+        // Container alignment variables.
+        scope.push("START", taffy::AlignItems::Start);
+        scope.push("CENTER", taffy::AlignItems::Center);
+        scope.push("END", taffy::AlignItems::End);
 
         // Push the default track metadata into the scope.
         update_scope_track_meta(&mut scope, &Track::new());
@@ -75,7 +80,8 @@ impl<'a> Script<'a> {
         // Register ui functions.
         engine
             .register_fn("FUM_UI", functions::fum_ui(taffy.clone(), ui.clone()))
-            .register_fn("Container", functions::container())
+            .register_fn("Container", functions::container())           // Container without opts.
+            .register_fn("Container", functions::container_opts())      // Container with opts.
             .register_fn("CoverImage", functions::cover_image())
             .register_fn("Label", functions::label());
 
