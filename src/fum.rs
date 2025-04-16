@@ -1,6 +1,6 @@
 use std::{panic, sync::Arc};
 
-use ratatui::{prelude::CrosstermBackend, Terminal};
+use ratatui::{layout::Position, prelude::CrosstermBackend, Terminal};
 
 use crate::{
     cli::CliArgs,
@@ -8,7 +8,9 @@ use crate::{
     mode::{FumMode, MprisMode, MprisModeEvent},
     script::Script,
     state::State,
-    ui, FumResult,
+    ui,
+    widget::FumWidget,
+    FumResult,
 };
 
 /// Fum TUI App.
@@ -76,6 +78,7 @@ impl<'a> Fum<'a> {
         // Execute the script at start.
         self.script.execute()?;
 
+        // Mpris mode event channel.
         let (mpris_mode_tx, mut mpris_mode_rx) = tokio::sync::mpsc::channel(10);
 
         // Handle the corresponding mode.
@@ -141,6 +144,7 @@ impl<'a> Fum<'a> {
 
     /// Handle tick event.
     async fn tick(&mut self) -> FumResult<()> {
+        // Acquire lock for script ui state.
         let ui = self
             .script
             .ui
@@ -167,9 +171,34 @@ impl<'a> Fum<'a> {
     /// Handle mouse click event.
     async fn mouse_click(
         &mut self,
-        _mouse: crossterm::event::MouseEvent,
-        _button: crossterm::event::MouseButton,
+        mouse: crossterm::event::MouseEvent,
+        button: crossterm::event::MouseButton,
     ) -> FumResult<()> {
+        if button == crossterm::event::MouseButton::Left {
+            // Acquire lock for script ui state.
+            let ui = self
+                .script
+                .ui
+                .lock()
+                .map_err(|err| format!("Failed to acquire lock for ui: {err}"))?;
+
+            // Check for button rects if its been clicked.
+            for (rect, widget) in &*ui {
+                match widget {
+                    FumWidget::Button { func, .. } => {
+                        let mouse_pos = Position::new(mouse.column, mouse.row);
+
+                        // If clicked, call the button function.
+                        if rect.contains(mouse_pos) {
+                            self.script.button_clicked(func)?;
+                        }
+                    }
+
+                    _ => {}
+                }
+            }
+        }
+
         Ok(())
     }
 

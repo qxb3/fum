@@ -4,7 +4,7 @@ use taffy::{NodeId, TaffyTree};
 use crate::FumResult;
 
 /// Fum Widget.
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Clone)]
 pub enum FumWidget {
     /// A container that can manage and contains another widgets.
     Container {
@@ -42,6 +42,21 @@ pub enum FumWidget {
         width: u16,
 
         /// Label height.
+        height: u16,
+    },
+
+    /// For displaying clicable texts.
+    Button {
+        /// Button text content.
+        text: String,
+
+        /// Button function when clicked.
+        func: rhai::FnPtr,
+
+        /// Button width.
+        width: u16,
+
+        /// Button height.
         height: u16,
     },
 }
@@ -98,7 +113,7 @@ impl FumWidget {
             }
 
             FumWidget::Label { width, height, .. } => {
-                // Craetes the label node.
+                // Creates the label node.
                 let label_node = taffy.new_leaf(taffy::Style {
                     size: taffy::Size {
                         width: taffy::Dimension::length(*width as f32),
@@ -111,6 +126,21 @@ impl FumWidget {
                 taffy.set_node_context(label_node, Some(widget.clone()))?;
 
                 Ok(label_node)
+            }
+
+            FumWidget::Button { width, height, .. } => {
+                let button_node = taffy.new_leaf(taffy::Style {
+                    size: taffy::Size {
+                        width: taffy::Dimension::length(*width as f32),
+                        height: taffy::Dimension::length(*height as f32),
+                    },
+                    ..Default::default()
+                })?;
+
+                // Attach widget on this node as a context.
+                taffy.set_node_context(button_node, Some(widget.clone()))?;
+
+                Ok(button_node)
             }
         }
     }
@@ -174,6 +204,20 @@ impl FumWidget {
 
                 rects.push((label_rect, widget));
             }
+
+            FumWidget::Button { .. } => {
+                let button_layout = taffy.layout(node)?;
+
+                // Creates a rect out of button layout with adjusted location based on parent rect.
+                let button_rect = Rect::new(
+                    button_layout.location.x as u16 + parent_rect.x,
+                    button_layout.location.y as u16 + parent_rect.y,
+                    button_layout.size.width as u16,
+                    button_layout.size.height as u16,
+                );
+
+                rects.push((button_rect, widget));
+            }
         }
 
         Ok(())
@@ -188,6 +232,8 @@ impl FumWidget {
             FumWidget::CoverImage { width, .. } => *width,
             #[rustfmt::skip]
             FumWidget::Label { width, .. } => *width,
+            #[rustfmt::skip]
+            FumWidget::Button { width, .. } => *width,
         }
     }
 
@@ -200,6 +246,8 @@ impl FumWidget {
             FumWidget::CoverImage { height, .. } => *height,
             #[rustfmt::skip]
             FumWidget::Label { height, .. } => *height,
+            #[rustfmt::skip]
+            FumWidget::Button { height, .. } => *height,
         }
     }
 }

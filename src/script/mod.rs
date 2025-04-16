@@ -99,7 +99,7 @@ impl<'a> Script<'a> {
             .register_fn("fmt", |d: &mut Duration| format_duration(d, false))
             .register_fn("fmt_ext", |d: &mut Duration| format_duration(d, true));
 
-        // Register custom functions.
+        // Register CONFIG, UI & Widget functions.
         engine
             .register_fn("CONFIG", functions::config(config.clone()))
             .register_fn("UI", functions::ui(taffy.clone(), ui.clone()))
@@ -108,7 +108,10 @@ impl<'a> Script<'a> {
             .register_fn("ContainerCenter", functions::container_center())
             .register_fn("ContainerEnd", functions::container_end())
             .register_fn("CoverImage", functions::cover_image())
-            .register_fn("Label", functions::label());
+            .register_fn("Label", functions::label())
+            .register_fn("Button", functions::button());
+
+        engine.register_fn("FOO", || println!("hiiiiiiiiiiii"));
 
         // Compile the script into ast.
         let ast = engine
@@ -140,6 +143,14 @@ impl<'a> Script<'a> {
 
         // Re-execute the script.
         self.execute()?;
+
+        Ok(())
+    }
+
+    /// Calls the function when a button has been clicked.
+    pub fn button_clicked(&self, func: &rhai::FnPtr) -> FumResult<()> {
+        func.call::<()>(&self.engine, &self.ast, ())
+            .map_err(|err| format!("Failed to call button function: {err}"))?;
 
         Ok(())
     }

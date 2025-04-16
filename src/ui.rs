@@ -29,6 +29,10 @@ pub async fn draw(
                     frame.render_widget(Text::from(text.as_str()), *rect);
                 }
 
+                FumWidget::Button { text, .. } => {
+                    frame.render_widget(Text::from(text.as_str()), *rect);
+                }
+
                 _ => unreachable!(),
             }
         }
