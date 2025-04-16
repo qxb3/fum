@@ -99,11 +99,12 @@ impl<'a> Script<'a> {
             .register_fn("fmt", |d: &mut Duration| format_duration(d, false))
             .register_fn("fmt_ext", |d: &mut Duration| format_duration(d, true));
 
-        // Register ui functions.
+        // Register custom functions.
         engine
-            .register_fn("UI", functions::fum_ui(taffy.clone(), ui.clone()))
-            .register_fn("Container", functions::container()) // Container without opts.
+            .register_fn("CONFIG", functions::config(config.clone()))
+            .register_fn("UI", functions::ui(taffy.clone(), ui.clone()))
             .register_fn("Container", functions::container_opts()) // Container with opts.
+            .register_fn("Container", functions::container()) // Container without opts.
             .register_fn("CoverImage", functions::cover_image())
             .register_fn("Label", functions::label());
 
