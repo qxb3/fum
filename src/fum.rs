@@ -48,10 +48,17 @@ impl<'a> Fum<'a> {
         let terminal = ratatui::init();
 
         // Creates a script from file.
-        let script = Script::from_file(&args.config_path)?;
+        let mut script = Script::from_file(&args.config_path)?;
+        script.execute()?; // Executes the script to populate the config state.
 
-        // Creates terminal event handler.
-        let event_handler = EventHandler::new(10);
+        // Acquire lock for config state.
+        let config_arc = Arc::clone(&script.config);
+        let config = config_arc
+            .lock()
+            .map_err(|err| format!("Failed to acquire lock for config state: {err}"))?;
+
+        // Creates Terminal event handler.
+        let event_handler = EventHandler::new(config.fps);
 
         Ok(Self {
             terminal,
@@ -74,12 +81,17 @@ impl<'a> Fum<'a> {
         // Handle the corresponding mode.
         match mode {
             FumMode::Player => {}
+
             FumMode::Mpris => {
+                let current_player = Arc::clone(&self.state.current_player);
+                let current_track = Arc::clone(&self.state.current_track);
+                let current_cover = Arc::clone(&self.state.current_cover);
+
                 let mut mpris_mode = MprisMode::new(
                     mpris_mode_tx.clone(),
-                    Arc::clone(&self.state.current_player),
-                    Arc::clone(&self.state.current_track),
-                    Arc::clone(&self.state.current_cover),
+                    current_player,
+                    current_track,
+                    current_cover,
                 )
                 .await?;
 

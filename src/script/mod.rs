@@ -4,6 +4,7 @@ use std::{
     time::Duration,
 };
 
+use config::FumConfig;
 use location::UiLocation;
 use ratatui::layout::Rect;
 use rhai::{Engine, Scope, AST};
@@ -16,6 +17,9 @@ use crate::{
 mod config;
 mod functions;
 mod location;
+
+/// Type alias for the script config state.
+pub type ScriptConfig = Arc<Mutex<FumConfig>>;
 
 /// Type alias for TaffyTree wrapped on arc mutex.
 pub type ScriptTaffy = Arc<Mutex<TaffyTree<FumWidget>>>;
@@ -34,6 +38,9 @@ pub struct Script<'a> {
     /// Script ast.
     pub ast: AST,
 
+    /// Script config.
+    pub config: ScriptConfig,
+
     /// Script ui.
     pub ui: ScriptUi,
 }
@@ -48,15 +55,15 @@ impl<'a> Script<'a> {
         let mut scope = Scope::new();
 
         // UI() function location variables.
-        scope.push("TOP", UiLocation::Top);
-        scope.push("TOP_LEFT", UiLocation::TopLeft);
-        scope.push("TOP_RIGHT", UiLocation::TopRight);
-        scope.push("BOTTOM", UiLocation::Bottom);
-        scope.push("BOTTOM_LEFT", UiLocation::BottomLeft);
-        scope.push("BOTTOM_RIGHT", UiLocation::BottomRight);
-        scope.push("LEFT", UiLocation::Left);
-        scope.push("RIGHT", UiLocation::Right);
-        scope.push("CENTER", UiLocation::Center);
+        scope.push("UI_TOP", UiLocation::Top);
+        scope.push("UI_TOP_LEFT", UiLocation::TopLeft);
+        scope.push("UI_TOP_RIGHT", UiLocation::TopRight);
+        scope.push("UI_BOTTOM", UiLocation::Bottom);
+        scope.push("UI_BOTTOM_LEFT", UiLocation::BottomLeft);
+        scope.push("UI_BOTTOM_RIGHT", UiLocation::BottomRight);
+        scope.push("UI_LEFT", UiLocation::Left);
+        scope.push("UI_RIGHT", UiLocation::Right);
+        scope.push("UI_CENTER", UiLocation::Center);
 
         // Container direction variables.
         scope.push("VERTICAL", taffy::FlexDirection::Column);
@@ -70,13 +77,14 @@ impl<'a> Script<'a> {
         // Push the default track metadata into the scope.
         update_scope_track_meta(&mut scope, &Track::new());
 
+        // Script config.
+        let config = Arc::new(Mutex::new(FumConfig::new()));
+
         // Taffy layout engine.
         let taffy = Arc::new(Mutex::new(TaffyTree::new()));
 
         // Script ui.
         let ui = Arc::new(Mutex::new(Vec::new()));
-
-        // Register stuff into the engine.
 
         // Register FumWidget type.
         engine.register_type_with_name::<FumWidget>("Widget");
@@ -108,6 +116,7 @@ impl<'a> Script<'a> {
             engine,
             scope,
             ast,
+            config,
             ui,
         })
     }
