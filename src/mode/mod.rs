@@ -1,6 +1,5 @@
-pub use mpris::*;
-
 mod mpris;
+pub use mpris::*;
 
 /// Which mode fum will be.
 #[derive(Debug, PartialEq)]

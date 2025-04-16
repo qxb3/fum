@@ -1,7 +1,3 @@
-use std::error::Error;
-
-use fum::Fum;
-
 mod cli;
 mod event;
 mod fum;
@@ -13,6 +9,10 @@ mod track;
 mod ui;
 mod utils;
 mod widget;
+
+use std::error::Error;
+
+use fum::Fum;
 
 /// Type alias for Result.
 type FumResult<T> = Result<T, Box<dyn Error + Send + Sync>>;

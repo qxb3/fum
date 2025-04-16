@@ -1,3 +1,7 @@
+mod config;
+mod functions;
+mod location;
+
 use std::{
     path::PathBuf,
     sync::{Arc, Mutex},
@@ -13,10 +17,6 @@ use taffy::TaffyTree;
 use crate::{
     track::Track, utils::duration::format_duration, widget::FumWidget, FumResult,
 };
-
-mod config;
-mod functions;
-mod location;
 
 /// Type alias for the script config state.
 pub type ScriptConfig = Arc<Mutex<FumConfig>>;

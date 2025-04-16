@@ -1,14 +1,6 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
 
-use std::{collections::HashMap, sync::Arc};
-
-use futures::{stream::FuturesUnordered, StreamExt};
-use tokio::sync::Mutex;
-use zbus::{Connection, Proxy};
-
-use crate::{fum::Fum, FumResult};
-
 pub use metadata::*;
 pub use player::*;
 pub use status::*;
@@ -16,6 +8,14 @@ pub use status::*;
 mod metadata;
 mod player;
 mod status;
+
+use std::{collections::HashMap, sync::Arc};
+
+use futures::{stream::FuturesUnordered, StreamExt};
+use tokio::sync::Mutex;
+use zbus::{Connection, Proxy};
+
+use crate::{fum::Fum, FumResult};
 
 /// Mpris Events.
 pub enum MprisEvent {
