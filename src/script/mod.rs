@@ -103,8 +103,10 @@ impl<'a> Script<'a> {
         engine
             .register_fn("CONFIG", functions::config(config.clone()))
             .register_fn("UI", functions::ui(taffy.clone(), ui.clone()))
-            .register_fn("Container", functions::container_opts()) // Container with opts.
-            .register_fn("Container", functions::container()) // Container without opts.
+            .register_fn("Container", functions::container_opts())
+            .register_fn("Container", functions::container())
+            .register_fn("ContainerCenter", functions::container_center())
+            .register_fn("ContainerEnd", functions::container_end())
             .register_fn("CoverImage", functions::cover_image())
             .register_fn("Label", functions::label());
 

@@ -13,9 +13,9 @@ pub fn config(config_state: ScriptConfig) -> impl Fn(rhai::Map) -> ScriptFnResul
             .map_err(|_| "Config fps needs to be a valid number")?;
 
         // Acquire lock for the config state.
-        let mut config = config_state
-            .lock()
-            .map_err(|err| format!("Failed to acquire lock for the config state: {err}"))?;
+        let mut config = config_state.lock().map_err(|err| {
+            format!("Failed to acquire lock for the config state: {err}")
+        })?;
 
         // Update config values.
         config.fps = fps as u64;

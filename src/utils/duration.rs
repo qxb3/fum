@@ -20,11 +20,7 @@ pub fn format_duration(duration: &Duration, extend: bool) -> String {
         }
     } else {
         if extend {
-            format!(
-                "{:02}:{:02}",
-                duration.as_secs() / 60,
-                duration.as_secs() % 60
-            )
+            format!("{:02}:{:02}", duration.as_secs() / 60, duration.as_secs() % 60)
         } else {
             format!("{}:{:02}", duration.as_secs() / 60, duration.as_secs() % 60)
         }

@@ -6,9 +6,9 @@ tab_spaces = 4
 hard_tabs = false
 newline_style = "Unix"
 
+fn_call_width = 90
 chain_width = 60
 struct_lit_width = 20
-fn_call_width = 60
 match_arm_leading_pipes = "Preserve"
 
 reorder_imports = true
