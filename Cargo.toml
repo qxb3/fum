@@ -8,6 +8,7 @@ license = "MIT"
 edition = "2021"
 
 [dependencies]
+async-trait = "0.1.88"
 base64 = "0.22.1"
 clap = { version = "4.5.32", features = ["derive"] }
 crossterm = { version = "0.28.1", features = ["event-stream"] }
