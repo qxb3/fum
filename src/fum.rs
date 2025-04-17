@@ -5,7 +5,7 @@ use ratatui::{layout::Position, prelude::CrosstermBackend, Terminal};
 use crate::{
     cli::CliArgs,
     event::{EventHandler, FumEvent},
-    mode::{FumMode, MprisMode, MprisModeEvent},
+    mode::{FumMode, FumModeEvent, FumModes, MprisMode, MprisModeEvent, PlayerMode},
     script::Script,
     state::State,
     ui,
@@ -71,36 +71,34 @@ impl<'a> Fum<'a> {
     }
 
     /// Start Fum.
-    pub async fn start(&mut self, mode: FumMode) -> FumResult<()> {
+    pub async fn start(&mut self, mode: FumModes) -> FumResult<()> {
         // Start event handler.
         self.event_handler.handle();
 
         // Execute the script at start.
         self.script.execute()?;
 
-        // Mpris mode event channel.
-        let (mpris_mode_tx, mut mpris_mode_rx) = tokio::sync::mpsc::channel(10);
+        // Get the according mode.
+        let mut mode: Box<dyn FumMode> = match mode {
+            FumModes::Player => {
+                let player_mode = PlayerMode::new();
+                Box::new(player_mode)
+            }
 
-        // Handle the corresponding mode.
-        match mode {
-            FumMode::Player => {}
-
-            FumMode::Mpris => {
+            FumModes::Mpris => {
                 let current_player = Arc::clone(&self.state.current_player);
                 let current_track = Arc::clone(&self.state.current_track);
                 let current_cover = Arc::clone(&self.state.current_cover);
 
-                let mut mpris_mode = MprisMode::new(
-                    mpris_mode_tx.clone(),
-                    current_player,
-                    current_track,
-                    current_cover,
-                )
-                .await?;
+                let mpris_mode =
+                    MprisMode::new(current_player, current_track, current_cover).await?;
 
-                mpris_mode.handle().await?;
+                Box::new(mpris_mode)
             }
-        }
+        };
+
+        // Start the mode.
+        mode.start().await?;
 
         // Read events and execute while we running.
         while !self.state.exit {
@@ -121,19 +119,21 @@ impl<'a> Fum<'a> {
                 }
 
                 // Read Mpris mode events.
-                Some(mpris_mode_event) = mpris_mode_rx.recv() => {
-                    match mpris_mode_event {
+                mpris_mode_event = mode.recv() => {
+                    match mpris_mode_event? {
                         // Updates the script track variables when the track metadata changes.
-                        MprisModeEvent::PlayerTrackMetaChanged => {
+                        FumModeEvent::MprisEvent(MprisModeEvent::PlayerTrackMetaChanged) => {
                             let current_track = self.state.current_track.lock().await;
                             self.script.update_track(&*current_track)?;
                         }
 
                         // Updates the script track POSITION variable when the track position changes.
-                        MprisModeEvent::PlayerPositionChanged => {
+                        FumModeEvent::MprisEvent(MprisModeEvent::PlayerPositionChanged) => {
                             let current_track = self.state.current_track.lock().await;
                             self.script.update_position(current_track.position.clone())?;
                         }
+
+                        _ => {}
                     }
                 }
             }

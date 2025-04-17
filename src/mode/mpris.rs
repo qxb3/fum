@@ -12,7 +12,10 @@ use crate::{
     FumResult,
 };
 
+use super::{FumMode, FumModeEvent};
+
 /// Mpris mode events.
+#[derive(Debug)]
 pub enum MprisModeEvent {
     /// Triggers when the general track metadata changed.
     PlayerTrackMetaChanged,
@@ -48,19 +51,23 @@ pub struct MprisMode {
     current_cover: CurrentCoverState,
 
     /// Sender for mpris mode event.
-    sender: tokio::sync::mpsc::Sender<MprisModeEvent>,
+    sender: tokio::sync::mpsc::Sender<FumModeEvent>,
+
+    /// Receiver for mpris mode event.
+    receiver: tokio::sync::mpsc::Receiver<FumModeEvent>,
 }
 
 impl MprisMode {
     /// Creates new MprisMode.
     pub async fn new(
-        sender: tokio::sync::mpsc::Sender<MprisModeEvent>,
         current_player: CurrentPlayerState,
         current_track: CurrentTrackState,
         current_cover: CurrentCoverState,
     ) -> FumResult<Self> {
         let mpris = Arc::new(Mpris::new().await?);
         let picker = Arc::new(Picker::from_query_stdio()?);
+
+        let (sender, receiver) = tokio::sync::mpsc::channel(20);
 
         Ok(Self {
             mpris,
@@ -69,11 +76,14 @@ impl MprisMode {
             current_track,
             current_cover,
             sender,
+            receiver,
         })
     }
+}
 
-    /// Handle mpris mode.
-    pub async fn handle(&mut self) -> FumResult<()> {
+#[async_trait::async_trait]
+impl FumMode for MprisMode {
+    async fn start(&mut self) -> FumResult<()> {
         let mpris = Arc::clone(&self.mpris);
         let picker = Arc::clone(&self.picker);
 
@@ -85,11 +95,11 @@ impl MprisMode {
 
         // A specific channel for broadcasting to the current player thread that its
         // detached and to stop watching for events.
-        let (detached_tx, _) = tokio::sync::broadcast::channel::<String>(10);
+        let (detached_tx, _) = tokio::sync::broadcast::channel::<String>(20);
 
         tokio::spawn(async move {
             // Channel for mpris events.
-            let (mpris_tx, mut mpris_rx) = tokio::sync::mpsc::channel(10);
+            let (mpris_tx, mut mpris_rx) = tokio::sync::mpsc::channel(20);
 
             // Watch mpris events.
             mpris
@@ -146,12 +156,16 @@ impl MprisMode {
 
                             // Sends out both the PlayerTrackMetaChanged & PlayerPositionChanged event.
                             mode_tx
-                                .send(MprisModeEvent::PlayerTrackMetaChanged)
+                                .send(FumModeEvent::MprisEvent(
+                                    MprisModeEvent::PlayerTrackMetaChanged,
+                                ))
                                 .await
                                 .unwrap();
 
                             mode_tx
-                                .send(MprisModeEvent::PlayerPositionChanged)
+                                .send(FumModeEvent::MprisEvent(
+                                    MprisModeEvent::PlayerPositionChanged,
+                                ))
                                 .await
                                 .unwrap();
                         }
@@ -159,7 +173,7 @@ impl MprisMode {
                         tokio::spawn(async move {
                             // Channel for player events.
                             let (player_tx, mut player_rx) =
-                                tokio::sync::mpsc::channel::<PlayerEvent>(10);
+                                tokio::sync::mpsc::channel::<PlayerEvent>(20);
 
                             // For watching the events of current player.
                             {
@@ -202,12 +216,12 @@ impl MprisMode {
 
                                             // Sends out both the PlayerTrackMetaChanged & PlayerPositionChanged event.
                                             mode_tx
-                                                .send(MprisModeEvent::PlayerTrackMetaChanged)
+                                                .send(FumModeEvent::MprisEvent(MprisModeEvent::PlayerTrackMetaChanged))
                                                 .await
                                                 .unwrap();
 
                                             mode_tx
-                                                .send(MprisModeEvent::PlayerPositionChanged)
+                                                .send(FumModeEvent::MprisEvent(MprisModeEvent::PlayerPositionChanged))
                                                 .await
                                                 .unwrap();
 
@@ -250,7 +264,10 @@ impl MprisMode {
                                                 *current_track = track;
 
                                                 // Sends out the PlayerTrackMetaChanged event.
-                                                mode_tx.send(MprisModeEvent::PlayerTrackMetaChanged).await.unwrap();
+                                                mode_tx
+                                                    .send(FumModeEvent::MprisEvent(MprisModeEvent::PlayerTrackMetaChanged))
+                                                    .await
+                                                    .unwrap();
                                             },
 
                                             // Update the position the current track when seeked.
@@ -271,7 +288,10 @@ impl MprisMode {
                                                 current_track.position = position;
 
                                                 // Sends out the PlayerPositionChanged event.
-                                                mode_tx.send(MprisModeEvent::PlayerPositionChanged).await.unwrap();
+                                                mode_tx
+                                                    .send(FumModeEvent::MprisEvent(MprisModeEvent::PlayerPositionChanged))
+                                                    .await
+                                                    .unwrap();
                                             },
 
                                             // Update the position the current track when the the track position progress.
@@ -280,7 +300,10 @@ impl MprisMode {
                                                 current_track.position = position;
 
                                                 // Sends out the PlayerPositionChanged event.
-                                                mode_tx.send(MprisModeEvent::PlayerPositionChanged).await.unwrap();
+                                                mode_tx
+                                                    .send(FumModeEvent::MprisEvent(MprisModeEvent::PlayerPositionChanged))
+                                                    .await
+                                                    .unwrap();
                                             },
                                         }
                                     }
@@ -302,6 +325,18 @@ impl MprisMode {
         Ok(())
     }
 
+    async fn recv(&mut self) -> FumResult<FumModeEvent> {
+        self.receiver
+            .recv()
+            .await
+            .ok_or(Box::new(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                "Failed to receive an event on MprisMode",
+            )))
+    }
+}
+
+impl MprisMode {
     /// Updates the current cover.
     fn update_cover(
         art_url: String,

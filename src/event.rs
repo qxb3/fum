@@ -109,7 +109,7 @@ impl EventHandler {
             .await
             .ok_or(Box::new(std::io::Error::new(
                 std::io::ErrorKind::Other,
-                "Failed to receive an event from EventHandler.",
+                "Failed to receive an event from EventHandler",
             )))
     }
 }

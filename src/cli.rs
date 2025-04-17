@@ -2,7 +2,7 @@ use std::{env, path::PathBuf};
 
 use clap::{Parser, Subcommand};
 
-use crate::{mode::FumMode, mpris::Mpris, FumResult};
+use crate::{mode::FumModes, mpris::Mpris, FumResult};
 
 /// Fum cli.
 #[derive(Parser, Debug)]
@@ -36,7 +36,7 @@ enum Command {
 /// Cli arguments.
 pub struct CliArgs {
     pub config_path: PathBuf,
-    pub mode: FumMode,
+    pub mode: FumModes,
 }
 
 /// Run the cli.
@@ -55,12 +55,12 @@ pub async fn run() -> FumResult<Option<CliArgs>> {
     match cli.command {
         Command::Player => Ok(Some(CliArgs {
             config_path,
-            mode: FumMode::Player,
+            mode: FumModes::Player,
         })),
 
         Command::Mpris => Ok(Some(CliArgs {
             config_path,
-            mode: FumMode::Mpris,
+            mode: FumModes::Mpris,
         })),
 
         Command::ListPlayers => {
