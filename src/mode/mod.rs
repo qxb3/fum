@@ -1,8 +1,8 @@
-mod mpris;
-mod player;
+mod mpris_mode;
+mod player_mode;
 
-pub use mpris::*;
-pub use player::*;
+pub use mpris_mode::*;
+pub use player_mode::*;
 
 use crate::FumResult;
 
