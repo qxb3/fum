@@ -12,7 +12,7 @@ use super::{LoopStatus, Metadata, MetadataValue, PlaybackStatus};
 
 /// Player Events.
 #[derive(Debug)]
-pub enum PlayerEvent {
+pub enum MprisPlayerEvent {
     /// When the metadata or properties of the player changed.
     PropertiesChanged,
 
@@ -55,7 +55,7 @@ pub enum PlayerEvent {
 /// * `connection` - A reference to the D-Bus connection.
 /// * `bus_name` - The D-Bus name of the media player.
 #[derive(Debug, Clone)]
-pub struct Player {
+pub struct MprisPlayer {
     connection: Arc<Mutex<Connection>>,
     player_proxy: Proxy<'static>,
 
@@ -63,14 +63,14 @@ pub struct Player {
     pub identity: String,
 }
 
-impl Player {
+impl MprisPlayer {
     /// Creates a new Player.
     pub async fn new(
         connection: Arc<Mutex<Connection>>,
         bus_name: String,
     ) -> FumResult<Self> {
         let player_proxy =
-            Player::create_player_proxy(connection.clone(), bus_name.to_string()).await?;
+            MprisPlayer::create_player_proxy(connection.clone(), bus_name.to_string()).await?;
 
         let identity = bus_name
             .split('.')
@@ -324,7 +324,7 @@ impl Player {
     /// Watch events of player.
     pub async fn watch(
         &self,
-        tx: tokio::sync::mpsc::Sender<PlayerEvent>,
+        tx: tokio::sync::mpsc::Sender<MprisPlayerEvent>,
     ) -> FumResult<()> {
         let connection = Arc::clone(&self.connection);
         let bus_name = self.bus_name.to_string();
@@ -332,13 +332,13 @@ impl Player {
         tokio::spawn(async move {
             // Properties proxy.
             let properties_proxy =
-                Player::create_properties_proxy(connection.clone(), bus_name.to_string())
+                MprisPlayer::create_properties_proxy(connection.clone(), bus_name.to_string())
                     .await
                     .expect("Failed to create properties proxy");
 
             // Player proxy.
             let player_proxy =
-                Player::create_player_proxy(connection.clone(), bus_name.to_string())
+                MprisPlayer::create_player_proxy(connection.clone(), bus_name.to_string())
                     .await
                     .expect("Failed to create player proxy");
 
@@ -363,7 +363,7 @@ impl Player {
 
                         // Receive PropertiesChanged events.
                         Some(_) = properties_event_stream.next() => {
-                            ptx.send(PlayerEvent::PropertiesChanged).await.unwrap();
+                            ptx.send(MprisPlayerEvent::PropertiesChanged).await.unwrap();
                         }
                     }
                 }
@@ -379,7 +379,7 @@ impl Player {
 
                         // Receive Seeked signal events.
                         Some(_) = seeked_event_stream.next() => {
-                            stx.send(PlayerEvent::Seeked).await.unwrap();
+                            stx.send(MprisPlayerEvent::Seeked).await.unwrap();
                         }
                     }
                 }
@@ -389,7 +389,7 @@ impl Player {
             let potx = tx.clone();
             tokio::spawn(async move {
                 // Creates a new player based on the player proxy connection above.
-                let player = Player::new(connection.clone(), bus_name.to_string())
+                let player = MprisPlayer::new(connection.clone(), bus_name.to_string())
                     .await
                     .expect("Failed to create Player in handling of position event");
 
@@ -415,7 +415,7 @@ impl Player {
                                     .await
                                     .expect("Failed to get position of player in position event");
 
-                                potx.send(PlayerEvent::Position(position)).await.unwrap();
+                                potx.send(MprisPlayerEvent::Position(position)).await.unwrap();
                             }
                         }
                     }

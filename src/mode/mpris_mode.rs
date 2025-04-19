@@ -6,7 +6,7 @@ use reqwest::Url;
 use tokio::sync::Mutex;
 
 use crate::{
-    mpris::{Mpris, MprisEvent, PlayerEvent},
+    mpris::{Mpris, MprisEvent, MprisPlayerEvent},
     state::{CurrentCoverState, CurrentPlayerState, CurrentTrackState},
     track::Track,
     FumResult,
@@ -173,7 +173,7 @@ impl FumMode for MprisMode {
                         tokio::spawn(async move {
                             // Channel for player events.
                             let (player_tx, mut player_rx) =
-                                tokio::sync::mpsc::channel::<PlayerEvent>(20);
+                                tokio::sync::mpsc::channel::<MprisPlayerEvent>(20);
 
                             // For watching the events of current player.
                             {
@@ -233,7 +233,7 @@ impl FumMode for MprisMode {
                                     Some(event) = player_rx.recv() => {
                                         match event {
                                             // Update the track metadata when the player properties changed.
-                                            PlayerEvent::PropertiesChanged => {
+                                            MprisPlayerEvent::PropertiesChanged => {
                                                 let current_player = current_player.lock().await;
                                                 let current_player = current_player
                                                     .as_ref()
@@ -271,7 +271,7 @@ impl FumMode for MprisMode {
                                             },
 
                                             // Update the position the current track when seeked.
-                                            PlayerEvent::Seeked => {
+                                            MprisPlayerEvent::Seeked => {
                                                 let current_player = current_player.lock().await;
                                                 let current_player = current_player
                                                     .as_ref()
@@ -295,7 +295,7 @@ impl FumMode for MprisMode {
                                             },
 
                                             // Update the position the current track when the the track position progress.
-                                            PlayerEvent::Position(position) => {
+                                            MprisPlayerEvent::Position(position) => {
                                                 let mut current_track = current_track.lock().await;
                                                 current_track.position = position;
 

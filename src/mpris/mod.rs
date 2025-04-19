@@ -1,13 +1,14 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
 
+mod metadata;
+mod mpris_player;
+mod status;
+
 pub use metadata::*;
-pub use player::*;
+pub use mpris_player::*;
 pub use status::*;
 
-mod metadata;
-mod player;
-mod status;
 
 use std::{collections::HashMap, sync::Arc};
 
@@ -20,7 +21,7 @@ use crate::{fum::Fum, FumResult};
 /// Mpris Events.
 pub enum MprisEvent {
     /// When there is a new player.
-    PlayerAttached(Player),
+    PlayerAttached(MprisPlayer),
 
     /// When a player de-attach or quits..
     PlayerDetached(String),
@@ -82,15 +83,15 @@ impl<'a> Mpris<'a> {
     }
 
     /// Gets all the active players.
-    pub async fn players(&self) -> FumResult<HashMap<String, Player>> {
+    pub async fn players(&self) -> FumResult<HashMap<String, MprisPlayer>> {
         let bus_names = self.bus_names().await?;
 
         // Creates a new Player based on bus names.
-        let mut players: HashMap<String, Player> = HashMap::new();
+        let mut players: HashMap<String, MprisPlayer> = HashMap::new();
 
         for bus_name in bus_names {
             let player =
-                Player::new(self.connection.clone(), bus_name.to_string()).await?;
+                MprisPlayer::new(self.connection.clone(), bus_name.to_string()).await?;
             players.insert(bus_name, player);
         }
 

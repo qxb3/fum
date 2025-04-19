@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use crate::{
-    mpris::{PlaybackStatus, Player},
+    mpris::{PlaybackStatus, MprisPlayer},
     FumResult,
 };
 
@@ -44,7 +44,7 @@ impl Track {
     }
 
     /// Creates a new track based on player.
-    pub async fn from_player(player: &Player) -> FumResult<Self> {
+    pub async fn from_player(player: &MprisPlayer) -> FumResult<Self> {
         let metadata = player.metadata().await?;
 
         // Comes from the metadata.
