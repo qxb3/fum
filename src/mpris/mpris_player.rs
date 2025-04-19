@@ -6,7 +6,7 @@ use futures::StreamExt;
 use tokio::sync::Mutex;
 use zbus::{zvariant::ObjectPath, Connection, Proxy};
 
-use crate::{track::Track, FumResult};
+use crate::{player::Player, track::Track, FumResult};
 
 use super::{LoopStatus, Metadata, MetadataValue, PlaybackStatus};
 
@@ -70,7 +70,8 @@ impl MprisPlayer {
         bus_name: String,
     ) -> FumResult<Self> {
         let player_proxy =
-            MprisPlayer::create_player_proxy(connection.clone(), bus_name.to_string()).await?;
+            MprisPlayer::create_player_proxy(connection.clone(), bus_name.to_string())
+                .await?;
 
         let identity = bus_name
             .split('.')
@@ -92,105 +93,6 @@ impl MprisPlayer {
             self.player_proxy.get_property("Metadata").await?;
 
         Ok(Metadata::new(metadata)?)
-    }
-
-    /// Skips to the next track in the tracklist.
-    pub async fn next(&self) -> FumResult<()> {
-        self.player_proxy.call_method("Next", &()).await?;
-
-        Ok(())
-    }
-
-    /// Skips to the previous track in the tracklist.
-    pub async fn previous(&self) -> FumResult<()> {
-        self.player_proxy.call_method("Previous", &()).await?;
-
-        Ok(())
-    }
-
-    /// Pauses playback.
-    pub async fn pause(&self) -> FumResult<()> {
-        self.player_proxy.call_method("Pause", &()).await?;
-
-        Ok(())
-    }
-
-    /// Play Pause playback.
-    pub async fn play_pause(&self) -> FumResult<()> {
-        self.player_proxy.call_method("PlayPause", &()).await?;
-
-        Ok(())
-    }
-
-    /// Stop playback.
-    pub async fn stop(&self) -> FumResult<()> {
-        self.player_proxy.call_method("Stop", &()).await?;
-
-        Ok(())
-    }
-
-    /// Play playback.
-    pub async fn play(&self) -> FumResult<()> {
-        self.player_proxy.call_method("Play", &()).await?;
-
-        Ok(())
-    }
-
-    /// Seek forward.
-    pub async fn seek_forward(&self, offset: Duration) -> FumResult<()> {
-        self.player_proxy
-            .call_method("Seek", &(offset.as_micros() as i64))
-            .await?;
-
-        Ok(())
-    }
-
-    /// Seek backward.
-    pub async fn seek_backward(&self, offset: Duration) -> FumResult<()> {
-        self.player_proxy
-            .call_method("Seek", &(-(offset.as_micros() as i64)))
-            .await?;
-
-        Ok(())
-    }
-
-    /// Set playback position.
-    pub async fn set_position(&self, trackid: &str, position: Duration) -> FumResult<()> {
-        let trackid = ObjectPath::try_from(trackid)?;
-
-        self.player_proxy
-            .call_method("SetPosition", &(trackid, position.as_micros() as i64))
-            .await?;
-
-        Ok(())
-    }
-
-    /// PlaybackStatus of player.
-    pub async fn playback_status(&self) -> FumResult<PlaybackStatus> {
-        let playback_status: String =
-            self.player_proxy.get_property("PlaybackStatus").await?;
-
-        Ok(PlaybackStatus::from_str(&playback_status)?)
-    }
-
-    /// LoopStatus of player.
-    pub async fn loop_status(&self) -> FumResult<LoopStatus> {
-        let loop_status: String = self.player_proxy.get_property("LoopStatus").await?;
-
-        Ok(LoopStatus::from_str(&loop_status)?)
-    }
-
-    /// Set LoopStatus of player.
-    pub async fn set_loop_status(&self, loop_status: LoopStatus) -> FumResult<()> {
-        if !self.can_control().await? {
-            return Err("Cannot set the LoopStatus as CanControl is false".into());
-        }
-
-        self.player_proxy
-            .set_property("LoopStatus", loop_status.to_string())
-            .await?;
-
-        Ok(())
     }
 
     /// Playback Rate of player.
@@ -233,49 +135,6 @@ impl MprisPlayer {
         let max_rate: f64 = self.player_proxy.get_property("MaximumRate").await?;
 
         Ok(max_rate)
-    }
-
-    /// Shuffle status of player.
-    pub async fn shuffle(&self) -> FumResult<bool> {
-        let shuffle: bool = self.player_proxy.get_property("Shuffle").await?;
-
-        Ok(shuffle)
-    }
-
-    /// Set Shuffle status of player.
-    pub async fn set_shuffle(&self, shuffle: bool) -> FumResult<()> {
-        if !self.can_control().await? {
-            return Err("Cannot set the Shuffle as CanControl is false".into());
-        }
-
-        self.player_proxy.set_property("Shuffle", shuffle).await?;
-
-        Ok(())
-    }
-
-    /// Volume of player.
-    pub async fn volume(&self) -> FumResult<f64> {
-        let volume: f64 = self.player_proxy.get_property("Volume").await?;
-
-        Ok(volume)
-    }
-
-    /// Set the Volume of player.
-    pub async fn set_volume(&self, volume: f64) -> FumResult<()> {
-        if !self.can_control().await? {
-            return Err("Cannot set the Volume as CanControl is false".into());
-        }
-
-        self.player_proxy.set_property("Volume", volume).await?;
-
-        Ok(())
-    }
-
-    /// Position of player.
-    pub async fn position(&self) -> FumResult<Duration> {
-        let position: i64 = self.player_proxy.get_property("Position").await?;
-
-        Ok(Duration::from_micros(position as u64))
     }
 
     /// Can the player go next.
@@ -331,16 +190,20 @@ impl MprisPlayer {
 
         tokio::spawn(async move {
             // Properties proxy.
-            let properties_proxy =
-                MprisPlayer::create_properties_proxy(connection.clone(), bus_name.to_string())
-                    .await
-                    .expect("Failed to create properties proxy");
+            let properties_proxy = MprisPlayer::create_properties_proxy(
+                connection.clone(),
+                bus_name.to_string(),
+            )
+            .await
+            .expect("Failed to create properties proxy");
 
             // Player proxy.
-            let player_proxy =
-                MprisPlayer::create_player_proxy(connection.clone(), bus_name.to_string())
-                    .await
-                    .expect("Failed to create player proxy");
+            let player_proxy = MprisPlayer::create_player_proxy(
+                connection.clone(),
+                bus_name.to_string(),
+            )
+            .await
+            .expect("Failed to create player proxy");
 
             // Creates event stream for PropertiesChanged interface.
             let mut properties_event_stream = properties_proxy
@@ -460,5 +323,133 @@ impl MprisPlayer {
             .await?;
 
         Ok(player_proxy)
+    }
+}
+
+#[async_trait::async_trait]
+impl Player for MprisPlayer {
+    async fn play(&mut self) -> FumResult<()> {
+        self.player_proxy.call_method("Play", &()).await?;
+
+        Ok(())
+    }
+
+    async fn play_pause(&mut self) -> FumResult<()> {
+        self.player_proxy.call_method("PlayPause", &()).await?;
+
+        Ok(())
+    }
+
+    async fn pause(&mut self) -> FumResult<()> {
+        self.player_proxy.call_method("Pause", &()).await?;
+
+        Ok(())
+    }
+
+    async fn stop(&mut self) -> FumResult<()> {
+        self.player_proxy.call_method("Stop", &()).await?;
+
+        Ok(())
+    }
+
+    async fn next(&mut self) -> FumResult<()> {
+        self.player_proxy.call_method("Next", &()).await?;
+
+        Ok(())
+    }
+
+    async fn previous(&mut self) -> FumResult<()> {
+        self.player_proxy.call_method("Previous", &()).await?;
+
+        Ok(())
+    }
+
+    async fn seek_forward(&mut self, offset: Duration) -> FumResult<()> {
+        self.player_proxy
+            .call_method("Seek", &(offset.as_micros() as i64))
+            .await?;
+
+        Ok(())
+    }
+
+    async fn seek_backward(&mut self, offset: Duration) -> FumResult<()> {
+        self.player_proxy
+            .call_method("Seek", &(-(offset.as_micros() as i64)))
+            .await?;
+
+        Ok(())
+    }
+
+    async fn set_position(&mut self, trackid: &str, position: Duration) -> FumResult<()> {
+        let trackid = ObjectPath::try_from(trackid)?;
+
+        self.player_proxy
+            .call_method("SetPosition", &(trackid, position.as_micros() as i64))
+            .await?;
+
+        Ok(())
+    }
+
+    async fn playback_status(&self) -> FumResult<PlaybackStatus> {
+        let playback_status: String =
+            self.player_proxy.get_property("PlaybackStatus").await?;
+
+        Ok(PlaybackStatus::from_str(&playback_status)?)
+    }
+
+    async fn loop_status(&self) -> FumResult<LoopStatus> {
+        let loop_status: String = self.player_proxy.get_property("LoopStatus").await?;
+
+        Ok(LoopStatus::from_str(&loop_status)?)
+    }
+
+    async fn set_loop_status(&mut self, loop_status: LoopStatus) -> FumResult<()> {
+        if !self.can_control().await? {
+            return Err("Cannot set the LoopStatus as CanControl is false".into());
+        }
+
+        self.player_proxy
+            .set_property("LoopStatus", loop_status.to_string())
+            .await?;
+
+        Ok(())
+    }
+
+    async fn shuffle(&self) -> FumResult<bool> {
+        let shuffle: bool = self.player_proxy.get_property("Shuffle").await?;
+
+        Ok(shuffle)
+    }
+
+    async fn set_shuffle(&mut self, shuffle: bool) -> FumResult<()> {
+        if !self.can_control().await? {
+            return Err("Cannot set the Shuffle as CanControl is false".into());
+        }
+
+        self.player_proxy.set_property("Shuffle", shuffle).await?;
+
+        Ok(())
+    }
+
+    async fn volume(&self) -> FumResult<f64> {
+        let volume: f64 = self.player_proxy.get_property("Volume").await?;
+
+        Ok(volume)
+    }
+
+    async fn set_volume(&mut self, volume: f64) -> FumResult<()> {
+        if !self.can_control().await? {
+            return Err("Cannot set the Volume as CanControl is false".into());
+        }
+
+        self.player_proxy.set_property("Volume", volume).await?;
+
+        Ok(())
+    }
+
+    async fn position(&self) -> FumResult<Duration> {
+        let position: i64 = self.player_proxy.get_property("Position").await?;
+
+        Ok(Duration::from_micros(position as u64))
     }
 }

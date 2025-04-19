@@ -7,6 +7,7 @@ use tokio::sync::Mutex;
 
 use crate::{
     mpris::{Mpris, MprisEvent, MprisPlayerEvent},
+    player::Player,
     state::{CurrentCoverState, CurrentPlayerState, CurrentTrackState},
     track::Track,
     FumResult,
@@ -134,12 +135,12 @@ impl FumMode for MprisMode {
                                 .expect("Tried to update track metadata for the player but current player is None somehow");
 
                             // Creates a track metadata of player.
-                            let track = Track::from_player(current_player).await.expect(
-                                &format!(
+                            let track = Track::from_mpris_player(current_player)
+                                .await
+                                .expect(&format!(
                                     "Failed to create track for: {}",
                                     current_player.bus_name
-                                ),
-                            );
+                                ));
 
                             // Update current cover.
                             if let Some(art_url) = &track.art_url {
@@ -240,7 +241,7 @@ impl FumMode for MprisMode {
                                                     .expect("Tried to update track metadata for the player but current player is None somehow");
 
                                                 // Creates a track metadata of player.
-                                                let track = Track::from_player(current_player)
+                                                let track = Track::from_mpris_player(current_player)
                                                     .await
                                                     .expect(&format!("Failed to create track for: {}", current_player.bus_name));
 

@@ -9,7 +9,6 @@ pub use metadata::*;
 pub use mpris_player::*;
 pub use status::*;
 
-
 use std::{collections::HashMap, sync::Arc};
 
 use futures::{stream::FuturesUnordered, StreamExt};

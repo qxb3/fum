@@ -3,6 +3,7 @@ mod event;
 mod fum;
 mod mode;
 mod mpris;
+mod player;
 mod script;
 mod state;
 mod track;
