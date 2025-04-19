@@ -6,11 +6,11 @@ mod mpris;
 mod player;
 mod script;
 mod state;
+mod status;
 mod track;
 mod ui;
 mod utils;
 mod widget;
-mod status;
 
 use std::error::Error;
 

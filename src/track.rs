@@ -1,8 +1,6 @@
 use std::time::Duration;
 
-use crate::{
-    mpris::MprisPlayer, player::Player, status::PlaybackStatus, FumResult
-};
+use crate::{mpris::MprisPlayer, player::Player, status::PlaybackStatus, FumResult};
 
 /// Contains the metadata of the current track / song.
 #[derive(Debug)]

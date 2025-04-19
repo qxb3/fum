@@ -1,6 +1,9 @@
 use std::time::Duration;
 
-use crate::{status::{LoopStatus, PlaybackStatus}, FumResult};
+use crate::{
+    status::{LoopStatus, PlaybackStatus},
+    FumResult,
+};
 
 /// Trait that Player modes should implement.
 #[async_trait::async_trait]
