@@ -3,11 +3,9 @@
 
 mod metadata;
 mod mpris_player;
-mod status;
 
 pub use metadata::*;
 pub use mpris_player::*;
-pub use status::*;
 
 use std::{collections::HashMap, sync::Arc};
 

@@ -1,12 +1,6 @@
-// TODO: Have a general LoopStatus & PlaybackStatus struct
-// That player can use instead of using the mpris one.
-
 use std::time::Duration;
 
-use crate::{
-    mpris::{LoopStatus, PlaybackStatus},
-    FumResult,
-};
+use crate::{status::{LoopStatus, PlaybackStatus}, FumResult};
 
 /// Trait that Player modes should implement.
 #[async_trait::async_trait]

@@ -1,11 +1,20 @@
-use std::{fmt, str::FromStr};
+use core::fmt;
+use std::str::FromStr;
 
-/// Playback status of player.
+/// Playback status of a player.
 #[derive(Debug, PartialEq, Clone)]
 pub enum PlaybackStatus {
     Playing,
     Paused,
     Stopped,
+}
+
+/// Loop status of a player.
+#[derive(Debug, PartialEq)]
+pub enum LoopStatus {
+    None,
+    Track,
+    Playlist,
 }
 
 impl FromStr for PlaybackStatus {
@@ -35,14 +44,6 @@ impl fmt::Display for PlaybackStatus {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.as_ref())
     }
-}
-
-/// Loop status of player.
-#[derive(Debug, PartialEq)]
-pub enum LoopStatus {
-    None,
-    Track,
-    Playlist,
 }
 
 impl FromStr for LoopStatus {

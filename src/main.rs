@@ -10,6 +10,7 @@ mod track;
 mod ui;
 mod utils;
 mod widget;
+mod status;
 
 use std::error::Error;
 

@@ -6,9 +6,9 @@ use futures::StreamExt;
 use tokio::sync::Mutex;
 use zbus::{zvariant::ObjectPath, Connection, Proxy};
 
-use crate::{player::Player, track::Track, FumResult};
+use crate::{player::Player, status::{LoopStatus, PlaybackStatus}, track::Track, FumResult};
 
-use super::{LoopStatus, Metadata, MetadataValue, PlaybackStatus};
+use super::{Metadata, MetadataValue};
 
 /// Player Events.
 #[derive(Debug)]
