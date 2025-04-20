@@ -79,12 +79,20 @@ impl FumWidget {
                     children_nodes.push(node);
                 }
 
+                // Center the container items if the container direction is horizontal & the align is center.
+                let justify_content = if *direction == taffy::FlexDirection::Row && *align == taffy::AlignItems::Center {
+                    Some(taffy::JustifyContent::Center)
+                } else {
+                    None
+                };
+
                 // Creates the container parent node.
                 let parent_node = taffy.new_with_children(
                     taffy::Style {
                         display: taffy::Display::Flex,
                         flex_direction: *direction,
                         align_items: Some(*align),
+                        justify_content,
                         ..Default::default()
                     },
                     &children_nodes,
