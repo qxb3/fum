@@ -12,7 +12,7 @@ pub fn play(current_player: CurrentPlayerState) -> impl Fn() -> ScriptFnResult<(
         tokio::spawn(async move {
             let mut current_player = current_player.lock().await;
             if let Some(player) = current_player.as_mut() {
-                player.play().await;
+                player.play().await.expect("Failed to call PLAY() function");
             }
         });
 
@@ -28,7 +28,10 @@ pub fn play_pause(current_player: CurrentPlayerState) -> impl Fn() -> ScriptFnRe
         tokio::spawn(async move {
             let mut current_player = current_player.lock().await;
             if let Some(player) = current_player.as_mut() {
-                player.play_pause().await;
+                player
+                    .play_pause()
+                    .await
+                    .expect("Failed to call PLAY_PAUSE() function");
             }
         });
 
@@ -44,7 +47,10 @@ pub fn pause(current_player: CurrentPlayerState) -> impl Fn() -> ScriptFnResult<
         tokio::spawn(async move {
             let mut current_player = current_player.lock().await;
             if let Some(player) = current_player.as_mut() {
-                player.pause().await;
+                player
+                    .pause()
+                    .await
+                    .expect("Failed to call PAUSE() function");
             }
         });
 
@@ -60,7 +66,7 @@ pub fn stop(current_player: CurrentPlayerState) -> impl Fn() -> ScriptFnResult<(
         tokio::spawn(async move {
             let mut current_player = current_player.lock().await;
             if let Some(player) = current_player.as_mut() {
-                player.stop().await;
+                player.stop().await.expect("Failed to call STOP() function");
             }
         });
 
@@ -76,7 +82,7 @@ pub fn next(current_player: CurrentPlayerState) -> impl Fn() -> ScriptFnResult<(
         tokio::spawn(async move {
             let mut current_player = current_player.lock().await;
             if let Some(player) = current_player.as_mut() {
-                player.next().await;
+                player.next().await.expect("Failed to call NEXT() function");
             }
         });
 
@@ -92,7 +98,10 @@ pub fn prev(current_player: CurrentPlayerState) -> impl Fn() -> ScriptFnResult<(
         tokio::spawn(async move {
             let mut current_player = current_player.lock().await;
             if let Some(player) = current_player.as_mut() {
-                player.previous().await;
+                player
+                    .previous()
+                    .await
+                    .expect("Failed to call PREV() function");
             }
         });
 
