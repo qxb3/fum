@@ -21,6 +21,14 @@ pub fn container_opts() -> impl Fn(rhai::Map) -> ScriptFnResult<FumWidget> {
             .try_cast_result::<taffy::AlignItems>()
             .map_err(|_| "Container align needs to be a valid align value")?;
 
+        // Extract the container spacing from opts, Will default to 0 if it doesnt exists.
+        let spacing = opts
+            .get("spacing")
+            .cloned()
+            .unwrap_or(rhai::Dynamic::from_int(0))
+            .as_int()
+            .map_err(|_| "Container spacing needs to be a valid number")?;
+
         // Extract container children from opts.
         let children = opts
             .get("children")
@@ -52,6 +60,7 @@ pub fn container_opts() -> impl Fn(rhai::Map) -> ScriptFnResult<FumWidget> {
             children: container_children,
             direction,
             align,
+            spacing: spacing as u16,
             width: container_width,
             height: container_height,
         })

@@ -17,6 +17,9 @@ pub enum FumWidget {
         /// The container alignment.
         align: taffy::AlignItems,
 
+        /// The spacing between the children.
+        spacing: u16,
+
         /// Container total width.
         width: u16,
 
@@ -69,7 +72,7 @@ impl FumWidget {
     ) -> FumResult<NodeId> {
         match widget {
             #[rustfmt::skip]
-            FumWidget::Container { children, direction, align, .. } => {
+            FumWidget::Container { children, direction, align, spacing, .. } => {
                 // Where the node children of this container will be stored.
                 let mut children_nodes = Vec::new();
 
@@ -93,6 +96,7 @@ impl FumWidget {
                         flex_direction: *direction,
                         align_items: Some(*align),
                         justify_content,
+                        gap: taffy::Size::length(*spacing as f32),
                         ..Default::default()
                     },
                     &children_nodes,
