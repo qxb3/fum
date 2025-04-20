@@ -457,4 +457,11 @@ impl Player for MprisPlayer {
 
         Ok(Duration::from_micros(position as u64))
     }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+    fn into_any(self: Box<Self>) -> Box<dyn std::any::Any> {
+        self
+    }
 }

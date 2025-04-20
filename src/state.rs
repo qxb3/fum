@@ -3,10 +3,10 @@ use std::sync::Arc;
 use ratatui_image::protocol::StatefulProtocol;
 use tokio::sync::Mutex;
 
-use crate::{mpris::MprisPlayer, track::Track};
+use crate::{player::Player, track::Track};
 
 /// Type alias for current player state.
-pub type CurrentPlayerState = Arc<Mutex<Option<MprisPlayer>>>;
+pub type CurrentPlayerState = Arc<Mutex<Option<Box<dyn Player>>>>;
 
 /// Type alias for current track state.
 pub type CurrentTrackState = Arc<Mutex<Track>>;

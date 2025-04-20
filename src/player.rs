@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{any::Any, time::Duration};
 
 use crate::{
     status::{LoopStatus, PlaybackStatus},
@@ -7,7 +7,7 @@ use crate::{
 
 /// Trait that Player modes should implement.
 #[async_trait::async_trait]
-pub trait Player {
+pub trait Player: std::any::Any + Send + Sync {
     async fn play(&mut self) -> FumResult<()>;
     async fn play_pause(&mut self) -> FumResult<()>;
     async fn pause(&mut self) -> FumResult<()>;
@@ -32,4 +32,7 @@ pub trait Player {
     async fn set_volume(&mut self, volume: f64) -> FumResult<()>;
 
     async fn position(&self) -> FumResult<Duration>;
+
+    fn as_any(&self) -> &dyn Any;
+    fn into_any(self: Box<Self>) -> Box<dyn Any>;
 }

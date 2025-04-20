@@ -3,10 +3,10 @@ use std::{fs, str::FromStr, sync::Arc};
 use base64::{prelude::BASE64_STANDARD, Engine};
 use ratatui_image::{picker::Picker, protocol::StatefulProtocol};
 use reqwest::Url;
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, MutexGuard};
 
 use crate::{
-    mpris::{Mpris, MprisEvent, MprisPlayerEvent},
+    mpris::{Mpris, MprisEvent, MprisPlayer, MprisPlayerEvent},
     player::Player,
     state::{CurrentCoverState, CurrentPlayerState, CurrentTrackState},
     track::Track,
@@ -124,15 +124,13 @@ impl FumMode for MprisMode {
                         // We update the current_player to the player
                         {
                             let mut current_player = current_player.lock().await;
-                            *current_player = Some(player);
+                            *current_player = Some(Box::new(player));
                         }
 
                         // Update the track metadata as soon as the player attached.
                         {
                             let current_player = current_player.lock().await;
-                            let current_player = current_player
-                                .as_ref()
-                                .expect("Tried to update track metadata for the player but current player is None somehow");
+                            let current_player = downcast_player(&current_player).await;
 
                             // Creates a track metadata of player.
                             let track = Track::from_mpris_player(current_player)
@@ -179,9 +177,8 @@ impl FumMode for MprisMode {
                             // For watching the events of current player.
                             {
                                 let current_player = current_player.lock().await;
-                                let current_player = current_player
-                                    .as_ref()
-                                    .expect("Tried to watch event for player but current player is somehow None");
+                                let current_player =
+                                    downcast_player(&current_player).await;
 
                                 // Watch player events.
                                 current_player.watch(player_tx.clone()).await.expect(
@@ -198,10 +195,9 @@ impl FumMode for MprisMode {
                                     // then we break out of this loop.
                                     Ok(bus_name) = detached_rx.recv() => {
                                         let mut current_player = current_player.lock().await;
+                                        let curr_player = downcast_player(&current_player).await;
+
                                         let mut current_cover = current_cover.lock().await;
-                                        let curr_player = current_player
-                                            .as_ref()
-                                            .expect("Tried to reset the track metadata for the player but current player is None somehow");
 
                                         if bus_name == curr_player.bus_name {
                                             // Set the current player to None.
@@ -236,9 +232,7 @@ impl FumMode for MprisMode {
                                             // Update the track metadata when the player properties changed.
                                             MprisPlayerEvent::PropertiesChanged => {
                                                 let current_player = current_player.lock().await;
-                                                let current_player = current_player
-                                                    .as_ref()
-                                                    .expect("Tried to update track metadata for the player but current player is None somehow");
+                                                let current_player = downcast_player(&current_player).await;
 
                                                 // Creates a track metadata of player.
                                                 let track = Track::from_mpris_player(current_player)
@@ -274,9 +268,7 @@ impl FumMode for MprisMode {
                                             // Update the position the current track when seeked.
                                             MprisPlayerEvent::Seeked => {
                                                 let current_player = current_player.lock().await;
-                                                let current_player = current_player
-                                                    .as_ref()
-                                                    .expect("Tried to update track position for the player but current player is None somehow");
+                                                let current_player = downcast_player(&current_player).await;
 
                                                 // Get the updated recent position.
                                                 let position = current_player
@@ -431,4 +423,18 @@ impl MprisMode {
             }
         });
     }
+}
+
+/// A helper function to downcast the current player to MprisPlayer.
+async fn downcast_player<'a>(
+    current_player_guard: &'a MutexGuard<'a, Option<Box<dyn Player>>>,
+) -> &'a MprisPlayer {
+    let current_player = current_player_guard
+        .as_ref()
+        .expect("Tried to update track metadata for the player but current player is None somehow")
+        .as_any()
+        .downcast_ref::<MprisPlayer>()
+        .expect("Expected an mpris player to be on the mpris mode but got a different player somehow");
+
+    current_player
 }
