@@ -41,6 +41,9 @@ pub enum FumWidget {
         /// Label text content.
         text: String,
 
+        /// If the label should be vertical.
+        vertical: bool,
+
         /// Label width.
         width: u16,
 
@@ -48,7 +51,7 @@ pub enum FumWidget {
         height: u16,
     },
 
-    /// For displaying clicable texts.
+    /// For displaying clickable texts.
     Button {
         /// Button text content.
         text: String,

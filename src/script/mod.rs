@@ -112,7 +112,9 @@ impl<'a> Script<'a> {
             .register_fn("ContainerEnd", functions::container_end())
             .register_fn("ContainerEnd", functions::container_end_ext_opts())
             .register_fn("CoverImage", functions::cover_image())
+            .register_fn("Label", functions::label_opts())
             .register_fn("Label", functions::label())
+            .register_fn("LabelVertical", functions::label_vertical())
             .register_fn("Button", functions::button());
 
         // Register player control functions.

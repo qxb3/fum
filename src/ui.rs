@@ -1,4 +1,10 @@
-use ratatui::{layout::Rect, prelude::CrosstermBackend, text::Text, Terminal};
+use ratatui::{
+    layout::Rect,
+    prelude::CrosstermBackend,
+    text::Text,
+    widgets::{Paragraph, Wrap},
+    Terminal,
+};
 use ratatui_image::StatefulImage;
 
 use crate::{state::State, widget::FumWidget, FumResult};
@@ -26,7 +32,10 @@ pub async fn draw(
                 }
 
                 FumWidget::Label { text, .. } => {
-                    frame.render_widget(Text::from(text.as_str()), *rect);
+                    frame.render_widget(
+                        Paragraph::new(text.to_string()).wrap(Wrap::default()),
+                        *rect,
+                    );
                 }
 
                 FumWidget::Button { text, .. } => {
