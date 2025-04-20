@@ -15,7 +15,8 @@ use rhai::{Engine, Scope, AST};
 use taffy::TaffyTree;
 
 use crate::{
-    track::Track, utils::duration::format_duration, widget::FumWidget, FumResult,
+    state::State, track::Track, utils::duration::format_duration, widget::FumWidget,
+    FumResult,
 };
 
 /// Type alias for the script config state.
@@ -46,8 +47,8 @@ pub struct Script<'a> {
 }
 
 impl<'a> Script<'a> {
-    /// Creates a new script, loading from file.
-    pub fn from_file<P: Into<PathBuf>>(config_path: P) -> FumResult<Self> {
+    /// Creates a new script, loading from file and passing in the state to be used in rhai functions.
+    pub fn from_file<P: Into<PathBuf>>(config_path: P, state: &State) -> FumResult<Self> {
         // Rhai engine.
         let mut engine = Engine::new();
 
@@ -111,7 +112,16 @@ impl<'a> Script<'a> {
             .register_fn("Label", functions::label())
             .register_fn("Button", functions::button());
 
-        engine.register_fn("FOO", || println!("hiiiiiiiiiiii"));
+        // Register player control functions.
+        engine
+            .register_fn("PLAY", functions::play(state.current_player.clone()))
+            .register_fn(
+                "PLAY_PAUSE",
+                functions::play_pause(state.current_player.clone()),
+            )
+            .register_fn("PAUSE", functions::pause(state.current_player.clone()))
+            .register_fn("PREV", functions::prev(state.current_player.clone()))
+            .register_fn("NEXT", functions::next(state.current_player.clone()));
 
         // Compile the script into ast.
         let ast = engine

@@ -1,0 +1,101 @@
+use std::sync::Arc;
+
+use crate::state::CurrentPlayerState;
+
+use super::ScriptFnResult;
+
+/// PLAY() control function.
+pub fn play(current_player: CurrentPlayerState) -> impl Fn() -> ScriptFnResult<()> {
+    move || -> ScriptFnResult<()> {
+        let current_player = Arc::clone(&current_player);
+
+        tokio::spawn(async move {
+            let mut current_player = current_player.lock().await;
+            if let Some(player) = current_player.as_mut() {
+                player.play().await;
+            }
+        });
+
+        Ok(())
+    }
+}
+
+/// PLAY_PAUSE() control function.
+pub fn play_pause(current_player: CurrentPlayerState) -> impl Fn() -> ScriptFnResult<()> {
+    move || -> ScriptFnResult<()> {
+        let current_player = Arc::clone(&current_player);
+
+        tokio::spawn(async move {
+            let mut current_player = current_player.lock().await;
+            if let Some(player) = current_player.as_mut() {
+                player.play_pause().await;
+            }
+        });
+
+        Ok(())
+    }
+}
+
+/// PAUSE() control function.
+pub fn pause(current_player: CurrentPlayerState) -> impl Fn() -> ScriptFnResult<()> {
+    move || -> ScriptFnResult<()> {
+        let current_player = Arc::clone(&current_player);
+
+        tokio::spawn(async move {
+            let mut current_player = current_player.lock().await;
+            if let Some(player) = current_player.as_mut() {
+                player.pause().await;
+            }
+        });
+
+        Ok(())
+    }
+}
+
+/// STOP() control function.
+pub fn stop(current_player: CurrentPlayerState) -> impl Fn() -> ScriptFnResult<()> {
+    move || -> ScriptFnResult<()> {
+        let current_player = Arc::clone(&current_player);
+
+        tokio::spawn(async move {
+            let mut current_player = current_player.lock().await;
+            if let Some(player) = current_player.as_mut() {
+                player.stop().await;
+            }
+        });
+
+        Ok(())
+    }
+}
+
+/// NEXT() control function.
+pub fn next(current_player: CurrentPlayerState) -> impl Fn() -> ScriptFnResult<()> {
+    move || -> ScriptFnResult<()> {
+        let current_player = Arc::clone(&current_player);
+
+        tokio::spawn(async move {
+            let mut current_player = current_player.lock().await;
+            if let Some(player) = current_player.as_mut() {
+                player.next().await;
+            }
+        });
+
+        Ok(())
+    }
+}
+
+/// PREV() control function.
+pub fn prev(current_player: CurrentPlayerState) -> impl Fn() -> ScriptFnResult<()> {
+    move || -> ScriptFnResult<()> {
+        let current_player = Arc::clone(&current_player);
+
+        tokio::spawn(async move {
+            let mut current_player = current_player.lock().await;
+            if let Some(player) = current_player.as_mut() {
+                player.previous().await;
+            }
+        });
+
+        Ok(())
+    }
+}

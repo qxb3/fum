@@ -50,7 +50,7 @@ impl<'a> Fum<'a> {
         let terminal = ratatui::init();
 
         // Creates a script from file.
-        let mut script = Script::from_file(&args.config_path)?;
+        let mut script = Script::from_file(&args.config_path, &state)?;
         script.execute()?; // Executes the script to populate the config state.
 
         // Acquire lock for config state.
