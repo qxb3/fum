@@ -35,16 +35,22 @@ pub async fn draw(
                     }
                 }
 
-                FumWidget::Label { text, .. } => {
+                FumWidget::Label { text, fg, bg, .. } => {
                     frame.render_widget(
-                        Paragraph::new(text.to_string()).wrap(Wrap::default()),
+                        Paragraph::new(text.to_string())
+                            .wrap(Wrap::default())
+                            .fg(*fg)
+                            .bg(*bg),
                         *rect,
                     );
                 }
 
-                FumWidget::Button { text, .. } => {
+                FumWidget::Button { text, fg, bg, .. } => {
                     frame.render_widget(
-                        Paragraph::new(text.to_string()).wrap(Wrap::default()),
+                        Paragraph::new(text.to_string())
+                            .wrap(Wrap::default())
+                            .fg(*fg)
+                            .bg(*bg),
                         *rect,
                     );
                 }

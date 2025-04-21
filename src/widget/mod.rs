@@ -58,6 +58,12 @@ pub enum FumWidget {
         /// If the label should be vertical.
         vertical: bool,
 
+        /// Label fg color.
+        fg: Color,
+
+        /// Label bg color.
+        bg: Color,
+
         /// Label width.
         width: u16,
 
@@ -75,6 +81,12 @@ pub enum FumWidget {
 
         /// If the button should be vertical.
         vertical: bool,
+
+        /// Button fg color.
+        fg: Color,
+
+        /// Button bg color.
+        bg: Color,
 
         /// Button width.
         width: u16,

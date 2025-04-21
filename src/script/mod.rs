@@ -144,9 +144,11 @@ impl<'a> Script<'a> {
             .register_fn("CoverImage", functions::cover_image())
             .register_fn("Label", functions::label_opts())
             .register_fn("Label", functions::label())
+            .register_fn("Label", functions::label_ext_opts())
             .register_fn("LabelVertical", functions::label_vertical())
             .register_fn("Button", functions::button_opts())
             .register_fn("Button", functions::button())
+            .register_fn("Button", functions::button_ext_opts())
             .register_fn("ButtonVertical", functions::button_vertical())
             .register_fn("Slider", functions::slider_opts());
 
