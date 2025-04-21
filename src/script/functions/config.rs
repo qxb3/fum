@@ -10,7 +10,7 @@ pub fn config(config_state: ScriptConfig) -> impl Fn(rhai::Map) -> ScriptFnResul
             .get("fps")
             .unwrap_or(&rhai::Dynamic::from_int(10))
             .as_int()
-            .map_err(|_| "Config fps needs to be a valid number")?;
+            .map_err(|_| "Config `fps` needs to be a valid number")?;
 
         // Acquire lock for the config state.
         let mut config = config_state.lock().map_err(|err| {

@@ -11,16 +11,16 @@ pub fn button_opts() -> impl Fn(rhai::Map) -> ScriptFnResult<FumWidget> {
         let text = opts
             .get("text")
             .cloned()
-            .ok_or("Button widget needs to have a text")?
+            .ok_or("Button widget needs to have a `text`")?
             .to_string();
 
         // Extract func from opts.
         let func = opts
             .get("func")
             .cloned()
-            .ok_or("Button widget needs to have a func")?
+            .ok_or("Button widget needs to have a `func`")?
             .try_cast_result::<rhai::FnPtr>()
-            .map_err(|_| "Button func needs to be a valid function")?;
+            .map_err(|_| "Button `func` needs to be a valid function")?;
 
         // Extract vertical from opts, Will default to false if it doesnt exists.
         let vertical = opts
@@ -28,7 +28,7 @@ pub fn button_opts() -> impl Fn(rhai::Map) -> ScriptFnResult<FumWidget> {
             .cloned()
             .unwrap_or(rhai::Dynamic::from_bool(false))
             .as_bool()
-            .map_err(|_| "Button vertical needs to be a boolean")?;
+            .map_err(|_| "Button `vertical` needs to be a boolean")?;
 
         // Get the width & height of the button accordingly if the button is vertical or not.
         let (width, height) = if vertical == false {

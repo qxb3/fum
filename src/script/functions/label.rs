@@ -11,7 +11,7 @@ pub fn label_opts() -> impl Fn(rhai::Map) -> ScriptFnResult<FumWidget> {
         let text = opts
             .get("text")
             .cloned()
-            .ok_or("Label widget needs to have a text")?
+            .ok_or("Label widget needs to have a `text`")?
             .to_string();
 
         // Extract vertical from opts, Will default to false if it doesnt exists.
@@ -20,7 +20,7 @@ pub fn label_opts() -> impl Fn(rhai::Map) -> ScriptFnResult<FumWidget> {
             .cloned()
             .unwrap_or(rhai::Dynamic::from_bool(false))
             .as_bool()
-            .map_err(|_| "Label vertical needs to be a boolean")?;
+            .map_err(|_| "Label `vertical` needs to be a boolean")?;
 
         // Get the width & height of the label accordingly if the label is vertical or not.
         let (width, height) = if vertical == false {

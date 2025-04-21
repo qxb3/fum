@@ -9,9 +9,9 @@ pub fn container_opts() -> impl Fn(rhai::Map) -> ScriptFnResult<FumWidget> {
         let direction = opts
             .get("direction")
             .cloned()
-            .ok_or("Container widget needs to have a direction")?
+            .ok_or("Container widget needs to have a `direction`")?
             .try_cast_result::<taffy::FlexDirection>()
-            .map_err(|_| "Container direction needs to be a valid direction")?;
+            .map_err(|_| "Container `direction` needs to be a valid value")?;
 
         // Extract container alignment from opts, Will default to START if it doesnt exists.
         let align = opts
@@ -19,7 +19,7 @@ pub fn container_opts() -> impl Fn(rhai::Map) -> ScriptFnResult<FumWidget> {
             .cloned()
             .unwrap_or(rhai::Dynamic::from(taffy::AlignItems::Start))
             .try_cast_result::<taffy::AlignItems>()
-            .map_err(|_| "Container align needs to be a valid align value")?;
+            .map_err(|_| "Container `align` needs to be a valid align value")?;
 
         // Extract the container spacing from opts, Will default to 0 if it doesnt exists.
         let spacing = opts
@@ -27,23 +27,22 @@ pub fn container_opts() -> impl Fn(rhai::Map) -> ScriptFnResult<FumWidget> {
             .cloned()
             .unwrap_or(rhai::Dynamic::from_int(0))
             .as_int()
-            .map_err(|_| "Container spacing needs to be a valid number")?;
+            .map_err(|_| "Container `spacing` needs to be a valid number")?;
 
         // Extract container children from opts.
         let children = opts
             .get("children")
             .cloned()
-            .ok_or("Container widget needs to have children")?
+            .ok_or("Container widget needs to have `children`")?
             .try_cast_result::<rhai::Array>()
-            .map_err(|_| "Container children needs to be an array of widget")?;
+            .map_err(|_| "Container `children` needs to be an array of widget")?;
 
         // Where the nodes of container children will be stored.
         let mut container_children = Vec::new();
-
         for child in children {
             let child = child
                 .try_cast_result::<FumWidget>()
-                .map_err(|_| "The children of the container needs to be a widget")?;
+                .map_err(|_| "The `children` of the container needs to be a widget")?;
 
             container_children.push(child);
         }
