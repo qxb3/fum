@@ -115,7 +115,9 @@ impl<'a> Script<'a> {
             .register_fn("Label", functions::label_opts())
             .register_fn("Label", functions::label())
             .register_fn("LabelVertical", functions::label_vertical())
-            .register_fn("Button", functions::button());
+            .register_fn("Button", functions::button_opts())
+            .register_fn("Button", functions::button())
+            .register_fn("ButtonVertical", functions::button_vertical());
 
         // Register player control functions.
         engine

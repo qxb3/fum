@@ -39,7 +39,10 @@ pub async fn draw(
                 }
 
                 FumWidget::Button { text, .. } => {
-                    frame.render_widget(Text::from(text.as_str()), *rect);
+                    frame.render_widget(
+                        Paragraph::new(text.to_string()).wrap(Wrap::default()),
+                        *rect,
+                    );
                 }
 
                 _ => unreachable!(),

@@ -59,6 +59,9 @@ pub enum FumWidget {
         /// Button function when clicked.
         func: rhai::FnPtr,
 
+        /// If the button should be vertical.
+        vertical: bool,
+
         /// Button width.
         width: u16,
 

@@ -50,7 +50,7 @@ pub fn label() -> impl Fn(rhai::Dynamic) -> ScriptFnResult<FumWidget> {
     }
 }
 
-/// Label() widget function with vertical opt.
+/// LabelVertical() widget function with vertical opt.
 pub fn label_vertical() -> impl Fn(rhai::Dynamic) -> ScriptFnResult<FumWidget> {
     move |text: rhai::Dynamic| -> ScriptFnResult<FumWidget> {
         let mut opts = rhai::Map::new();
