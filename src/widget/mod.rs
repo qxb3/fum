@@ -141,6 +141,10 @@ impl FumWidget {
                         align_items: Some(*align),
                         justify_content,
                         gap: taffy::Size::length(*spacing as f32),
+                        size: taffy::Size {
+                            width: taffy::Dimension::percent(1.0),
+                            height: taffy::Dimension::auto(),
+                        },
                         ..Default::default()
                     },
                     &children_nodes,
