@@ -40,18 +40,10 @@ pub fn container_opts() -> impl Fn(rhai::Map) -> ScriptFnResult<FumWidget> {
         // Where the nodes of container children will be stored.
         let mut container_children = Vec::new();
 
-        // width & height of container.
-        let mut container_width = 0;
-        let mut container_height = 0;
-
         for child in children {
             let child = child
                 .try_cast_result::<FumWidget>()
                 .map_err(|_| "The children of the container needs to be a widget")?;
-
-            // Adds the child size to the container size.
-            container_width += child.get_width();
-            container_height += child.get_height();
 
             container_children.push(child);
         }
@@ -61,8 +53,6 @@ pub fn container_opts() -> impl Fn(rhai::Map) -> ScriptFnResult<FumWidget> {
             direction,
             align,
             spacing: spacing as u16,
-            width: container_width,
-            height: container_height,
         })
     }
 }

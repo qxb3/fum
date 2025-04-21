@@ -10,12 +10,15 @@ use std::{
 
 use config::FumConfig;
 use location::UiLocation;
-use ratatui::layout::Rect;
+use ratatui::{layout::Rect, style::Color};
 use rhai::{Engine, Scope, AST};
 use taffy::TaffyTree;
 
 use crate::{
-    state::State, track::Track, utils::duration::format_duration, widget::FumWidget,
+    state::State,
+    track::Track,
+    utils::duration::format_duration,
+    widget::{FumWidget, SliderDataSource},
     FumResult,
 };
 
@@ -75,6 +78,29 @@ impl<'a> Script<'a> {
         scope.push("ALIGN_CENTER", taffy::AlignItems::Center);
         scope.push("ALIGN_END", taffy::AlignItems::End);
 
+        // Slider data source variables.
+        scope.push("SOURCE_PROGRESS", SliderDataSource::Progress);
+        scope.push("SOURCE_VOLUME", SliderDataSource::Volume);
+
+        // Color variables.
+        scope.push("RESET", Color::Reset);
+        scope.push("BLACK", Color::Black);
+        scope.push("RED", Color::Red);
+        scope.push("GREEN", Color::Green);
+        scope.push("YELLOW", Color::Yellow);
+        scope.push("BLUE", Color::Blue);
+        scope.push("MAGENTA", Color::Magenta);
+        scope.push("CYAN", Color::Cyan);
+        scope.push("GRAY", Color::Gray);
+        scope.push("DARK_GRAY", Color::DarkGray);
+        scope.push("LIGHT_RED", Color::LightRed);
+        scope.push("LIGHT_GREEN", Color::LightGreen);
+        scope.push("LIGHT_YELLOW", Color::LightYellow);
+        scope.push("LIGHT_BLUE", Color::LightBlue);
+        scope.push("LIGHT_MAGENTA", Color::LightMagenta);
+        scope.push("LIGHT_CYAN", Color::LightCyan);
+        scope.push("WHITE", Color::White);
+
         // Push the default track metadata into the scope.
         update_scope_track_meta(&mut scope, &Track::new());
 
@@ -117,7 +143,8 @@ impl<'a> Script<'a> {
             .register_fn("LabelVertical", functions::label_vertical())
             .register_fn("Button", functions::button_opts())
             .register_fn("Button", functions::button())
-            .register_fn("ButtonVertical", functions::button_vertical());
+            .register_fn("ButtonVertical", functions::button_vertical())
+            .register_fn("Slider", functions::slider_opts());
 
         // Register player control functions.
         engine

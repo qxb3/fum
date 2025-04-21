@@ -1,7 +1,27 @@
-use ratatui::layout::Rect;
+use ratatui::{layout::Rect, style::Color};
 use taffy::{NodeId, TaffyTree};
 
 use crate::FumResult;
+
+/// Which source the slider should be using.
+#[derive(Debug, Clone, PartialEq)]
+pub enum SliderDataSource {
+    Progress,
+    Volume,
+}
+
+/// Slider filled & remaining text opts.
+#[derive(Debug, Clone)]
+pub struct SliderTextOpts {
+    /// Section's text.
+    pub text: String,
+
+    /// Section's fg color.
+    pub fg: Color,
+
+    /// Section's bg color.
+    pub bg: Color,
+}
 
 /// Fum Widget.
 #[derive(Debug, Clone)]
@@ -19,12 +39,6 @@ pub enum FumWidget {
 
         /// The spacing between the children.
         spacing: u16,
-
-        /// Container total width.
-        width: u16,
-
-        /// Container total height.
-        height: u16,
     },
 
     /// For displaying the cover art image of a track.
@@ -67,6 +81,18 @@ pub enum FumWidget {
 
         /// Button height.
         height: u16,
+    },
+
+    /// For displaying sliders.
+    Slider {
+        /// The data source this slider will be using.
+        data_source: SliderDataSource,
+
+        /// The filled section of the slider.
+        filled: SliderTextOpts,
+
+        /// The remaining un-filled section of the slider.
+        remaining: SliderTextOpts,
     },
 }
 
@@ -160,6 +186,21 @@ impl FumWidget {
 
                 Ok(button_node)
             }
+
+            FumWidget::Slider { .. } => {
+                let slider_node = taffy.new_leaf(taffy::Style {
+                    size: taffy::Size {
+                        width: taffy::Dimension::percent(1.0),
+                        height: taffy::Dimension::length(1.0),
+                    },
+                    ..Default::default()
+                })?;
+
+                // Attach widget on this node as a context.
+                taffy.set_node_context(slider_node, Some(widget.clone()))?;
+
+                Ok(slider_node)
+            }
         }
     }
 
@@ -236,36 +277,38 @@ impl FumWidget {
 
                 rects.push((button_rect, widget));
             }
+
+            FumWidget::Slider { .. } => {
+                let slider_layout = taffy.layout(node)?;
+
+                // Creates a rect out of slider layout with adjusted location based on parent rect.
+                let slider_rect = Rect::new(
+                    slider_layout.location.x as u16 + parent_rect.x,
+                    slider_layout.location.y as u16 + parent_rect.y,
+                    slider_layout.size.width as u16,
+                    slider_layout.size.height as u16,
+                );
+
+                rects.push((slider_rect, widget));
+            }
         }
 
         Ok(())
     }
 
-    /// Get the width of the widget.
-    pub fn get_width(&self) -> u16 {
-        match self {
-            #[rustfmt::skip]
-            FumWidget::Container { width, .. } => *width,
-            #[rustfmt::skip]
-            FumWidget::CoverImage { width, .. } => *width,
-            #[rustfmt::skip]
-            FumWidget::Label { width, .. } => *width,
-            #[rustfmt::skip]
-            FumWidget::Button { width, .. } => *width,
-        }
-    }
-
-    /// Get the height of the widget.
-    pub fn get_height(&self) -> u16 {
-        match self {
-            #[rustfmt::skip]
-            FumWidget::Container { height, .. } => *height,
-            #[rustfmt::skip]
-            FumWidget::CoverImage { height, .. } => *height,
-            #[rustfmt::skip]
-            FumWidget::Label { height, .. } => *height,
-            #[rustfmt::skip]
-            FumWidget::Button { height, .. } => *height,
-        }
-    }
+    // /// Get the size of the widget.
+    // pub fn get_size(&self) -> taffy::Size<taffy::Dimension> {
+    //     match self {
+    //         #[rustfmt::skip]
+    //         FumWidget::Container { .. } => taffy::Size::auto(),
+    //         #[rustfmt::skip]
+    //         FumWidget::CoverImage { width, height, .. } => taffy::Size { width: taffy::Dimension::length(*width as f32), height: taffy::Dimension::length(*height as f32) },
+    //         #[rustfmt::skip]
+    //         FumWidget::Label { width, height, .. } => taffy::Size { width: taffy::Dimension::length(*width as f32), height: taffy::Dimension::length(*height as f32) },
+    //         #[rustfmt::skip]
+    //         FumWidget::Button { width, height, .. } => taffy::Size { width: taffy::Dimension::length(*width as f32), height: taffy::Dimension::length(*height as f32) },
+    //         #[rustfmt::skip]
+    //         FumWidget::Slider { .. } => taffy::Size::auto(),
+    //     }
+    // }
 }
