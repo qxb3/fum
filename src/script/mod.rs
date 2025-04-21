@@ -15,6 +15,7 @@ use rhai::{Engine, Scope, AST};
 use taffy::TaffyTree;
 
 use crate::{
+    cover::Cover,
     state::State,
     track::Track,
     utils::duration::format_duration,
@@ -51,7 +52,7 @@ pub struct Script<'a> {
 
 impl<'a> Script<'a> {
     /// Creates a new script, loading from file and passing in the state to be used in rhai functions.
-    pub fn from_file<P: Into<PathBuf>>(config_path: P, state: &State) -> FumResult<Self> {
+    pub fn new<P: Into<PathBuf>>(config_path: P, state: &State) -> FumResult<Self> {
         // Rhai engine.
         let mut engine = Engine::new();
 
@@ -103,6 +104,9 @@ impl<'a> Script<'a> {
 
         // Push the default track metadata into the scope.
         update_scope_track_meta(&mut scope, &Track::new());
+
+        // Push the default avg color into the scope.
+        update_cover_avg_color(&mut scope, None);
 
         // Script config.
         let config = Arc::new(Mutex::new(FumConfig::new()));
@@ -191,6 +195,15 @@ impl<'a> Script<'a> {
         Ok(())
     }
 
+    pub fn update_cover_avg_color(&mut self, cover: Option<&Cover>) -> FumResult<()> {
+        update_cover_avg_color(&mut self.scope, cover);
+
+        // Re-execute the script.
+        self.execute()?;
+
+        Ok(())
+    }
+
     /// Calls the function when a button has been clicked.
     pub fn button_clicked(&self, func: &rhai::FnPtr) -> FumResult<()> {
         func.call::<()>(&self.engine, &self.ast, ())
@@ -230,4 +243,13 @@ fn update_scope_track_meta(scope: &mut Scope, track: &Track) {
     scope.set_value("SHUFFLE", shuffle);
     scope.set_value("VOLUME", volume);
     scope.set_value("POSITION", position);
+}
+
+/// A helper function to update the avg color variable from the script.
+pub fn update_cover_avg_color(scope: &mut Scope, cover: Option<&Cover>) {
+    if let Some(cover) = cover {
+        scope.push("COVER_AVG_COLOR", cover.avg_color);
+    } else {
+        scope.push("COVER_AVG_COLOR", Color::Reset);
+    }
 }

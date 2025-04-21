@@ -1,4 +1,5 @@
 mod cli;
+mod cover;
 mod event;
 mod fum;
 mod mode;

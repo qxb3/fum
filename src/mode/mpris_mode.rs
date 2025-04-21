@@ -1,11 +1,12 @@
 use std::{fs, str::FromStr, sync::Arc};
 
 use base64::{prelude::BASE64_STANDARD, Engine};
-use ratatui_image::{picker::Picker, protocol::StatefulProtocol};
+use ratatui_image::picker::Picker;
 use reqwest::Url;
-use tokio::sync::{Mutex, MutexGuard};
+use tokio::sync::MutexGuard;
 
 use crate::{
+    cover::Cover,
     mpris::{Mpris, MprisEvent, MprisPlayer, MprisPlayerEvent},
     player::Player,
     state::{CurrentCoverState, CurrentPlayerState, CurrentTrackState},
@@ -23,6 +24,9 @@ pub enum MprisModeEvent {
 
     /// Triggers when the player position changes. This includes the seeked event.
     PlayerPositionChanged,
+
+    /// Triggers when the cover changes.
+    CoverChanged,
 }
 
 /// MprisMode.
@@ -146,6 +150,7 @@ impl FumMode for MprisMode {
                                     art_url.to_string(),
                                     picker.clone(),
                                     current_cover.clone(),
+                                    mode_tx.clone(),
                                 );
                             }
 
@@ -249,7 +254,8 @@ impl FumMode for MprisMode {
                                                             MprisMode::update_cover(
                                                                 track_art_url.to_string(),
                                                                 picker.clone(),
-                                                                current_cover.clone()
+                                                                current_cover.clone(),
+                                                                mode_tx.clone()
                                                             );
                                                         }
                                                     }
@@ -334,7 +340,8 @@ impl MprisMode {
     fn update_cover(
         art_url: String,
         picker: Arc<Picker>,
-        current_cover: Arc<Mutex<Option<StatefulProtocol>>>,
+        current_cover: CurrentCoverState,
+        mpris_tx: tokio::sync::mpsc::Sender<FumModeEvent>,
     ) {
         tokio::spawn(async move {
             // Handle if art url is file:// scheme.
@@ -348,19 +355,18 @@ impl MprisMode {
                 // Get bytes of cover image.
                 let bytes = fs::read(&path).expect("Failed to get cover art image bytes");
 
-                // Decode cover image.
-                let cover = image::ImageReader::new(std::io::Cursor::new(bytes))
-                    .with_guessed_format()
-                    .expect("Unknown cover art image file type")
-                    .decode()
-                    .expect("Failed to decode cover art image");
-
-                // Creates a image StatefulProtocol.
-                let protocol = picker.new_resize_protocol(cover);
+                // Creates the cover.
+                let cover = Cover::new(bytes, &*picker);
 
                 // Updates the current cover.
                 let mut current_cover = current_cover.lock().await;
-                *current_cover = Some(protocol);
+                *current_cover = Some(cover);
+
+                // Sends the CoverChanged event.
+                mpris_tx
+                    .send(FumModeEvent::MprisEvent(MprisModeEvent::CoverChanged))
+                    .await
+                    .unwrap();
             }
             // Handle if the art url is base64.
             else if art_url.starts_with("data:") {
@@ -375,19 +381,18 @@ impl MprisMode {
                     .decode(image_data)
                     .expect("Failed to get cover art image bytes");
 
-                // Decode cover image.
-                let cover = image::ImageReader::new(std::io::Cursor::new(bytes))
-                    .with_guessed_format()
-                    .expect("Unknown cover art image file type")
-                    .decode()
-                    .expect("Failed to decode cover art image");
-
-                // Creates a image StatefulProtocol.
-                let protocol = picker.new_resize_protocol(cover);
+                // Creates the cover.
+                let cover = Cover::new(bytes, &*picker);
 
                 // Updates the current cover.
                 let mut current_cover = current_cover.lock().await;
-                *current_cover = Some(protocol);
+                *current_cover = Some(cover);
+
+                // Sends the CoverChanged event.
+                mpris_tx
+                    .send(FumModeEvent::MprisEvent(MprisModeEvent::CoverChanged))
+                    .await
+                    .unwrap();
             }
             // Handle normal cover art url.
             else if art_url.starts_with("http://") || art_url.starts_with("https://") {
@@ -407,19 +412,18 @@ impl MprisMode {
                     .await
                     .expect("Failed to get cover art image bytes");
 
-                // Decode cover image.
-                let cover = image::ImageReader::new(std::io::Cursor::new(bytes))
-                    .with_guessed_format()
-                    .expect("Unknown cover art image file type")
-                    .decode()
-                    .expect("Failed to decode cover art image");
-
-                // Creates a image StatefulProtocol.
-                let protocol = picker.new_resize_protocol(cover);
+                // Creates the cover.
+                let cover = Cover::new(bytes.to_vec(), &*picker);
 
                 // Updates the current cover.
                 let mut current_cover = current_cover.lock().await;
-                *current_cover = Some(protocol);
+                *current_cover = Some(cover);
+
+                // Sends the CoverChanged event.
+                mpris_tx
+                    .send(FumModeEvent::MprisEvent(MprisModeEvent::CoverChanged))
+                    .await
+                    .unwrap();
             }
         });
     }

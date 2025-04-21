@@ -1,9 +1,9 @@
 use ratatui::{
     layout::{Constraint, Layout, Rect},
     prelude::CrosstermBackend,
-    style::{Color, Styled, Stylize},
+    style::Stylize,
     text::Text,
-    widgets::{Block, Paragraph, Wrap},
+    widgets::{Paragraph, Wrap},
     Terminal,
 };
 use ratatui_image::StatefulImage;
@@ -30,7 +30,7 @@ pub async fn draw(
                         frame.render_stateful_widget(
                             StatefulImage::default(),
                             *rect,
-                            cover,
+                            &mut cover.stateful_protocol,
                         );
                     }
                 }

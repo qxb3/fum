@@ -49,8 +49,8 @@ impl<'a> Fum<'a> {
         // Initialize ratatui.
         let terminal = ratatui::init();
 
-        // Creates a script from file.
-        let mut script = Script::from_file(&args.config_path, &state)?;
+        // Creates a script.
+        let mut script = Script::new(&args.config_path, &state)?;
         script.execute()?; // Executes the script to populate the config state.
 
         // Acquire lock for config state.
@@ -131,6 +131,12 @@ impl<'a> Fum<'a> {
                         FumModeEvent::MprisEvent(MprisModeEvent::PlayerPositionChanged) => {
                             let current_track = self.state.current_track.lock().await;
                             self.script.update_position(current_track.position.clone())?;
+                        }
+
+                        // Updates the script COVER_AVG_COLOR variable when the cover changed.
+                        FumModeEvent::MprisEvent(MprisModeEvent::CoverChanged) => {
+                            let current_cover = self.state.current_cover.lock().await;
+                            self.script.update_cover_avg_color(current_cover.as_ref())?;
                         }
 
                         _ => {}
