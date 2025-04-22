@@ -45,7 +45,7 @@ pub fn button_opts() -> impl Fn(rhai::Map) -> ScriptFnResult<FumWidget> {
             .cloned()
             .unwrap_or(rhai::Dynamic::from(Color::Reset))
             .try_cast_result::<Color>()
-            .map_err(|_| "Label `fg` needs to be a valid color")?;
+            .map_err(|_| "Button `fg` needs to be a valid color")?;
 
         // Extract bg color from opts, Will default to Color::Reset if it doesnt exists.
         let bg = opts
@@ -53,7 +53,7 @@ pub fn button_opts() -> impl Fn(rhai::Map) -> ScriptFnResult<FumWidget> {
             .cloned()
             .unwrap_or(rhai::Dynamic::from(Color::Reset))
             .try_cast_result::<Color>()
-            .map_err(|_| "Label `bg` needs to be a valid color")?;
+            .map_err(|_| "Button `bg` needs to be a valid color")?;
 
         // Real unicode width of the text label.
         let real_unicode_width = UnicodeWidthStr::width(text.as_str()) as u16;
