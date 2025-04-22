@@ -23,7 +23,7 @@ pub fn label_opts() -> impl Fn(rhai::Map) -> ScriptFnResult<FumWidget> {
             .as_bool()
             .map_err(|_| "Label `vertical` needs to be a boolean")?;
 
-        // Extract max_chars from opts, Will default to None if it doesnt exists.
+        // Extract max_chars from opts, Will default to -1 if it doesnt exists.
         let max_chars = opts
             .get("max_chars")
             .cloned()

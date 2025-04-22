@@ -85,6 +85,9 @@ pub enum FumWidget {
         /// If the button should be vertical.
         vertical: bool,
 
+        /// Max character the button will render till truncated.
+        max_chars: i64,
+
         /// Button fg color.
         fg: Color,
 
