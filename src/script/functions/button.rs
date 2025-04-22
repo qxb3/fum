@@ -110,3 +110,21 @@ pub fn button_vertical(
         button_opts(opts)
     }
 }
+
+/// ButtonVertical() widget function with vertical opt & can pass extra opts.
+pub fn button_vertical_ext_opts(
+) -> impl Fn(rhai::Dynamic, rhai::FnPtr, rhai::Map) -> ScriptFnResult<FumWidget> {
+    move |text: rhai::Dynamic,
+          func: rhai::FnPtr,
+          ext_opts: rhai::Map|
+          -> ScriptFnResult<FumWidget> {
+        let mut opts = rhai::Map::new();
+        opts.insert("text".into(), text);
+        opts.insert("func".into(), rhai::Dynamic::from(func));
+        opts.insert("vertical".into(), rhai::Dynamic::from_bool(true));
+        opts.extend(ext_opts);
+
+        let button_opts = button_opts();
+        button_opts(opts)
+    }
+}

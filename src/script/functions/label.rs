@@ -58,7 +58,8 @@ pub fn label_opts() -> impl Fn(rhai::Map) -> ScriptFnResult<FumWidget> {
         };
 
         // Get the width & height of the label accordingly if the label is vertical or not.
-        let (width, height) = if vertical == false { (unicode_width, 1) } else { (1, unicode_width) };
+        let (width, height) =
+            if vertical == false { (unicode_width, 1) } else { (1, unicode_width) };
 
         Ok(FumWidget::Label {
             text: text.to_string(),
@@ -104,6 +105,20 @@ pub fn label_vertical() -> impl Fn(rhai::Dynamic) -> ScriptFnResult<FumWidget> {
         let mut opts = rhai::Map::new();
         opts.insert("text".into(), text);
         opts.insert("vertical".into(), rhai::Dynamic::from_bool(true));
+
+        let label_opts = label_opts();
+        label_opts(opts)
+    }
+}
+
+/// LabelVertical() widget function with vertical opt & can pass extra opts.
+pub fn label_vertical_ext_opts(
+) -> impl Fn(rhai::Dynamic, rhai::Map) -> ScriptFnResult<FumWidget> {
+    move |text: rhai::Dynamic, ext_opts: rhai::Map| -> ScriptFnResult<FumWidget> {
+        let mut opts = rhai::Map::new();
+        opts.insert("text".into(), text);
+        opts.insert("vertical".into(), rhai::Dynamic::from_bool(true));
+        opts.extend(ext_opts);
 
         let label_opts = label_opts();
         label_opts(opts)
