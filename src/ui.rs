@@ -58,12 +58,22 @@ pub async fn draw(
                 }
 
                 // Render Button Widget.
-                FumWidget::Button { text, fg, bg, .. } => {
+                FumWidget::Button {
+                    text,
+                    max_chars,
+                    fg,
+                    bg,
+                    ..
+                } => {
+                    // Truncate the text if the max_chars isnt a -1.
+                    let text = if *max_chars == -1 {
+                        text.to_string()
+                    } else {
+                        truncate(&text, *max_chars as usize)
+                    };
+
                     frame.render_widget(
-                        Paragraph::new(text.to_string())
-                            .wrap(Wrap::default())
-                            .fg(*fg)
-                            .bg(*bg),
+                        Paragraph::new(text).wrap(Wrap::default()).fg(*fg).bg(*bg),
                         *rect,
                     );
                 }
