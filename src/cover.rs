@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use image::{DynamicImage, GenericImageView, Pixel};
 use ratatui::style::Color;
 use ratatui_image::{picker::Picker, protocol::StatefulProtocol};
@@ -36,26 +34,27 @@ impl Cover {
 
     /// Calculates the average color of a cover dynamic image.
     pub fn calculate_avg_color(cover: &DynamicImage) -> Color {
-        let mut rgb_map: HashMap<(u8, u8, u8), u32> = HashMap::new();
+        // Sum of all the color pixel.
+        let mut sum_r = 0;
+        let mut sum_g = 0;
+        let mut sum_b = 0;
 
         // Loop thru all the pixel to add the the sum.
         for (_, _, color) in cover.pixels() {
-            let [r, g, b] = color.to_rgb().0;
+            let color = color.to_rgb().0;
 
-            if let Some(count) = rgb_map.get_mut(&(r, g, b)) {
-                *count += 1;
-            } else {
-                rgb_map.insert((r, g, b), 1);
-            }
+            sum_r += color[0] as u32;
+            sum_g += color[1] as u32;
+            sum_b += color[2] as u32;
         }
 
-        // Get the highest rgb color from the map.
-        let (avg_r, avg_g, avg_b) = rgb_map
-            .iter()
-            .max_by_key(|(_, &count)| count)
-            .expect("Rgb map should not be empty")
-            .0;
+        // Gets the total pixel.
+        let total_pixel = cover.width() * cover.height();
 
-        Color::Rgb(*avg_r, *avg_g, *avg_b)
+        let avg_r = (sum_r / total_pixel) as u8;
+        let avg_g = (sum_g / total_pixel) as u8;
+        let avg_b = (sum_b / total_pixel) as u8;
+
+        Color::Rgb(avg_r, avg_g, avg_b)
     }
 }
