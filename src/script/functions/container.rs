@@ -29,6 +29,12 @@ pub fn container_opts() -> impl Fn(rhai::Map) -> ScriptFnResult<FumWidget> {
             .as_int()
             .map_err(|_| "Container `spacing` needs to be a valid number")?;
 
+        // Extract the container justify from opts.
+        let justify = opts
+            .get("justify")
+            .cloned()
+            .and_then(|j| j.try_cast::<taffy::JustifyContent>());
+
         // Extract container children from opts.
         let children = opts
             .get("children")
@@ -51,6 +57,7 @@ pub fn container_opts() -> impl Fn(rhai::Map) -> ScriptFnResult<FumWidget> {
             children: container_children,
             direction,
             align,
+            justify,
             spacing: spacing as u16,
         })
     }

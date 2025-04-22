@@ -34,8 +34,11 @@ pub enum FumWidget {
         /// The direction of the children will flow.
         direction: taffy::FlexDirection,
 
-        /// The container alignment.
+        /// The container align items.
         align: taffy::AlignItems,
+
+        /// The container justify content.
+        justify: Option<taffy::JustifyContent>,
 
         /// The spacing between the children.
         spacing: u16,
@@ -122,7 +125,7 @@ impl FumWidget {
     ) -> FumResult<NodeId> {
         match widget {
             #[rustfmt::skip]
-            FumWidget::Container { children, direction, align, spacing, .. } => {
+            FumWidget::Container { children, direction, align, justify, spacing, .. } => {
                 // Where the node children of this container will be stored.
                 let mut children_nodes = Vec::new();
 
@@ -132,11 +135,14 @@ impl FumWidget {
                     children_nodes.push(node);
                 }
 
+                // If justify from opts is set, Use that else:
                 // Center the container items if the container direction is horizontal & the align is center.
-                let justify_content = if *direction == taffy::FlexDirection::Row && *align == taffy::AlignItems::Center {
-                    Some(taffy::JustifyContent::Center)
-                } else {
-                    None
+                let justify_content = match justify {
+                    Some(justify) => Some(*justify),
+                    None => match (direction, align) {
+                        (taffy::FlexDirection::Row, taffy::AlignItems::Center) => Some(taffy::JustifyContent::Center),
+                        _ => None
+                    }
                 };
 
                 // Creates the container parent node.

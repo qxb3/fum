@@ -79,6 +79,14 @@ impl<'a> Script<'a> {
         scope.push("ALIGN_CENTER", taffy::AlignItems::Center);
         scope.push("ALIGN_END", taffy::AlignItems::End);
 
+        // Container justify content variables.
+        scope.push("JUSTIFY_START", taffy::JustifyContent::Start);
+        scope.push("JUSTIFY_CENTER", taffy::JustifyContent::Center);
+        scope.push("JUSTIFY_END", taffy::JustifyContent::End);
+        scope.push("JUSTIFY_BETWEEN", taffy::JustifyContent::SpaceBetween);
+        scope.push("JUSTIFY_EVENLY", taffy::JustifyContent::SpaceEvenly);
+        scope.push("JUSTIFY_AROUND", taffy::JustifyContent::SpaceAround);
+
         // Slider data source variables.
         scope.push("SOURCE_PROGRESS", SliderDataSource::Progress);
         scope.push("SOURCE_VOLUME", SliderDataSource::Volume);
