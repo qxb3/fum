@@ -58,6 +58,9 @@ pub enum FumWidget {
         /// If the label should be vertical.
         vertical: bool,
 
+        /// Max character the label will render till truncated.
+        max_chars: i64,
+
         /// Label fg color.
         fg: Color,
 

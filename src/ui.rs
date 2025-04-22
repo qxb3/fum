@@ -8,7 +8,7 @@ use ratatui::{
 };
 use ratatui_image::StatefulImage;
 
-use crate::{state::State, widget::FumWidget, FumResult};
+use crate::{state::State, utils::text::truncate, widget::FumWidget, FumResult};
 
 pub async fn draw(
     terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
@@ -25,6 +25,7 @@ pub async fn draw(
     terminal.draw(|frame| {
         for (rect, widget) in ui {
             match widget {
+                // Render CoverImage Widget.
                 FumWidget::CoverImage { .. } => {
                     if let Some(cover) = current_cover.as_mut() {
                         frame.render_stateful_widget(
@@ -35,16 +36,28 @@ pub async fn draw(
                     }
                 }
 
-                FumWidget::Label { text, fg, bg, .. } => {
+                // Render Label Widget.
+                FumWidget::Label {
+                    text,
+                    max_chars,
+                    fg,
+                    bg,
+                    ..
+                } => {
+                    // Truncate the text if the max_chars isnt a -1.
+                    let text = if *max_chars == -1 {
+                        text.to_string()
+                    } else {
+                        truncate(&text, *max_chars as usize)
+                    };
+
                     frame.render_widget(
-                        Paragraph::new(text.to_string())
-                            .wrap(Wrap::default())
-                            .fg(*fg)
-                            .bg(*bg),
+                        Paragraph::new(text).wrap(Wrap::default()).fg(*fg).bg(*bg),
                         *rect,
                     );
                 }
 
+                // Render Button Widget.
                 FumWidget::Button { text, fg, bg, .. } => {
                     frame.render_widget(
                         Paragraph::new(text.to_string())
@@ -55,6 +68,7 @@ pub async fn draw(
                     );
                 }
 
+                // Render Slider Widget.
                 FumWidget::Slider {
                     filled, remaining, ..
                 } => {
