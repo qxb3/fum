@@ -26,17 +26,3 @@ pub fn format_duration(duration: &Duration, extend: bool) -> String {
         }
     }
 }
-
-/// Calculate and formats the remaining duration.
-pub fn format_remaining_duration(
-    current: Duration,
-    total: Duration,
-    extend: bool,
-) -> String {
-    if total > current {
-        let remaining = total - current;
-        format!("-{}", format_duration(&remaining, extend))
-    } else {
-        format!("-0:00")
-    }
-}

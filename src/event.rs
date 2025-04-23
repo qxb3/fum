@@ -102,8 +102,8 @@ impl EventHandler {
         });
     }
 
-    /// Receive the next event from the handle thread.
-    pub async fn next(&mut self) -> FumResult<FumEvent> {
+    /// Receive the terminal events..
+    pub async fn recv(&mut self) -> FumResult<FumEvent> {
         self.receiver
             .recv()
             .await

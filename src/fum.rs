@@ -6,7 +6,7 @@ use crate::{
     cli::CliArgs,
     event::{EventHandler, FumEvent},
     mode::{FumMode, FumModeEvent, FumModes, MprisMode, MprisModeEvent, PlayerMode},
-    script::Script,
+    script::{Script, ScriptEvent},
     state::State,
     ui,
     widget::FumWidget,
@@ -104,7 +104,7 @@ impl<'a> Fum<'a> {
         while !self.state.exit {
             tokio::select! {
                 // Read crossterm terminal events.
-                term_event = self.event_handler.next() => {
+                term_event = self.event_handler.recv() => {
                     match term_event? {
                         FumEvent::Tick => self.tick().await?,
                         FumEvent::KeyPress(key) => self.keypress(key).await?,
@@ -118,6 +118,17 @@ impl<'a> Fum<'a> {
                     }
                 }
 
+                // Read script events.
+                script_event = self.script.recv() => {
+                    match script_event? {
+                        ScriptEvent::SetVar => {
+                            // Re-executes the script for the ui to reflect the change
+                            // When a persistent variable has been updated.
+                            self.script.execute()?;
+                        }
+                    }
+                }
+
                 // Read Mpris mode events.
                 mpris_mode_event = mode.recv() => {
                     match mpris_mode_event? {
@@ -127,10 +138,11 @@ impl<'a> Fum<'a> {
                             self.script.update_track(&*current_track)?;
                         }
 
-                        // Updates the script track POSITION variable when the track position changes.
+                        // Updates the script track POSITION & REMAINING_LENGTH variable when the track position changes.
                         FumModeEvent::MprisEvent(MprisModeEvent::PlayerPositionChanged) => {
                             let current_track = self.state.current_track.lock().await;
-                            self.script.update_position(current_track.position.clone())?;
+                            self.script.update_position(current_track.position)?;
+                            self.script.update_remaining_length(current_track.length, current_track.position)?;
                         }
 
                         // Updates the script COVER_AVG_COLOR variable when the cover changed.

@@ -3,6 +3,7 @@ mod functions;
 mod location;
 
 use std::{
+    collections::HashMap,
     path::PathBuf,
     sync::{Arc, Mutex},
     time::Duration,
@@ -31,6 +32,15 @@ pub type ScriptTaffy = Arc<Mutex<TaffyTree<FumWidget>>>;
 /// Type alias for the script ui state.
 pub type ScriptUi = Arc<Mutex<Vec<(Rect, FumWidget)>>>;
 
+/// Type alias for script persisten variables.
+pub type ScriptVars = Arc<Mutex<HashMap<String, rhai::Dynamic>>>;
+
+/// Script event.
+pub enum ScriptEvent {
+    /// Triggers when the script uses SET_VAR() function to update a persistent variable.
+    SetVar, // The only event we only care about for now.
+}
+
 /// Fum script.
 pub struct Script<'a> {
     /// Rhai engine.
@@ -47,6 +57,16 @@ pub struct Script<'a> {
 
     /// Script ui.
     pub ui: ScriptUi,
+
+    /// Script persistent variables.
+    #[allow(dead_code)]
+    pub vars: ScriptVars,
+
+    /// Script event sender.
+    sender: tokio::sync::mpsc::UnboundedSender<ScriptEvent>,
+
+    /// Script event receiver.
+    receiver: tokio::sync::mpsc::UnboundedReceiver<ScriptEvent>,
 }
 
 impl<'a> Script<'a> {
@@ -124,6 +144,12 @@ impl<'a> Script<'a> {
         // Script ui.
         let ui = Arc::new(Mutex::new(Vec::new()));
 
+        // Script persistent variables.
+        let vars = Arc::new(Mutex::new(HashMap::new()));
+
+        // Sender & Receiver for script event.
+        let (sender, receiver) = tokio::sync::mpsc::unbounded_channel();
+
         // Register FumWidget type.
         engine.register_type_with_name::<FumWidget>("Widget");
 
@@ -163,14 +189,20 @@ impl<'a> Script<'a> {
 
         // Register player control functions.
         engine
-            .register_fn("PLAY", functions::play(state.current_player.clone()))
+            .register_fn("PLAY", functions::play(Arc::clone(&state.current_player)))
             .register_fn(
                 "PLAY_PAUSE",
-                functions::play_pause(state.current_player.clone()),
+                functions::play_pause(Arc::clone(&state.current_player)),
             )
-            .register_fn("PAUSE", functions::pause(state.current_player.clone()))
-            .register_fn("PREV", functions::prev(state.current_player.clone()))
-            .register_fn("NEXT", functions::next(state.current_player.clone()));
+            .register_fn("PAUSE", functions::pause(Arc::clone(&state.current_player)))
+            .register_fn("PREV", functions::prev(Arc::clone(&state.current_player)))
+            .register_fn("NEXT", functions::next(Arc::clone(&state.current_player)));
+
+        // Register vars function.
+        engine
+            .register_fn("DEF_VAR", functions::define_var(Arc::clone(&vars)))
+            .register_fn("SET_VAR", functions::set_var(Arc::clone(&vars), sender.clone()))
+            .register_fn("GET_VAR", functions::get_var(Arc::clone(&vars)));
 
         // Compile the script into ast.
         let ast = engine
@@ -183,6 +215,9 @@ impl<'a> Script<'a> {
             ast,
             config,
             ui,
+            vars,
+            sender,
+            receiver,
         })
     }
 
@@ -198,10 +233,23 @@ impl<'a> Script<'a> {
 
     /// Updates only the track POSITION variable from the script.
     pub fn update_position(&mut self, position: Duration) -> FumResult<()> {
+        // Updates the POSITION.
         self.scope.set_value("POSITION", position);
 
         // Re-execute the script.
         self.execute()?;
+
+        Ok(())
+    }
+
+    /// Updates only the track REMAINING_LENGTH variable from the script.
+    pub fn update_remaining_length(
+        &mut self,
+        length: Duration,
+        position: Duration,
+    ) -> FumResult<()> {
+        let remaining_length = get_remaining_length(length, position);
+        self.scope.set_value("REMAINING_LENGTH", remaining_length);
 
         Ok(())
     }
@@ -231,6 +279,17 @@ impl<'a> Script<'a> {
 
         Ok(())
     }
+
+    /// Receive the script events..
+    pub async fn recv(&mut self) -> FumResult<ScriptEvent> {
+        self.receiver
+            .recv()
+            .await
+            .ok_or(Box::new(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                "Failed to receive an event from script",
+            )))
+    }
 }
 
 /// A helper function to update the track variables from the script.
@@ -244,6 +303,7 @@ fn update_scope_track_meta(scope: &mut Scope, track: &Track) {
     let shuffle = track.shuffle.clone();
     let volume = track.volume.clone();
     let position = track.position.clone();
+    let remaining_length = get_remaining_length(length, position);
 
     scope.set_value("TITLE", title);
     scope.set_value("ALBUM", album);
@@ -254,6 +314,7 @@ fn update_scope_track_meta(scope: &mut Scope, track: &Track) {
     scope.set_value("SHUFFLE", shuffle);
     scope.set_value("VOLUME", volume);
     scope.set_value("POSITION", position);
+    scope.set_value("REMAINING_LENGTH", remaining_length);
 }
 
 /// A helper function to update the avg color variable from the script.
@@ -262,5 +323,15 @@ pub fn update_cover_avg_color(scope: &mut Scope, cover: Option<&Cover>) {
         scope.push("COVER_AVG_COLOR", cover.avg_color);
     } else {
         scope.push("COVER_AVG_COLOR", Color::Reset);
+    }
+}
+
+// Gets the remaining length by subtracting length - position.
+// If length isnt greather than position, Default to 0.
+pub fn get_remaining_length(length: Duration, position: Duration) -> Duration {
+    if length > position {
+        length - position
+    } else {
+        Duration::from_secs(0)
     }
 }
