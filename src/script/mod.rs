@@ -156,10 +156,10 @@ impl<'a> Script<'a> {
         // Register std Duration along with some of it functions & custom one.
         engine
             .register_type_with_name::<Duration>("Duration")
-            .register_fn("as_millis", |duration: &mut Duration| duration.as_millis())
-            .register_fn("as_nanos", |duration: &mut Duration| duration.as_nanos())
-            .register_fn("as_secs", |duration: &mut Duration| duration.as_secs())
-            .register_fn("is_zero", |duration: &mut Duration| duration.is_zero())
+            .register_fn("as_millis", functions::duration_as_millis())
+            .register_fn("as_nanos", functions::duration_as_nanos())
+            .register_fn("as_secs", functions::duration_as_secs())
+            .register_fn("is_zero", functions::duration_is_zero())
             .register_fn("fmt", functions::duration_fmt())
             .register_fn("fmt", functions::duration_fmt_ext());
 

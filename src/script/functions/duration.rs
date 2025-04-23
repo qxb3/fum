@@ -2,6 +2,26 @@ use std::time::Duration;
 
 use crate::utils::duration::format_duration;
 
+/// .as_millis() type function for Duration.
+pub fn duration_as_millis() -> impl Fn(&mut Duration) -> rhai::INT {
+    move |duration: &mut Duration| -> rhai::INT { duration.as_millis() as i64 }
+}
+
+/// .as_nanos() type function for Duration.
+pub fn duration_as_nanos() -> impl Fn(&mut Duration) -> rhai::INT {
+    move |duration: &mut Duration| -> rhai::INT { duration.as_nanos() as i64 }
+}
+
+/// .as_secs() type function for Duration.
+pub fn duration_as_secs() -> impl Fn(&mut Duration) -> rhai::INT {
+    move |duration: &mut Duration| -> rhai::INT { duration.as_secs() as i64 }
+}
+
+/// .is_zero() type function for Duration.
+pub fn duration_is_zero() -> impl Fn(&mut Duration) -> bool {
+    move |duration: &mut Duration| -> bool { duration.is_zero() }
+}
+
 /// .fmt() type function for Duration.
 /// Formats the Duration into human readable string.
 pub fn duration_fmt() -> impl Fn(&mut Duration) -> String {
