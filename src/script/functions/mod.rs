@@ -11,6 +11,7 @@ mod label;
 mod player_controls;
 mod slider;
 mod ui;
+mod duration;
 
 pub use button::*;
 pub use config::*;
@@ -20,3 +21,4 @@ pub use label::*;
 pub use player_controls::*;
 pub use slider::*;
 pub use ui::*;
+pub use duration::*;

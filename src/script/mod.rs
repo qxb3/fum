@@ -18,7 +18,6 @@ use crate::{
     cover::Cover,
     state::State,
     track::Track,
-    utils::duration::format_duration,
     widget::{FumWidget, SliderDataSource},
     FumResult,
 };
@@ -135,13 +134,13 @@ impl<'a> Script<'a> {
             .register_fn("as_nanos", |duration: &mut Duration| duration.as_nanos())
             .register_fn("as_secs", |duration: &mut Duration| duration.as_secs())
             .register_fn("is_zero", |duration: &mut Duration| duration.is_zero())
-            .register_fn("fmt", |d: &mut Duration| format_duration(d, false))
-            .register_fn("fmt_ext", |d: &mut Duration| format_duration(d, true));
+            .register_fn("fmt", functions::duration_fmt())
+            .register_fn("fmt", functions::duration_fmt_ext());
 
         // Register CONFIG, UI & Widget functions.
         engine
-            .register_fn("CONFIG", functions::config(config.clone()))
-            .register_fn("UI", functions::ui(taffy.clone(), ui.clone()))
+            .register_fn("CONFIG", functions::config(Arc::clone(&config)))
+            .register_fn("UI", functions::ui(Arc::clone(&taffy), Arc::clone(&ui)))
             .register_fn("Container", functions::container_opts())
             .register_fn("Container", functions::container())
             .register_fn("Container", functions::container_ext_opts())
