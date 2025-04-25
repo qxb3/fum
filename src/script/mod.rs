@@ -42,6 +42,7 @@ pub enum ScriptEvent {
 }
 
 /// Fum script.
+#[allow(dead_code)]
 pub struct Script<'a> {
     /// Rhai engine.
     pub engine: Engine,
@@ -59,7 +60,6 @@ pub struct Script<'a> {
     pub ui: ScriptUi,
 
     /// Script persistent variables.
-    #[allow(dead_code)]
     pub vars: ScriptVars,
 
     /// Script event sender.
@@ -254,19 +254,12 @@ impl<'a> Script<'a> {
         Ok(())
     }
 
+    /// Updates only the COVER_AVG_COLOR variable from script.
     pub fn update_cover_avg_color(&mut self, cover: Option<&Cover>) -> FumResult<()> {
         update_cover_avg_color(&mut self.scope, cover);
 
         // Re-execute the script.
         self.execute()?;
-
-        Ok(())
-    }
-
-    /// Calls the function when a button has been clicked.
-    pub fn button_clicked(&self, func: &rhai::FnPtr) -> FumResult<()> {
-        func.call::<()>(&self.engine, &self.ast, ())
-            .map_err(|err| format!("Failed to call button function: {err}"))?;
 
         Ok(())
     }

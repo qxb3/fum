@@ -1,3 +1,5 @@
+// Text / String Utilities.
+
 /// Truncate a string.
 pub fn truncate(str: &str, size: usize) -> String {
     if str.chars().count() <= size {

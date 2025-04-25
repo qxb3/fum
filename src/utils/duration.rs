@@ -1,3 +1,5 @@
+// Duration type Utilities.
+
 use std::time::Duration;
 
 /// Formats duration into a readable string format.

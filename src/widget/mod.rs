@@ -4,7 +4,7 @@ use taffy::{NodeId, TaffyTree};
 use crate::FumResult;
 
 /// Which source the slider should be using.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum SliderDataSource {
     Progress,
     Volume,
