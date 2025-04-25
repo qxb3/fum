@@ -20,6 +20,9 @@ pub enum FumEvent {
     /// Mouse drag event.
     MouseDrag(crossterm::event::MouseEvent, crossterm::event::MouseButton),
 
+    /// Mouse up event.
+    MouseUp(crossterm::event::MouseButton),
+
     /// Resize event.
     Resize(u16, u16),
 }
@@ -87,8 +90,14 @@ impl EventHandler {
                                         sender.send(FumEvent::MouseClick(mouse, button)).unwrap();
                                     },
 
+                                    // Send mouse drag event.
                                     crossterm::event::MouseEventKind::Drag(button) => {
                                         sender.send(FumEvent::MouseDrag(mouse, button)).unwrap();
+                                    },
+
+                                    // Send mouse up event.
+                                    crossterm::event::MouseEventKind::Up(button) => {
+                                        sender.send(FumEvent::MouseUp(button)).unwrap();
                                     },
 
                                     _ => {}

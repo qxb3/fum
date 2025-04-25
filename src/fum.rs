@@ -111,6 +111,7 @@ impl<'a> Fum<'a> {
                         FumEvent::KeyPress(key) => self.keypress(key).await?,
                         FumEvent::MouseClick(mou, btn) => self.mouse_click(mou, btn).await?,
                         FumEvent::MouseDrag(mou, btn) => self.mouse_drag(mou, btn).await?,
+                        FumEvent::MouseUp(btn) => self.mouse_up(btn).await?,
                         FumEvent::Resize(_, _) => {
                             // Re-execute the script when the terminal resized so the ui positioning updates.
                             self.script.execute()?;
@@ -211,6 +212,19 @@ impl<'a> Fum<'a> {
         if button == crossterm::event::MouseButton::Left {
             // Slider drag interaction.
             self.slider_drag_interaction(mouse).await?;
+        }
+
+        Ok(())
+    }
+
+    /// Handle mouse up event.
+    async fn mouse_up(&mut self, button: crossterm::event::MouseButton) -> FumResult<()> {
+        // Only handle the mouse left drag.
+        if button == crossterm::event::MouseButton::Left {
+            // Reset drag states on mouse up event.
+            self.state.drag.is_dragging = false;
+            self.state.drag.start_drag = None;
+            self.state.drag.current_drag = None;
         }
 
         Ok(())
