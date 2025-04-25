@@ -8,7 +8,12 @@ use ratatui::{
 };
 use ratatui_image::StatefulImage;
 
-use crate::{state::State, utils::text::truncate, widget::FumWidget, FumResult};
+use crate::{
+    state::State,
+    utils::text::truncate,
+    widget::{FumWidget, SliderDataSource},
+    FumResult,
+};
 
 pub async fn draw(
     terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
@@ -80,48 +85,94 @@ pub async fn draw(
 
                 // Render Slider Widget.
                 FumWidget::Slider {
-                    filled, remaining, ..
+                    data_source,
+                    filled,
+                    remaining,
                 } => {
-                    // Calculates the ratio for filled and remaining.
-                    let filled_remaining_ratio = if current_track.position.as_secs() > 0 {
-                        current_track.position.as_secs() as f64
-                            / current_track.length.as_secs() as f64
-                    } else {
-                        0.0
-                    };
+                    match data_source {
+                        // Render progress slider.
+                        SliderDataSource::Progress => {
+                            let position = current_track.position.as_secs() as f64; // Current Track current position.
+                            let length = current_track.length.as_secs() as f64; // Current Track length.
 
-                    // Calculates the width for both filled & remaining space.
-                    let filled_width =
-                        (filled_remaining_ratio * rect.width as f64).round();
-                    let remaining_width = rect.width.saturating_sub(filled_width as u16);
+                            // Calculates the ratio for filled and remaining.
+                            let ratio = if position > 0.0 {
+                                position / length as f64
+                            } else {
+                                0.0
+                            };
 
-                    // Creates a layout rects for filled & remaining area.
-                    let [filled_area, remaining_area] = Layout::horizontal([
-                        Constraint::Length(filled_width as u16),
-                        Constraint::Length(remaining_width as u16),
-                    ])
-                    .areas(*rect);
+                            // Calculates the width for both filled & remaining space.
+                            let filled_width = (ratio * rect.width as f64).round();
+                            let remaining_width =
+                                rect.width.saturating_sub(filled_width as u16);
 
-                    // Gets the final string of filled & remaining to be rendered.
-                    let filled_result = filled.text.repeat(filled_width as usize);
-                    let remaining_result =
-                        remaining.text.repeat(remaining_width as usize);
+                            // Creates a layout rects for filled & remaining area.
+                            let [filled_area, remaining_area] = Layout::horizontal([
+                                Constraint::Length(filled_width as u16),
+                                Constraint::Length(remaining_width as u16),
+                            ])
+                            .areas(*rect);
 
-                    // Render filled.
-                    frame.render_widget(
-                        Text::from(filled_result.as_str())
-                            .fg(filled.fg)
-                            .bg(filled.bg),
-                        filled_area,
-                    );
+                            // Gets the final string of filled & remaining to be rendered.
+                            let filled_result = filled.text.repeat(filled_width as usize);
+                            let remaining_result =
+                                remaining.text.repeat(remaining_width as usize);
 
-                    // Render remaining.
-                    frame.render_widget(
-                        Text::from(remaining_result.as_str())
-                            .fg(remaining.fg)
-                            .bg(remaining.bg),
-                        remaining_area,
-                    );
+                            // Render filled.
+                            frame.render_widget(
+                                Text::from(filled_result.as_str())
+                                    .fg(filled.fg)
+                                    .bg(filled.bg),
+                                filled_area,
+                            );
+
+                            // Render remaining.
+                            frame.render_widget(
+                                Text::from(remaining_result.as_str())
+                                    .fg(remaining.fg)
+                                    .bg(remaining.bg),
+                                remaining_area,
+                            );
+                        }
+
+                        // Render volume slider.
+                        SliderDataSource::Volume => {
+                            // Calculates the width for both filled & remaining space.
+                            let filled_width =
+                                (current_track.volume * rect.width as f64).round();
+                            let remaining_width =
+                                rect.width.saturating_sub(filled_width as u16);
+
+                            // Creates a layout rects for filled & remaining area.
+                            let [filled_area, remaining_area] = Layout::horizontal([
+                                Constraint::Length(filled_width as u16),
+                                Constraint::Length(remaining_width as u16),
+                            ])
+                            .areas(*rect);
+
+                            // Gets the final string of filled & remaining to be rendered.
+                            let filled_result = filled.text.repeat(filled_width as usize);
+                            let remaining_result =
+                                remaining.text.repeat(remaining_width as usize);
+
+                            // Render filled.
+                            frame.render_widget(
+                                Text::from(filled_result.as_str())
+                                    .fg(filled.fg)
+                                    .bg(filled.bg),
+                                filled_area,
+                            );
+
+                            // Render remaining.
+                            frame.render_widget(
+                                Text::from(remaining_result.as_str())
+                                    .fg(remaining.fg)
+                                    .bg(remaining.bg),
+                                remaining_area,
+                            );
+                        }
+                    }
                 }
 
                 _ => unreachable!(),

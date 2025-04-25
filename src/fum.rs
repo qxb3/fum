@@ -6,7 +6,6 @@ use crate::{
     cli::CliArgs,
     event::{EventHandler, FumEvent},
     mode::{FumMode, FumModeEvent, FumModes, MprisMode, MprisModeEvent, PlayerMode},
-    player::Player,
     script::{Script, ScriptEvent},
     state::State,
     ui,
@@ -278,17 +277,19 @@ impl<'a> Fum<'a> {
                         get_interacted_slider(Arc::clone(&self.script.ui), &start_drag)?
                     {
                         // Map the slider's slide into 0 - 1. 0 means the very start, 1 means the very end of the slider.
-                        let value = ((current_drag.x as f64 - slider_rect.x as f64)
+                        let slider_value = ((current_drag.x as f64
+                            - slider_rect.x as f64)
                             / slider_rect.width as f64)
                             .clamp(0.0, 1.0);
 
                         match slider_source {
+                            // Handle progress slider interaction.
                             SliderDataSource::Progress => {
                                 // Ig its fine to just use .lock here.
                                 let current_track = self.state.current_track.lock().await;
 
                                 let length = current_track.length.as_secs(); // Total Length of track in secs.
-                                let position = value * length as f64; // Mul the value above to get the real duration in secs.
+                                let position = slider_value * length as f64; // Mul the value above to get the real duration in secs.
 
                                 // This is just to reset the drag state's so when you slide the slider
                                 // to the end its not gonna skip track a thousand times (you have to drag slide again).
@@ -319,7 +320,21 @@ impl<'a> Fum<'a> {
                                 }
                             }
 
-                            SliderDataSource::Volume => {}
+                            // Handle volume slider interaction.
+                            SliderDataSource::Volume => {
+                                // try_lock here to not block.
+                                if let Ok(mut current_player) =
+                                    self.state.current_player.try_lock()
+                                {
+                                    if let Some(player) = current_player.as_mut() {
+                                        // Set the volume.
+                                        player.set_volume(slider_value).await?;
+
+                                        // Re-exceute the script to get update more fastly ig.
+                                        self.script.execute()?;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
