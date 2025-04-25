@@ -219,7 +219,7 @@ impl<'a> Fum<'a> {
 
     /// Handle mouse up event.
     async fn mouse_up(&mut self, button: crossterm::event::MouseButton) -> FumResult<()> {
-        // Only handle the mouse left drag.
+        // Only handle the mouse left up.
         if button == crossterm::event::MouseButton::Left {
             // Reset drag states on mouse up event.
             self.state.drag.is_dragging = false;
