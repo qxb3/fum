@@ -199,7 +199,8 @@ impl<'a> Script<'a> {
             .register_fn("PLAY_PAUSE", functions::play_pause(Arc::clone(&state)))
             .register_fn("PAUSE", functions::pause(Arc::clone(&state)))
             .register_fn("PREV", functions::prev(Arc::clone(&state)))
-            .register_fn("NEXT", functions::next(Arc::clone(&state)));
+            .register_fn("NEXT", functions::next(Arc::clone(&state)))
+            .register_fn("STOP", functions::stop(Arc::clone(&state)));
 
         // Register vars function.
         engine

@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use ratatui::layout::Rect;
-use taffy::prelude::TaffyAuto;
 
 use crate::{
     script::{location::UiLocation, ScriptTaffy, ScriptUi},
