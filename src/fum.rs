@@ -95,12 +95,7 @@ impl<'a> Fum<'a> {
         // Start the mode.
         mode.start().await?;
 
-        let should_exit = {
-            let state = self.state.lock().await;
-            state.should_exit()
-        };
-
-        while !should_exit {
+        while !self.get_should_exit().await {
             tokio::select! {
                 // Read crossterm terminal events.
                 term_event = self.event_handler.recv() => {
@@ -351,6 +346,12 @@ impl<'a> Fum<'a> {
         }
 
         Ok(())
+    }
+
+    /// Acquire lock for state and checks if we should exit.
+    async fn get_should_exit(&self) -> bool {
+        let state = self.state.lock().await;
+        state.should_exit()
     }
 
     /// Restore terminal state.
