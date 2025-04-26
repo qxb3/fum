@@ -105,7 +105,6 @@ pub fn button_ext_opts(
         let mut opts = rhai::Map::new();
         opts.insert("text".into(), text);
         opts.insert("func".into(), rhai::Dynamic::from(func));
-        opts.insert("vertical".into(), rhai::Dynamic::from_bool(true));
         opts.extend(ext_opts);
 
         let button_opts = button_opts();
