@@ -30,10 +30,14 @@ pub fn container_opts() -> impl Fn(rhai::Map) -> ScriptFnResult<FumWidget> {
             .map_err(|_| "Container `spacing` needs to be a valid number")?;
 
         // Extract the container justify from opts.
-        let justify = opts
-            .get("justify")
-            .cloned()
-            .and_then(|j| j.try_cast::<taffy::JustifyContent>());
+        let justify = match opts.get("justify").cloned() {
+            Some(justify) => {
+                Some(justify.try_cast_result::<taffy::JustifyContent>().map_err(
+                    |_| "Container `justify` needs to be a valid justify value",
+                )?)
+            }
+            None => None,
+        };
 
         // Extract container children from opts.
         let children = opts

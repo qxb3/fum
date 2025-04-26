@@ -32,16 +32,24 @@ pub fn ui_opts(
             .map_err(|_| "UI `layout` needs to be a array of widgets")?;
 
         // Extract min_width from opts.
-        let min_width = opts
-            .get("min_width")
-            .cloned()
-            .and_then(|s| s.try_cast::<rhai::INT>());
+        let min_width = match opts.get("min_width").cloned() {
+            Some(min_width) => Some(
+                min_width
+                    .try_cast_result::<rhai::INT>()
+                    .map_err(|_| "UI `min_width` needs to be a valid number")?,
+            ),
+            None => None,
+        };
 
         // Extract min_height from opts.
-        let min_height = opts
-            .get("min_height")
-            .cloned()
-            .and_then(|s| s.try_cast::<rhai::INT>());
+        let min_height = match opts.get("min_height").cloned() {
+            Some(min_height) => Some(
+                min_height
+                    .try_cast_result::<rhai::INT>()
+                    .map_err(|_| "UI `min_height` needs to be a valid number")?,
+            ),
+            None => None,
+        };
 
         // Acquire lock for taffy.
         let mut taffy = taffy
