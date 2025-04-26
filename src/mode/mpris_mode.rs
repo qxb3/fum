@@ -105,15 +105,11 @@ impl FumMode for MprisMode {
 
                         let shared_state = Arc::clone(&state);
 
-                        // We update the current_player
                         {
+                            // We update the current_player
                             let mut state = shared_state.lock().await;
                             state.set_player(Box::new(player));
-                        }
 
-                        // Update the track metadata as soon as the player attached.
-                        {
-                            let mut state = shared_state.lock().await;
                             let current_player = downcast_player(state.get_player());
 
                             // Creates a track metadata of player.
@@ -125,7 +121,6 @@ impl FumMode for MprisMode {
                                 ));
 
                             // Update current cover.
-                            let current_cover = state.get_cover_mut();
                             if let Some(art_url) = &track.art_url {
                                 MprisMode::update_cover(
                                     art_url.to_string(),
@@ -135,7 +130,7 @@ impl FumMode for MprisMode {
                                 );
                             }
 
-                            // Update the track metadata.
+                            // Update the track metadata as soon as the player attached.
                             state.set_track(track);
 
                             // Sends out both the PlayerTrackMetaChanged & PlayerPositionChanged event.

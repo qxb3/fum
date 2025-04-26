@@ -1,6 +1,8 @@
 #![allow(dead_code)]
 
-use std::{collections::HashMap, ops::Deref, str::FromStr, sync::Arc, time::Duration};
+use std::{
+    any::Any, collections::HashMap, ops::Deref, str::FromStr, sync::Arc, time::Duration,
+};
 
 use futures::StreamExt;
 use tokio::sync::Mutex;
@@ -458,10 +460,11 @@ impl Player for MprisPlayer {
         Ok(Duration::from_micros(position as u64))
     }
 
-    fn as_any(&self) -> &dyn std::any::Any {
+    fn as_any(&self) -> &dyn Any {
         self
     }
-    fn into_any(self: Box<Self>) -> Box<dyn std::any::Any> {
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
         self
     }
 }

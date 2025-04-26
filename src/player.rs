@@ -7,7 +7,7 @@ use crate::{
 
 /// Trait that Player modes should implement.
 #[async_trait::async_trait]
-pub trait Player: std::any::Any + Send + Sync {
+pub trait Player: Any + Send + Sync {
     async fn play(&mut self) -> FumResult<()>;
     async fn play_pause(&mut self) -> FumResult<()>;
     async fn pause(&mut self) -> FumResult<()>;
@@ -33,6 +33,16 @@ pub trait Player: std::any::Any + Send + Sync {
 
     async fn position(&self) -> FumResult<Duration>;
 
+    // WORKAROUND: #[async_trait] can interfere with standard downcasting via Any.
+    /// Returns a reference to the `Any` trait object.
+    ///
+    /// This method serves as a workaround when using the `#[async_trait]` macro,
+    /// which can prevent direct coercion from `&dyn Player` to `&dyn Any`.
+    /// Calling this method explicitly provides the `&dyn Any` reference needed
+    /// to use the standard downcasting methods like `Any::downcast_ref`.
+    ///
+    /// You typically call this *before* attempting to downcast:
+    /// `player_ref.as_any().downcast_ref::<FooPlayer>()`.
     fn as_any(&self) -> &dyn Any;
-    fn into_any(self: Box<Self>) -> Box<dyn Any>;
+    fn as_any_mut(&mut self) -> &mut dyn Any;
 }
