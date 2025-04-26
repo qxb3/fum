@@ -155,7 +155,7 @@ impl FumWidget {
                         gap: taffy::Size::length(*spacing as f32),
                         size: taffy::Size {
                             width: taffy::Dimension::percent(1.0),
-                            height: taffy::Dimension::auto(),
+                            height: taffy::Dimension::percent(1.0),
                         },
                         ..Default::default()
                     },
