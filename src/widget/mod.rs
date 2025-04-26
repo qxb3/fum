@@ -169,7 +169,7 @@ impl FumWidget {
             }
 
             FumWidget::CoverImage { width, height } => {
-                // Absolute size for cover image.
+                // Absolute size for cover image widget.
                 let size = taffy::Size {
                     width: taffy::Dimension::length(*width as f32),
                     height: taffy::Dimension::length(*height as f32),
@@ -221,11 +221,16 @@ impl FumWidget {
             }
 
             FumWidget::Slider { .. } => {
+                // Absolute size of slider widget.
+                let size = taffy::Size {
+                    width: taffy::Dimension::percent(1.0),
+                    height: taffy::Dimension::length(1.0)
+                };
+
                 let slider_node = taffy.new_leaf(taffy::Style {
-                    size: taffy::Size {
-                        width: taffy::Dimension::percent(1.0),
-                        height: taffy::Dimension::length(1.0),
-                    },
+                    size,
+                    min_size: size,
+                    max_size: size,
                     ..Default::default()
                 })?;
 
