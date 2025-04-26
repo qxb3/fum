@@ -169,12 +169,17 @@ impl FumWidget {
             }
 
             FumWidget::CoverImage { width, height } => {
+                // Absolute size for cover image.
+                let size = taffy::Size {
+                    width: taffy::Dimension::length(*width as f32),
+                    height: taffy::Dimension::length(*height as f32),
+                };
+
                 // Creates the cover image node.
                 let cover_img_node = taffy.new_leaf(taffy::Style {
-                    size: taffy::Size {
-                        width: taffy::Dimension::length(*width as f32),
-                        height: taffy::Dimension::length(*height as f32),
-                    },
+                    size,
+                    min_size: size,
+                    max_size: size,
                     ..Default::default()
                 })?;
 
