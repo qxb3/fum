@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use ratatui::layout::Rect;
 use taffy::prelude::TaffyAuto;
 
@@ -8,12 +10,40 @@ use crate::{
 
 use super::ScriptFnResult;
 
-/// UI() function to set or update the ui.
-pub fn ui(
+/// UI() function to set or update the ui with opts.
+pub fn ui_opts(
     taffy: ScriptTaffy,
-    ui_state: ScriptUi,
-) -> impl Fn(UiLocation, rhai::Array) -> ScriptFnResult<()> {
-    move |location: UiLocation, widgets: rhai::Array| -> ScriptFnResult<()> {
+    ui: ScriptUi,
+) -> impl Fn(rhai::Map) -> ScriptFnResult<()> {
+    move |opts: rhai::Map| -> ScriptFnResult<()> {
+        // Extract location from opts.
+        let location = opts
+            .get("location")
+            .cloned()
+            .unwrap_or(rhai::Dynamic::from(UiLocation::Center))
+            .try_cast_result::<UiLocation>()
+            .map_err(|_| "UI `location` needs to be a valid location")?;
+
+        // Extract layout from opts.
+        let layout = opts
+            .get("layout")
+            .cloned()
+            .ok_or("UI needs to have a `layout`")?
+            .try_cast_result::<rhai::Array>()
+            .map_err(|_| "UI `layout` needs to be a array of widgets")?;
+
+        // Extract min_width from opts.
+        let min_width = opts
+            .get("min_width")
+            .cloned()
+            .and_then(|s| s.try_cast::<rhai::INT>());
+
+        // Extract min_height from opts.
+        let min_height = opts
+            .get("min_height")
+            .cloned()
+            .and_then(|s| s.try_cast::<rhai::INT>());
+
         // Acquire lock for taffy.
         let mut taffy = taffy
             .lock()
@@ -23,10 +53,10 @@ pub fn ui(
         let mut widget_nodes = Vec::new();
 
         // Build taffy tree.
-        for widget in widgets {
+        for widget in layout {
             let widget = widget
                 .try_cast_result::<FumWidget>()
-                .map_err(|_| "The values of UI() function needs to be a widget")?;
+                .map_err(|_| "UI `layout` needs to be a array of widgets")?;
 
             // Build the widget node.
             let node = FumWidget::build_taffy_tree(&mut *taffy, &widget)
@@ -35,16 +65,34 @@ pub fn ui(
             widget_nodes.push(node);
         }
 
+        // Gets the root node size based on the min width & height.
+        let root_node_size = match (min_width, min_height) {
+            (Some(min_width), None) => taffy::Size {
+                width: taffy::Dimension::length(min_width as f32),
+                height: taffy::Dimension::auto(),
+            },
+            (None, Some(min_height)) => taffy::Size {
+                width: taffy::Dimension::auto(),
+                height: taffy::Dimension::length(min_height as f32),
+            },
+            (Some(min_width), Some(min_height)) => taffy::Size {
+                width: taffy::Dimension::length(min_width as f32),
+                height: taffy::Dimension::length(min_height as f32),
+            },
+            (None, None) => taffy::Size {
+                width: taffy::Dimension::auto(),
+                height: taffy::Dimension::auto(),
+            },
+        };
+
         // Creates the root node that will contain the ui layout.
         let root_node = taffy
             .new_with_children(
                 taffy::Style {
                     display: taffy::Display::Flex,
                     flex_direction: taffy::FlexDirection::Column,
-                    size: taffy::Size {
-                        width: taffy::Dimension::AUTO,
-                        height: taffy::Dimension::AUTO,
-                    },
+                    size: root_node_size,
+                    min_size: root_node_size,
                     ..Default::default()
                 },
                 &widget_nodes,
@@ -115,12 +163,46 @@ pub fn ui(
         }
 
         // Updates the ui.
-        let mut ui = ui_state
+        let mut ui = ui
             .lock()
             .map_err(|err| format!("Failed to acquire lock for ui state: {err}"))?;
 
         *ui = rects;
 
         Ok(())
+    }
+}
+
+/// Wrapper arround the ui_opts.
+pub fn ui(
+    taffy: ScriptTaffy,
+    ui: ScriptUi,
+) -> impl Fn(UiLocation, rhai::Array) -> ScriptFnResult<()> {
+    move |location: UiLocation, layout: rhai::Array| -> ScriptFnResult<()> {
+        let mut opts = rhai::Map::new();
+        opts.insert("location".into(), rhai::Dynamic::from(location));
+        opts.insert("layout".into(), rhai::Dynamic::from_array(layout));
+
+        let ui_opts = ui_opts(Arc::clone(&taffy), Arc::clone(&ui));
+        ui_opts(opts)
+    }
+}
+
+/// Wrapper arround the ui_opts & can pass extra opts.
+pub fn ui_ext_opts(
+    taffy: ScriptTaffy,
+    ui: ScriptUi,
+) -> impl Fn(UiLocation, rhai::Array, rhai::Map) -> ScriptFnResult<()> {
+    move |location: UiLocation,
+          layout: rhai::Array,
+          ext_opts: rhai::Map|
+          -> ScriptFnResult<()> {
+        let mut opts = rhai::Map::new();
+        opts.insert("location".into(), rhai::Dynamic::from(location));
+        opts.insert("layout".into(), rhai::Dynamic::from_array(layout));
+        opts.extend(ext_opts);
+
+        let ui_opts = ui_opts(Arc::clone(&taffy), Arc::clone(&ui));
+        ui_opts(opts)
     }
 }

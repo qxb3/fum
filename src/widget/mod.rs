@@ -224,7 +224,7 @@ impl FumWidget {
                 // Absolute size of slider widget.
                 let size = taffy::Size {
                     width: taffy::Dimension::percent(1.0),
-                    height: taffy::Dimension::length(1.0)
+                    height: taffy::Dimension::length(1.0),
                 };
 
                 let slider_node = taffy.new_leaf(taffy::Style {

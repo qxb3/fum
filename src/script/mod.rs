@@ -167,7 +167,12 @@ impl<'a> Script<'a> {
         // Register CONFIG, UI & Widget functions.
         engine
             .register_fn("CONFIG", functions::config(Arc::clone(&config)))
+            .register_fn("UI", functions::ui_opts(Arc::clone(&taffy), Arc::clone(&ui)))
             .register_fn("UI", functions::ui(Arc::clone(&taffy), Arc::clone(&ui)))
+            .register_fn(
+                "UI",
+                functions::ui_ext_opts(Arc::clone(&taffy), Arc::clone(&ui)),
+            )
             .register_fn("Container", functions::container_opts())
             .register_fn("Container", functions::container())
             .register_fn("Container", functions::container_ext_opts())
