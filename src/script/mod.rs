@@ -74,6 +74,7 @@ impl<'a> Script<'a> {
     pub fn new<P: Into<PathBuf>>(config_path: P, state: FumState) -> FumResult<Self> {
         // Rhai engine.
         let mut engine = Engine::new();
+        engine.set_max_expr_depths(999, 999); // Have enough expr depths.
 
         // Script scope.
         let mut scope = Scope::new();
