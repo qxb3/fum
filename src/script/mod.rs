@@ -17,7 +17,7 @@ use taffy::TaffyTree;
 
 use crate::{
     cover::Cover,
-    state::State,
+    state::FumState,
     track::Track,
     widget::{FumWidget, SliderDataSource},
     FumResult,
@@ -71,7 +71,7 @@ pub struct Script<'a> {
 
 impl<'a> Script<'a> {
     /// Creates a new script, loading from file and passing in the state to be used in rhai functions.
-    pub fn new<P: Into<PathBuf>>(config_path: P, state: &State) -> FumResult<Self> {
+    pub fn new<P: Into<PathBuf>>(config_path: P, state: FumState) -> FumResult<Self> {
         // Rhai engine.
         let mut engine = Engine::new();
 
@@ -189,14 +189,11 @@ impl<'a> Script<'a> {
 
         // Register player control functions.
         engine
-            .register_fn("PLAY", functions::play(Arc::clone(&state.current_player)))
-            .register_fn(
-                "PLAY_PAUSE",
-                functions::play_pause(Arc::clone(&state.current_player)),
-            )
-            .register_fn("PAUSE", functions::pause(Arc::clone(&state.current_player)))
-            .register_fn("PREV", functions::prev(Arc::clone(&state.current_player)))
-            .register_fn("NEXT", functions::next(Arc::clone(&state.current_player)));
+            .register_fn("PLAY", functions::play(Arc::clone(&state)))
+            .register_fn("PLAY_PAUSE", functions::play_pause(Arc::clone(&state)))
+            .register_fn("PAUSE", functions::pause(Arc::clone(&state)))
+            .register_fn("PREV", functions::prev(Arc::clone(&state)))
+            .register_fn("NEXT", functions::next(Arc::clone(&state)));
 
         // Register vars function.
         engine

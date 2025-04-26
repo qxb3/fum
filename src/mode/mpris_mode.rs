@@ -3,13 +3,12 @@ use std::{fs, str::FromStr, sync::Arc};
 use base64::{prelude::BASE64_STANDARD, Engine};
 use ratatui_image::picker::Picker;
 use reqwest::Url;
-use tokio::sync::MutexGuard;
 
 use crate::{
     cover::Cover,
     mpris::{Mpris, MprisEvent, MprisPlayer, MprisPlayerEvent},
     player::Player,
-    state::{CurrentCoverState, CurrentPlayerState, CurrentTrackState},
+    state::FumState,
     track::Track,
     FumResult,
 };
@@ -46,14 +45,8 @@ pub struct MprisMode {
     /// Picker for image rendering.
     picker: Arc<Picker>,
 
-    /// A reference to the current player state.
-    current_player: CurrentPlayerState,
-
-    /// A reference to the current track state.
-    current_track: CurrentTrackState,
-
-    /// A reference to the current cover state.
-    current_cover: CurrentCoverState,
+    /// Handle to the shared state.
+    state: FumState,
 
     /// Sender for mpris mode event.
     sender: tokio::sync::mpsc::Sender<FumModeEvent>,
@@ -64,11 +57,7 @@ pub struct MprisMode {
 
 impl MprisMode {
     /// Creates new MprisMode.
-    pub async fn new(
-        current_player: CurrentPlayerState,
-        current_track: CurrentTrackState,
-        current_cover: CurrentCoverState,
-    ) -> FumResult<Self> {
+    pub async fn new(state: FumState) -> FumResult<Self> {
         let mpris = Arc::new(Mpris::new().await?);
         let picker = Arc::new(Picker::from_query_stdio()?);
 
@@ -77,9 +66,7 @@ impl MprisMode {
         Ok(Self {
             mpris,
             picker,
-            current_player,
-            current_track,
-            current_cover,
+            state,
             sender,
             receiver,
         })
@@ -91,12 +78,9 @@ impl FumMode for MprisMode {
     async fn start(&mut self) -> FumResult<()> {
         let mpris = Arc::clone(&self.mpris);
         let picker = Arc::clone(&self.picker);
-
         let mode_tx = self.sender.clone();
 
-        let current_player = Arc::clone(&self.current_player);
-        let current_track = Arc::clone(&self.current_track);
-        let current_cover = Arc::clone(&self.current_cover);
+        let state = Arc::clone(&self.state);
 
         // A specific channel for broadcasting to the current player thread that its
         // detached and to stop watching for events.
@@ -116,25 +100,21 @@ impl FumMode for MprisMode {
                 match event {
                     MprisEvent::PlayerAttached(player) => {
                         let mut detached_rx = detached_tx.subscribe();
-
                         let picker = Arc::clone(&picker);
-
                         let mode_tx = mode_tx.clone();
 
-                        let current_player = Arc::clone(&current_player);
-                        let current_track = Arc::clone(&current_track);
-                        let current_cover = Arc::clone(&current_cover);
+                        let shared_state = Arc::clone(&state);
 
-                        // We update the current_player to the player
+                        // We update the current_player
                         {
-                            let mut current_player = current_player.lock().await;
-                            *current_player = Some(Box::new(player));
+                            let mut state = shared_state.lock().await;
+                            state.set_player(Box::new(player));
                         }
 
                         // Update the track metadata as soon as the player attached.
                         {
-                            let current_player = current_player.lock().await;
-                            let current_player = downcast_player(&current_player).await;
+                            let mut state = shared_state.lock().await;
+                            let current_player = downcast_player(state.get_player());
 
                             // Creates a track metadata of player.
                             let track = Track::from_mpris_player(current_player)
@@ -145,18 +125,18 @@ impl FumMode for MprisMode {
                                 ));
 
                             // Update current cover.
+                            let current_cover = state.get_cover_mut();
                             if let Some(art_url) = &track.art_url {
                                 MprisMode::update_cover(
                                     art_url.to_string(),
                                     picker.clone(),
-                                    current_cover.clone(),
+                                    Arc::clone(&shared_state),
                                     mode_tx.clone(),
                                 );
                             }
 
                             // Update the track metadata.
-                            let mut current_track = current_track.lock().await;
-                            *current_track = track;
+                            state.set_track(track);
 
                             // Sends out both the PlayerTrackMetaChanged & PlayerPositionChanged event.
                             mode_tx
@@ -181,9 +161,8 @@ impl FumMode for MprisMode {
 
                             // For watching the events of current player.
                             {
-                                let current_player = current_player.lock().await;
-                                let current_player =
-                                    downcast_player(&current_player).await;
+                                let state = shared_state.lock().await;
+                                let current_player = downcast_player(state.get_player());
 
                                 // Watch player events.
                                 current_player.watch(player_tx.clone()).await.expect(
@@ -199,22 +178,18 @@ impl FumMode for MprisMode {
                                     // If received an detached event and if the bus_name matched to the player
                                     // then we break out of this loop.
                                     Ok(bus_name) = detached_rx.recv() => {
-                                        let mut current_player = current_player.lock().await;
-                                        let curr_player = downcast_player(&current_player).await;
+                                        let mut state = shared_state.lock().await;
+                                        let current_player = downcast_player(state.get_player());
 
-                                        let mut current_cover = current_cover.lock().await;
-
-                                        if bus_name == curr_player.bus_name {
-                                            // Set the current player to None.
-                                            *current_player = None;
+                                        if bus_name == current_player.bus_name {
+                                            // Remove the current player.
+                                            state.clear_player();
 
                                             // Resets the current track metadata to their default values.
-                                            let mut current_track = current_track.lock().await;
-                                            let track = Track::default();
-                                            *current_track = track;
+                                            state.set_track(Track::default());
 
-                                            // Set the current cover to None.
-                                            *current_cover = None;
+                                            // Remove the current cover.
+                                            state.clear_cover();
 
                                             // Sends out both the PlayerTrackMetaChanged & PlayerPositionChanged event.
                                             mode_tx
@@ -236,15 +211,14 @@ impl FumMode for MprisMode {
                                         match event {
                                             // Update the track metadata when the player properties changed.
                                             MprisPlayerEvent::PropertiesChanged => {
-                                                let current_player = current_player.lock().await;
-                                                let current_player = downcast_player(&current_player).await;
+                                                let mut state = shared_state.lock().await;
+                                                let current_player = downcast_player(state.get_player());
+                                                let current_track = state.get_track();
 
                                                 // Creates a track metadata of player.
                                                 let track = Track::from_mpris_player(current_player)
                                                     .await
                                                     .expect(&format!("Failed to create track for: {}", current_player.bus_name));
-
-                                                let mut current_track = current_track.lock().await;
 
                                                 // If the new art_url doesn't match the current art url means that its been changed,
                                                 if let Some(current_art_url) = &current_track.art_url {
@@ -254,15 +228,15 @@ impl FumMode for MprisMode {
                                                             MprisMode::update_cover(
                                                                 track_art_url.to_string(),
                                                                 picker.clone(),
-                                                                current_cover.clone(),
+                                                                Arc::clone(&shared_state),
                                                                 mode_tx.clone()
                                                             );
                                                         }
                                                     }
                                                 }
 
-                                                // Update the track metadata.
-                                                *current_track = track;
+                                                // Update the track state.
+                                                state.set_track(track);
 
                                                 // Sends out the PlayerTrackMetaChanged event.
                                                 mode_tx
@@ -273,8 +247,8 @@ impl FumMode for MprisMode {
 
                                             // Update the position the current track when seeked.
                                             MprisPlayerEvent::Seeked => {
-                                                let current_player = current_player.lock().await;
-                                                let current_player = downcast_player(&current_player).await;
+                                                let mut state = shared_state.lock().await;
+                                                let current_player = downcast_player(state.get_player());
 
                                                 // Get the updated recent position.
                                                 let position = current_player
@@ -283,7 +257,7 @@ impl FumMode for MprisMode {
                                                     .expect(&format!("Failed to get the player position for: {}", current_player.bus_name));
 
                                                 // Updates the current track position.
-                                                let mut current_track = current_track.lock().await;
+                                                let current_track = state.get_track_mut();
                                                 current_track.position = position;
 
                                                 // Sends out the PlayerPositionChanged event.
@@ -295,7 +269,9 @@ impl FumMode for MprisMode {
 
                                             // Update the position the current track when the the track position progress.
                                             MprisPlayerEvent::Position(position) => {
-                                                let mut current_track = current_track.lock().await;
+                                                let mut state = shared_state.lock().await;
+                                                let current_track = state.get_track_mut();
+
                                                 current_track.position = position;
 
                                                 // Sends out the PlayerPositionChanged event.
@@ -340,7 +316,7 @@ impl MprisMode {
     fn update_cover(
         art_url: String,
         picker: Arc<Picker>,
-        current_cover: CurrentCoverState,
+        state: FumState,
         mpris_tx: tokio::sync::mpsc::Sender<FumModeEvent>,
     ) {
         tokio::spawn(async move {
@@ -359,8 +335,8 @@ impl MprisMode {
                 let cover = Cover::new(bytes, &*picker);
 
                 // Updates the current cover.
-                let mut current_cover = current_cover.lock().await;
-                *current_cover = Some(cover);
+                let mut state = state.lock().await;
+                state.set_cover(cover);
 
                 // Sends the CoverChanged event.
                 mpris_tx
@@ -385,8 +361,8 @@ impl MprisMode {
                 let cover = Cover::new(bytes, &*picker);
 
                 // Updates the current cover.
-                let mut current_cover = current_cover.lock().await;
-                *current_cover = Some(cover);
+                let mut state = state.lock().await;
+                state.set_cover(cover);
 
                 // Sends the CoverChanged event.
                 mpris_tx
@@ -416,8 +392,8 @@ impl MprisMode {
                 let cover = Cover::new(bytes.to_vec(), &*picker);
 
                 // Updates the current cover.
-                let mut current_cover = current_cover.lock().await;
-                *current_cover = Some(cover);
+                let mut state = state.lock().await;
+                state.set_cover(cover);
 
                 // Sends the CoverChanged event.
                 mpris_tx
@@ -430,15 +406,11 @@ impl MprisMode {
 }
 
 /// A helper function to downcast the current player to MprisPlayer.
-async fn downcast_player<'a>(
-    current_player_guard: &'a MutexGuard<'a, Option<Box<dyn Player>>>,
-) -> &'a MprisPlayer {
-    let current_player = current_player_guard
+fn downcast_player<'a>(player: Option<&'a (dyn Player)>) -> &'a MprisPlayer {
+    player
         .as_ref()
         .expect("Tried to update track metadata for the player but current player is None somehow")
         .as_any()
         .downcast_ref::<MprisPlayer>()
-        .expect("Expected an mpris player to be on the mpris mode but got a different player somehow");
-
-    current_player
+        .expect("Expected an mpris player to be on the mpris mode but got a different player somehow")
 }

@@ -9,7 +9,7 @@ use ratatui::{
 use ratatui_image::StatefulImage;
 
 use crate::{
-    state::State,
+    state::FumState,
     utils::text::truncate,
     widget::{FumWidget, SliderDataSource},
     FumResult,
@@ -17,14 +17,10 @@ use crate::{
 
 pub async fn draw(
     terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
-    state: &mut State,
+    state: FumState,
     ui: &Vec<(Rect, FumWidget)>,
 ) -> FumResult<()> {
-    // Gets the current track state.
-    let current_track = state.current_track.lock().await;
-
-    // Gets the current cover state.
-    let mut current_cover = state.current_cover.lock().await;
+    let mut state = state.lock().await;
 
     // Drawing part.
     terminal.draw(|frame| {
@@ -32,7 +28,8 @@ pub async fn draw(
             match widget {
                 // Render CoverImage Widget.
                 FumWidget::CoverImage { .. } => {
-                    if let Some(cover) = current_cover.as_mut() {
+                    let current_cover = state.get_cover_mut();
+                    if let Some(cover) = current_cover {
                         frame.render_stateful_widget(
                             StatefulImage::default(),
                             *rect,
@@ -92,6 +89,7 @@ pub async fn draw(
                     match data_source {
                         // Render progress slider.
                         SliderDataSource::Progress => {
+                            let current_track = state.get_track();
                             let position = current_track.position.as_secs() as f64; // Current Track current position.
                             let length = current_track.length.as_secs() as f64; // Current Track length.
 
@@ -139,6 +137,7 @@ pub async fn draw(
                         // Render volume slider.
                         SliderDataSource::Volume => {
                             // Calculates the width for both filled & remaining space.
+                            let current_track = state.get_track();
                             let filled_width =
                                 (current_track.volume * rect.width as f64).round();
                             let remaining_width =

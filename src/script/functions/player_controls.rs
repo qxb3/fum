@@ -1,17 +1,18 @@
 use std::sync::Arc;
 
-use crate::state::CurrentPlayerState;
+use crate::state::FumState;
 
 use super::ScriptFnResult;
 
 /// PLAY() control function.
-pub fn play(current_player: CurrentPlayerState) -> impl Fn() -> ScriptFnResult<()> {
+pub fn play(state: FumState) -> impl Fn() -> ScriptFnResult<()> {
     move || -> ScriptFnResult<()> {
-        let current_player = Arc::clone(&current_player);
+        let state = Arc::clone(&state);
 
         tokio::spawn(async move {
-            let mut current_player = current_player.lock().await;
-            if let Some(player) = current_player.as_mut() {
+            let mut state = state.lock().await;
+
+            if let Some(player) = state.get_player_mut() {
                 player.play().await.expect("Failed to call PLAY() function");
             }
         });
@@ -21,13 +22,14 @@ pub fn play(current_player: CurrentPlayerState) -> impl Fn() -> ScriptFnResult<(
 }
 
 /// PLAY_PAUSE() control function.
-pub fn play_pause(current_player: CurrentPlayerState) -> impl Fn() -> ScriptFnResult<()> {
+pub fn play_pause(state: FumState) -> impl Fn() -> ScriptFnResult<()> {
     move || -> ScriptFnResult<()> {
-        let current_player = Arc::clone(&current_player);
+        let state = Arc::clone(&state);
 
         tokio::spawn(async move {
-            let mut current_player = current_player.lock().await;
-            if let Some(player) = current_player.as_mut() {
+            let mut state = state.lock().await;
+
+            if let Some(player) = state.get_player_mut() {
                 player
                     .play_pause()
                     .await
@@ -40,13 +42,14 @@ pub fn play_pause(current_player: CurrentPlayerState) -> impl Fn() -> ScriptFnRe
 }
 
 /// PAUSE() control function.
-pub fn pause(current_player: CurrentPlayerState) -> impl Fn() -> ScriptFnResult<()> {
+pub fn pause(state: FumState) -> impl Fn() -> ScriptFnResult<()> {
     move || -> ScriptFnResult<()> {
-        let current_player = Arc::clone(&current_player);
+        let state = Arc::clone(&state);
 
         tokio::spawn(async move {
-            let mut current_player = current_player.lock().await;
-            if let Some(player) = current_player.as_mut() {
+            let mut state = state.lock().await;
+
+            if let Some(player) = state.get_player_mut() {
                 player
                     .pause()
                     .await
@@ -59,13 +62,14 @@ pub fn pause(current_player: CurrentPlayerState) -> impl Fn() -> ScriptFnResult<
 }
 
 /// STOP() control function.
-pub fn stop(current_player: CurrentPlayerState) -> impl Fn() -> ScriptFnResult<()> {
+pub fn stop(state: FumState) -> impl Fn() -> ScriptFnResult<()> {
     move || -> ScriptFnResult<()> {
-        let current_player = Arc::clone(&current_player);
+        let state = Arc::clone(&state);
 
         tokio::spawn(async move {
-            let mut current_player = current_player.lock().await;
-            if let Some(player) = current_player.as_mut() {
+            let mut state = state.lock().await;
+
+            if let Some(player) = state.get_player_mut() {
                 player.stop().await.expect("Failed to call STOP() function");
             }
         });
@@ -75,13 +79,14 @@ pub fn stop(current_player: CurrentPlayerState) -> impl Fn() -> ScriptFnResult<(
 }
 
 /// NEXT() control function.
-pub fn next(current_player: CurrentPlayerState) -> impl Fn() -> ScriptFnResult<()> {
+pub fn next(state: FumState) -> impl Fn() -> ScriptFnResult<()> {
     move || -> ScriptFnResult<()> {
-        let current_player = Arc::clone(&current_player);
+        let state = Arc::clone(&state);
 
         tokio::spawn(async move {
-            let mut current_player = current_player.lock().await;
-            if let Some(player) = current_player.as_mut() {
+            let mut state = state.lock().await;
+
+            if let Some(player) = state.get_player_mut() {
                 player.next().await.expect("Failed to call NEXT() function");
             }
         });
@@ -91,13 +96,14 @@ pub fn next(current_player: CurrentPlayerState) -> impl Fn() -> ScriptFnResult<(
 }
 
 /// PREV() control function.
-pub fn prev(current_player: CurrentPlayerState) -> impl Fn() -> ScriptFnResult<()> {
+pub fn prev(state: FumState) -> impl Fn() -> ScriptFnResult<()> {
     move || -> ScriptFnResult<()> {
-        let current_player = Arc::clone(&current_player);
+        let state = Arc::clone(&state);
 
         tokio::spawn(async move {
-            let mut current_player = current_player.lock().await;
-            if let Some(player) = current_player.as_mut() {
+            let mut state = state.lock().await;
+
+            if let Some(player) = state.get_player_mut() {
                 player
                     .previous()
                     .await

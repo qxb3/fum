@@ -7,7 +7,7 @@ use crate::{
     event::{EventHandler, FumEvent},
     mode::{FumMode, FumModeEvent, FumModes, MprisMode, MprisModeEvent, PlayerMode},
     script::{Script, ScriptEvent},
-    state::State,
+    state::{FumState, State},
     ui,
     utils::interaction::get_interacted_slider,
     widget::{FumWidget, SliderDataSource},
@@ -23,7 +23,7 @@ pub struct Fum<'a> {
     event_handler: EventHandler,
 
     /// Application state.
-    state: State,
+    state: FumState,
 
     /// Config script.
     script: Script<'a>,
@@ -44,14 +44,14 @@ impl<'a> Fum<'a> {
         // Enables mouse capture.
         crossterm::execute!(std::io::stdout(), crossterm::event::EnableMouseCapture)?;
 
-        // Creates a new state.
-        let state = State::new();
+        // Creates a new shared state.
+        let state = State::new_shared();
 
         // Initialize ratatui.
         let terminal = ratatui::init();
 
         // Creates a script.
-        let mut script = Script::new(&args.config_path, &state)?;
+        let mut script = Script::new(&args.config_path, Arc::clone(&state))?;
         script.execute()?; // Executes the script to populate the config state.
 
         // Acquire lock for config state.
@@ -87,13 +87,7 @@ impl<'a> Fum<'a> {
             }
 
             FumModes::Mpris => {
-                let current_player = Arc::clone(&self.state.current_player);
-                let current_track = Arc::clone(&self.state.current_track);
-                let current_cover = Arc::clone(&self.state.current_cover);
-
-                let mpris_mode =
-                    MprisMode::new(current_player, current_track, current_cover).await?;
-
+                let mpris_mode = MprisMode::new(Arc::clone(&self.state)).await?;
                 Box::new(mpris_mode)
             }
         };
@@ -101,8 +95,12 @@ impl<'a> Fum<'a> {
         // Start the mode.
         mode.start().await?;
 
-        // Read events and execute while we running.
-        while !self.state.exit {
+        let should_exit = {
+            let state = self.state.lock().await;
+            state.should_exit()
+        };
+
+        while !should_exit {
             tokio::select! {
                 // Read crossterm terminal events.
                 term_event = self.event_handler.recv() => {
@@ -135,21 +133,24 @@ impl<'a> Fum<'a> {
                     match mpris_mode_event? {
                         // Updates the script track variables when the track metadata changes.
                         FumModeEvent::MprisEvent(MprisModeEvent::PlayerTrackMetaChanged) => {
-                            let current_track = self.state.current_track.lock().await;
-                            self.script.update_track(&*current_track)?;
+                            let state = self.state.lock().await;
+                            let current_track = state.get_track();
+                            self.script.update_track(current_track)?;
                         }
 
                         // Updates the script track POSITION & REMAINING_LENGTH variable when the track position changes.
                         FumModeEvent::MprisEvent(MprisModeEvent::PlayerPositionChanged) => {
-                            let current_track = self.state.current_track.lock().await;
+                            let state = self.state.lock().await;
+                            let current_track = state.get_track();
                             self.script.update_position(current_track.position)?;
                             self.script.update_remaining_length(current_track.length, current_track.position)?;
                         }
 
                         // Updates the script COVER_AVG_COLOR variable when the cover changed.
                         FumModeEvent::MprisEvent(MprisModeEvent::CoverChanged) => {
-                            let current_cover = self.state.current_cover.lock().await;
-                            self.script.update_cover_avg_color(current_cover.as_ref())?;
+                            let state = self.state.lock().await;
+                            let current_cover = state.get_cover();
+                            self.script.update_cover_avg_color(current_cover)?;
                         }
 
                         _ => {}
@@ -171,7 +172,7 @@ impl<'a> Fum<'a> {
             .map_err(|err| format!("Failed to acquire lock for ui: {err}"))?;
 
         // Draws the ui.
-        ui::draw(&mut self.terminal, &mut self.state, &*ui).await?;
+        ui::draw(&mut self.terminal, Arc::clone(&self.state), &*ui).await?;
 
         Ok(())
     }
@@ -179,7 +180,7 @@ impl<'a> Fum<'a> {
     /// Handle keypress event.
     async fn keypress(&mut self, key: crossterm::event::KeyEvent) -> FumResult<()> {
         match key.code {
-            crossterm::event::KeyCode::Char('q') => self.exit()?,
+            crossterm::event::KeyCode::Char('q') => self.exit().await?,
 
             _ => {}
         }
@@ -221,10 +222,9 @@ impl<'a> Fum<'a> {
     async fn mouse_up(&mut self, button: crossterm::event::MouseButton) -> FumResult<()> {
         // Only handle the mouse left up.
         if button == crossterm::event::MouseButton::Left {
-            // Reset drag states on mouse up event.
-            self.state.drag.is_dragging = false;
-            self.state.drag.start_drag = None;
-            self.state.drag.current_drag = None;
+            // End drag states on mouse up event.
+            let mut state = self.state.lock().await;
+            state.end_drag();
         }
 
         Ok(())
@@ -268,24 +268,24 @@ impl<'a> Fum<'a> {
         &mut self,
         mouse: crossterm::event::MouseEvent,
     ) -> FumResult<()> {
-        // Set the is_dragging & start_drag states if not set.
-        if !self.state.drag.is_dragging && self.state.drag.start_drag.is_none() {
-            self.state.drag.is_dragging = true;
-            self.state.drag.start_drag = Some(Position::new(mouse.column, mouse.row));
+        let mut state = self.state.lock().await;
+
+        // Start drag if not currently.
+        if !state.is_dragging() {
+            state.start_drag(Position::new(mouse.column, mouse.row));
         }
 
         // Do stuff if dragging.
-        if self.state.drag.is_dragging {
+        if state.is_dragging() {
             // Update the current drag position.
-            self.state.drag.current_drag = Some(Position::new(mouse.column, mouse.row));
+            state.update_current_drag(Position::new(mouse.column, mouse.row));
 
-            // Extract start & current drag positions.
-            let start_drag = self.state.drag.start_drag;
-            let current_drag = self.state.drag.current_drag;
+            // Gets the drag state.
+            let drag_state = state.get_drag();
 
             // Checks if there is both start & current drags.
-            if let Some(start_drag) = start_drag {
-                if let Some(current_drag) = current_drag {
+            if let Some(start_drag) = drag_state.start_drag {
+                if let Some(current_drag) = drag_state.current_drag {
                     // Get the interacted slider based on the ui state.
                     if let Some((slider_rect, slider_source)) =
                         get_interacted_slider(Arc::clone(&self.script.ui), &start_drag)?
@@ -299,54 +299,49 @@ impl<'a> Fum<'a> {
                         match slider_source {
                             // Handle progress slider interaction.
                             SliderDataSource::Progress => {
-                                // Ig its fine to just use .lock here.
-                                let current_track = self.state.current_track.lock().await;
+                                // Gets the track_id, new position & track length.
+                                let (track_id, position, length) = {
+                                    let current_track = state.get_track();
+                                    let length = current_track.length.as_secs(); // Total Length of track in secs.
+                                    let position = slider_value * length as f64; // Mul the value above to get the real duration in secs.
 
-                                let length = current_track.length.as_secs(); // Total Length of track in secs.
-                                let position = slider_value * length as f64; // Mul the value above to get the real duration in secs.
+                                    (current_track.track_id.to_owned(), position, length)
+                                };
 
-                                // This is just to reset the drag state's so when you slide the slider
+                                // This is just to reset / end the drag state's so when you slide the slider
                                 // to the end its not gonna skip track a thousand times (you have to drag slide again).
-                                if position >= current_track.length.as_secs() as f64 {
-                                    self.state.drag.is_dragging = false;
-                                    self.state.drag.start_drag = None;
-                                    self.state.drag.current_drag = None;
+                                if position >= length as f64 {
+                                    state.end_drag();
                                 }
 
-                                // try_lock here to not block.
-                                if let Ok(mut current_player) =
-                                    self.state.current_player.try_lock()
-                                {
-                                    if let Some(player) = current_player.as_mut() {
-                                        if let Some(track_id) = &current_track.track_id {
-                                            // Set the position.
-                                            player
-                                                .set_position(
-                                                    track_id,
-                                                    Duration::from_secs(position as u64),
-                                                )
-                                                .await?;
+                                // Update the position if there is a player.
+                                let current_player = state.get_player_mut();
+                                if let Some(player) = current_player {
+                                    if let Some(track_id) = &track_id {
+                                        // Set the position.
+                                        player
+                                            .set_position(
+                                                track_id,
+                                                Duration::from_secs(position as u64),
+                                            )
+                                            .await?;
 
-                                            // Re-exceute the script to get update more fastly ig.
-                                            self.script.execute()?;
-                                        }
+                                        // Re-exceute the script to get update more fastly ig.
+                                        self.script.execute()?;
                                     }
                                 }
                             }
 
                             // Handle volume slider interaction.
                             SliderDataSource::Volume => {
-                                // try_lock here to not block.
-                                if let Ok(mut current_player) =
-                                    self.state.current_player.try_lock()
-                                {
-                                    if let Some(player) = current_player.as_mut() {
-                                        // Set the volume.
-                                        player.set_volume(slider_value).await?;
+                                let current_player = state.get_player_mut();
 
-                                        // Re-exceute the script to get update more fastly ig.
-                                        self.script.execute()?;
-                                    }
+                                // Updates the volume.
+                                if let Some(player) = current_player {
+                                    player.set_volume(slider_value).await?;
+
+                                    // Re-exceute the script to get update more fastly ig.
+                                    self.script.execute()?;
                                 }
                             }
                         }
@@ -370,10 +365,12 @@ impl<'a> Fum<'a> {
     }
 
     /// Exits out of fum.
-    fn exit(&mut self) -> FumResult<()> {
+    async fn exit(&mut self) -> FumResult<()> {
         Fum::restore()?;
 
-        self.state.exit = true;
+        // Tell the state to exit.
+        let mut state = self.state.lock().await;
+        state.exit();
 
         Ok(())
     }
