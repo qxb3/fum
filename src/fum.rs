@@ -1,5 +1,6 @@
 use std::{panic, sync::Arc, time::Duration};
 
+use crossterm::terminal::{Clear, ClearType};
 use ratatui::{layout::Position, prelude::CrosstermBackend, Terminal};
 
 use crate::{
@@ -49,6 +50,10 @@ impl<'a> Fum<'a> {
 
         // Initialize ratatui.
         let terminal = ratatui::init();
+
+        // Clear the termianal after ratatui::init()
+        // Helps clear the errors when the previous run exits with errors.
+        crossterm::execute!(std::io::stdout(), Clear(ClearType::All))?;
 
         // Creates a script.
         let mut script = Script::new(&args.config_path, Arc::clone(&state))?;
