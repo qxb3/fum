@@ -1,6 +1,7 @@
 use std::{any::Any, time::Duration};
 
 use crate::{
+    mpris::TrackId,
     status::{LoopStatus, PlaybackStatus},
     FumResult,
 };
@@ -18,7 +19,7 @@ pub trait Player: Any + Send + Sync {
 
     async fn seek_forward(&mut self, offset: Duration) -> FumResult<()>;
     async fn seek_backward(&mut self, offset: Duration) -> FumResult<()>;
-    async fn set_position(&mut self, trackid: &str, position: Duration) -> FumResult<()>;
+    async fn set_position(&mut self, track_id: &TrackId, position: Duration) -> FumResult<()>;
 
     async fn playback_status(&self) -> FumResult<PlaybackStatus>;
 

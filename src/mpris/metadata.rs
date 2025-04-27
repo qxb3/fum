@@ -9,6 +9,17 @@ use crate::FumResult;
 /// Type alias for zvariant::Value<'_>.
 pub type MetadataValue<'a> = zvariant::Value<'a>;
 
+/// A custom struct for TrackId.
+#[derive(Debug, Clone)]
+pub struct TrackId(String);
+
+impl TrackId {
+    /// Gets the actual string value of track id.
+    pub fn get_value(&self) -> &str {
+        &self.0
+    }
+}
+
 /// Represents the metadata of an MPRIS media player.
 ///
 /// This struct stores key-value pairs of metadata properties retrieved from an MPRIS-compatible player.
@@ -28,12 +39,12 @@ impl<'a> Metadata<'a> {
     ///
     /// Returns Err when mpris:trackid is somehow a different type.
     /// Returns None when mpris:trackid doesn't exists.
-    pub fn trackid(&self) -> FumResult<Option<String>> {
+    pub fn track_id(&self) -> FumResult<Option<TrackId>> {
         self.metadata
             .get("mpris:trackid")
-            .map(|trackid| match trackid {
-                MetadataValue::Str(trackid) => Ok(Some(trackid.to_string())),
-                MetadataValue::ObjectPath(trackid) => Ok(Some(trackid.to_string())),
+            .map(|track_id| match track_id {
+                MetadataValue::Str(track_id) => Ok(Some(TrackId(track_id.to_string()))),
+                MetadataValue::ObjectPath(track_id) => Ok(Some(TrackId(track_id.to_string()))),
                 _ => Err("mpris:trackid is not a object path / string.".into()),
             })
             .unwrap_or(Ok(None))

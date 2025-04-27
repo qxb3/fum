@@ -174,9 +174,11 @@ impl<'a> Script<'a> {
         let script_event_sender = sender.clone();
         let config_watcher = notify::RecommendedWatcher::new(
             move |_| {
-                script_event_sender.send(ScriptEvent::ScriptModified).unwrap();
+                script_event_sender
+                    .send(ScriptEvent::ScriptModified)
+                    .unwrap();
             },
-            notify::Config::default()
+            notify::Config::default(),
         )?;
 
         // Register FumWidget type.

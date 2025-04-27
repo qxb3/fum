@@ -1,11 +1,16 @@
 use std::time::Duration;
 
-use crate::{mpris::MprisPlayer, player::Player, status::PlaybackStatus, FumResult};
+use crate::{
+    mpris::{MprisPlayer, TrackId},
+    player::Player,
+    status::PlaybackStatus,
+    FumResult,
+};
 
 /// Contains the metadata of the current track / song.
 #[derive(Debug)]
 pub struct Track {
-    pub track_id: Option<String>,
+    pub track_id: Option<TrackId>,
     pub title: String,
     pub album: String,
     pub artists: Vec<String>,
@@ -45,7 +50,7 @@ impl Track {
         let metadata = player.metadata().await?;
 
         // Comes from the metadata.
-        let track_id = metadata.trackid()?;
+        let track_id = metadata.track_id()?;
         let title = metadata.title()?.unwrap_or("No Music".into());
         let album = metadata.album()?.unwrap_or("Album".into());
         let artists = metadata.artists()?.unwrap_or(vec!["Artist".into()]);

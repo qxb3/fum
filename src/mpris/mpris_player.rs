@@ -13,7 +13,7 @@ use crate::{
     FumResult,
 };
 
-use super::{Metadata, MetadataValue};
+use super::{Metadata, MetadataValue, TrackId};
 
 /// Player Events.
 #[derive(Debug)]
@@ -372,8 +372,8 @@ impl Player for MprisPlayer {
         Ok(())
     }
 
-    async fn set_position(&mut self, trackid: &str, position: Duration) -> FumResult<()> {
-        let trackid = ObjectPath::try_from(trackid)?;
+    async fn set_position(&mut self, trackid: &TrackId, position: Duration) -> FumResult<()> {
+        let trackid = ObjectPath::try_from(trackid.get_value())?;
 
         self.player_proxy
             .call_method("SetPosition", &(trackid, position.as_micros() as i64))
@@ -444,11 +444,8 @@ impl Player for MprisPlayer {
         Ok(Duration::from_micros(position as u64))
     }
 
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
-    fn as_any_mut(&mut self) -> &mut dyn Any {
-        self
-    }
+    #[rustfmt::skip]
+    fn as_any(&self) -> &dyn Any { self }
+    #[rustfmt::skip]
+    fn as_any_mut(&mut self) -> &mut dyn Any { self }
 }
