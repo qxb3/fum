@@ -86,8 +86,7 @@ pub fn label() -> impl Fn(rhai::Dynamic) -> ScriptFnResult<FumWidget> {
 }
 
 /// Label() widget function with default opt values & can pass extra opts.
-pub fn label_ext_opts() -> impl Fn(rhai::Dynamic, rhai::Map) -> ScriptFnResult<FumWidget>
-{
+pub fn label_ext_opts() -> impl Fn(rhai::Dynamic, rhai::Map) -> ScriptFnResult<FumWidget> {
     move |text: rhai::Dynamic, ext_opts: rhai::Map| -> ScriptFnResult<FumWidget> {
         let mut opts = rhai::Map::new();
         opts.insert("text".into(), text);
@@ -112,8 +111,7 @@ pub fn label_vertical() -> impl Fn(rhai::Dynamic) -> ScriptFnResult<FumWidget> {
 }
 
 /// LabelVertical() widget function with vertical opt & can pass extra opts.
-pub fn label_vertical_ext_opts(
-) -> impl Fn(rhai::Dynamic, rhai::Map) -> ScriptFnResult<FumWidget> {
+pub fn label_vertical_ext_opts() -> impl Fn(rhai::Dynamic, rhai::Map) -> ScriptFnResult<FumWidget> {
     move |text: rhai::Dynamic, ext_opts: rhai::Map| -> ScriptFnResult<FumWidget> {
         let mut opts = rhai::Map::new();
         opts.insert("text".into(), text);

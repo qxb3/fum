@@ -3,9 +3,7 @@ use crate::script::{ScriptEvent, ScriptVars};
 use super::ScriptFnResult;
 
 // DEF_VAR() function to define a persistent variable.
-pub fn define_var(
-    vars: ScriptVars,
-) -> impl Fn(rhai::Dynamic, rhai::Dynamic) -> ScriptFnResult<()> {
+pub fn define_var(vars: ScriptVars) -> impl Fn(rhai::Dynamic, rhai::Dynamic) -> ScriptFnResult<()> {
     move |var_name: rhai::Dynamic, value: rhai::Dynamic| -> ScriptFnResult<()> {
         // Turn the var_name dynamic into String.
         let var_name = var_name
@@ -53,9 +51,7 @@ pub fn set_var(
 }
 
 // GET_VAR() function get a variable from persistent vars state.
-pub fn get_var(
-    vars: ScriptVars,
-) -> impl Fn(rhai::Dynamic) -> ScriptFnResult<rhai::Dynamic> {
+pub fn get_var(vars: ScriptVars) -> impl Fn(rhai::Dynamic) -> ScriptFnResult<rhai::Dynamic> {
     move |var_name: rhai::Dynamic| -> ScriptFnResult<rhai::Dynamic> {
         // Turn the var_name dynamic into String.
         let var_name = var_name

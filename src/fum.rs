@@ -84,6 +84,9 @@ impl<'a> Fum<'a> {
         // Execute the script at start.
         self.script.execute()?;
 
+        // Watch the config script for changes.
+        self.script.watch_config().await?;
+
         // Get the according mode.
         let mut mode: Box<dyn FumMode + 'static> = match mode {
             FumModes::Player => {
@@ -123,6 +126,12 @@ impl<'a> Fum<'a> {
                         ScriptEvent::SetVar => {
                             // Re-executes the script for the ui to reflect the change
                             // When a persistent variable has been updated.
+                            self.script.execute()?;
+                        }
+
+                        ScriptEvent::ScriptModified => {
+                            // Re-compiles & Re-execute the script when the script has been modified.
+                            self.script.recompile()?;
                             self.script.execute()?;
                         }
                     }
@@ -250,9 +259,7 @@ impl<'a> Fum<'a> {
                     // Calls the function when a button has been clicked.
                     if rect.contains(mouse_pos) {
                         func.call(&self.script.engine, &self.script.ast, ())
-                            .map_err(|err| {
-                                format!("Failed to call button function: {err}")
-                            })?;
+                            .map_err(|err| format!("Failed to call button function: {err}"))?;
                     }
                 }
 
@@ -291,8 +298,7 @@ impl<'a> Fum<'a> {
                         get_interacted_slider(Arc::clone(&self.script.ui), &start_drag)?
                     {
                         // Map the slider's slide into 0 - 1. 0 means the very start, 1 means the very end of the slider.
-                        let slider_value = ((current_drag.x as f64
-                            - slider_rect.x as f64)
+                        let slider_value = ((current_drag.x as f64 - slider_rect.x as f64)
                             / slider_rect.width as f64)
                             .clamp(0.0, 1.0);
 

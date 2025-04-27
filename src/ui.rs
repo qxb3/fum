@@ -94,16 +94,11 @@ pub async fn draw(
                             let length = current_track.length.as_secs() as f64; // Current Track length.
 
                             // Calculates the ratio for filled and remaining.
-                            let ratio = if position > 0.0 {
-                                position / length as f64
-                            } else {
-                                0.0
-                            };
+                            let ratio = if position > 0.0 { position / length as f64 } else { 0.0 };
 
                             // Calculates the width for both filled & remaining space.
                             let filled_width = (ratio * rect.width as f64).round();
-                            let remaining_width =
-                                rect.width.saturating_sub(filled_width as u16);
+                            let remaining_width = rect.width.saturating_sub(filled_width as u16);
 
                             // Creates a layout rects for filled & remaining area.
                             let [filled_area, remaining_area] = Layout::horizontal([
@@ -114,8 +109,7 @@ pub async fn draw(
 
                             // Gets the final string of filled & remaining to be rendered.
                             let filled_result = filled.text.repeat(filled_width as usize);
-                            let remaining_result =
-                                remaining.text.repeat(remaining_width as usize);
+                            let remaining_result = remaining.text.repeat(remaining_width as usize);
 
                             // Render filled.
                             frame.render_widget(
@@ -138,10 +132,8 @@ pub async fn draw(
                         SliderDataSource::Volume => {
                             // Calculates the width for both filled & remaining space.
                             let current_track = state.get_track();
-                            let filled_width =
-                                (current_track.volume * rect.width as f64).round();
-                            let remaining_width =
-                                rect.width.saturating_sub(filled_width as u16);
+                            let filled_width = (current_track.volume * rect.width as f64).round();
+                            let remaining_width = rect.width.saturating_sub(filled_width as u16);
 
                             // Creates a layout rects for filled & remaining area.
                             let [filled_area, remaining_area] = Layout::horizontal([
@@ -152,8 +144,7 @@ pub async fn draw(
 
                             // Gets the final string of filled & remaining to be rendered.
                             let filled_result = filled.text.repeat(filled_width as usize);
-                            let remaining_result =
-                                remaining.text.repeat(remaining_width as usize);
+                            let remaining_result = remaining.text.repeat(remaining_width as usize);
 
                             // Render filled.
                             frame.render_widget(

@@ -113,8 +113,7 @@ pub fn button_ext_opts(
 }
 
 /// ButtonVertical() widget function with vertical opt.
-pub fn button_vertical(
-) -> impl Fn(rhai::Dynamic, rhai::FnPtr) -> ScriptFnResult<FumWidget> {
+pub fn button_vertical() -> impl Fn(rhai::Dynamic, rhai::FnPtr) -> ScriptFnResult<FumWidget> {
     move |text: rhai::Dynamic, func: rhai::FnPtr| -> ScriptFnResult<FumWidget> {
         let mut opts = rhai::Map::new();
         opts.insert("text".into(), text);

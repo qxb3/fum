@@ -78,9 +78,7 @@ impl<'a> Metadata<'a> {
                 MetadataValue::Array(artists) => {
                     let artists: Vec<String> = artists
                         .iter()
-                        .filter_map(|a| {
-                            a.downcast_ref::<&str>().map(|s| s.to_string()).ok()
-                        })
+                        .filter_map(|a| a.downcast_ref::<&str>().map(|s| s.to_string()).ok())
                         .collect();
 
                     Ok(Some(artists))
@@ -98,9 +96,7 @@ impl<'a> Metadata<'a> {
         self.metadata
             .get("mpris:length")
             .map(|length| match length {
-                MetadataValue::I64(length) => {
-                    Ok(Some(Duration::from_micros(*length as u64)))
-                }
+                MetadataValue::I64(length) => Ok(Some(Duration::from_micros(*length as u64))),
                 MetadataValue::U64(length) => Ok(Some(Duration::from_micros(*length))),
                 _ => Err("mpris:length is not a i64 / u64.".into()),
             })

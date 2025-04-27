@@ -11,6 +11,7 @@ use std::{
 
 use config::FumConfig;
 use location::UiLocation;
+use notify::Watcher;
 use ratatui::{layout::Rect, style::Color};
 use rhai::{Engine, Scope, AST};
 use taffy::TaffyTree;
@@ -38,12 +39,18 @@ pub type ScriptVars = Arc<Mutex<HashMap<String, rhai::Dynamic>>>;
 /// Script event.
 pub enum ScriptEvent {
     /// Triggers when the script uses SET_VAR() function to update a persistent variable.
-    SetVar, // The only event we only care about for now.
+    SetVar,
+
+    /// Triggers when the script has been modified.
+    ScriptModified,
 }
 
 /// Fum script.
 #[allow(dead_code)]
 pub struct Script<'a> {
+    /// The script config path.
+    pub config_path: PathBuf,
+
     /// Rhai engine.
     pub engine: Engine,
 
@@ -63,15 +70,24 @@ pub struct Script<'a> {
     pub vars: ScriptVars,
 
     /// Script event sender.
-    sender: tokio::sync::mpsc::UnboundedSender<ScriptEvent>,
+    script_sender: tokio::sync::mpsc::UnboundedSender<ScriptEvent>,
 
     /// Script event receiver.
-    receiver: tokio::sync::mpsc::UnboundedReceiver<ScriptEvent>,
+    script_receiver: tokio::sync::mpsc::UnboundedReceiver<ScriptEvent>,
+
+    /// Config watcher sender.
+    config_watcher_sender: std::sync::mpsc::Sender<notify::Result<notify::Event>>,
+
+    /// Config watcher receiver.
+    config_watcher_receiver: std::sync::mpsc::Receiver<notify::Result<notify::Event>>,
+
+    /// Config watcher.
+    config_watcher: notify::INotifyWatcher,
 }
 
 impl<'a> Script<'a> {
     /// Creates a new script, loading from file and passing in the state to be used in rhai functions.
-    pub fn new<P: Into<PathBuf>>(config_path: P, state: FumState) -> FumResult<Self> {
+    pub fn new(config_path: &PathBuf, state: FumState) -> FumResult<Self> {
         // Rhai engine.
         let mut engine = Engine::new();
         engine.set_max_expr_depths(999, 999); // Have enough expr depths.
@@ -151,6 +167,18 @@ impl<'a> Script<'a> {
         // Sender & Receiver for script event.
         let (sender, receiver) = tokio::sync::mpsc::unbounded_channel();
 
+        // Config watcher channels.
+        let (config_watcher_sender, config_watcher_receiver) =
+            std::sync::mpsc::channel::<notify::Result<notify::Event>>();
+
+        let script_event_sender = sender.clone();
+        let mut config_watcher = notify::RecommendedWatcher::new(
+            move |_| {
+                script_event_sender.send(ScriptEvent::ScriptModified).unwrap();
+            },
+            notify::Config::default()
+        )?;
+
         // Register FumWidget type.
         engine.register_type_with_name::<FumWidget>("Widget");
 
@@ -169,10 +197,7 @@ impl<'a> Script<'a> {
             .register_fn("CONFIG", functions::config(Arc::clone(&config)))
             .register_fn("UI", functions::ui_opts(Arc::clone(&taffy), Arc::clone(&ui)))
             .register_fn("UI", functions::ui(Arc::clone(&taffy), Arc::clone(&ui)))
-            .register_fn(
-                "UI",
-                functions::ui_ext_opts(Arc::clone(&taffy), Arc::clone(&ui)),
-            )
+            .register_fn("UI", functions::ui_ext_opts(Arc::clone(&taffy), Arc::clone(&ui)))
             .register_fn("Container", functions::container_opts())
             .register_fn("Container", functions::container())
             .register_fn("Container", functions::container_ext_opts())
@@ -210,18 +235,22 @@ impl<'a> Script<'a> {
 
         // Compile the script into ast.
         let ast = engine
-            .compile_file(config_path.into())
+            .compile_file(config_path.clone())
             .map_err(|err| format!("Error parsing config script: {err}"))?;
 
         Ok(Self {
+            config_path: config_path.clone(),
             engine,
             scope,
             ast,
             config,
             ui,
             vars,
-            sender,
-            receiver,
+            script_sender: sender,
+            script_receiver: receiver,
+            config_watcher_sender,
+            config_watcher_receiver,
+            config_watcher,
         })
     }
 
@@ -277,15 +306,32 @@ impl<'a> Script<'a> {
         Ok(())
     }
 
+    /// Re-compiles the ast.
+    pub fn recompile(&mut self) -> FumResult<()> {
+        self.ast = self
+            .engine
+            .compile_file(self.config_path.clone())
+            .map_err(|err| format!("Error parsing config script: {err}"))?;
+
+        Ok(())
+    }
+
     /// Receive the script events..
     pub async fn recv(&mut self) -> FumResult<ScriptEvent> {
-        self.receiver
+        self.script_receiver
             .recv()
             .await
             .ok_or(Box::new(std::io::Error::new(
                 std::io::ErrorKind::Other,
                 "Failed to receive an event from script",
             )))
+    }
+
+    pub async fn watch_config(&mut self) -> FumResult<()> {
+        self.config_watcher
+            .watch(self.config_path.as_path(), notify::RecursiveMode::NonRecursive)?;
+
+        Ok(())
     }
 }
 

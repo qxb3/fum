@@ -113,12 +113,13 @@ impl FumMode for MprisMode {
                             let current_player = downcast_player(state.get_player());
 
                             // Creates a track metadata of player.
-                            let track = Track::from_mpris_player(current_player)
-                                .await
-                                .expect(&format!(
-                                    "Failed to create track for: {}",
-                                    current_player.bus_name
-                                ));
+                            let track =
+                                Track::from_mpris_player(current_player)
+                                    .await
+                                    .expect(&format!(
+                                        "Failed to create track for: {}",
+                                        current_player.bus_name
+                                    ));
 
                             // Update current cover.
                             if let Some(art_url) = &track.art_url {
@@ -160,12 +161,13 @@ impl FumMode for MprisMode {
                                 let current_player = downcast_player(state.get_player());
 
                                 // Watch player events.
-                                current_player.watch(player_tx.clone()).await.expect(
-                                    &format!(
+                                current_player
+                                    .watch(player_tx.clone())
+                                    .await
+                                    .expect(&format!(
                                         "Failed to watch player: {} events",
                                         current_player.bus_name
-                                    ),
-                                );
+                                    ));
                             }
 
                             loop {
@@ -407,5 +409,7 @@ fn downcast_player<'a>(player: Option<&'a (dyn Player)>) -> &'a MprisPlayer {
         .expect("Tried to update track metadata for the player but current player is None somehow")
         .as_any()
         .downcast_ref::<MprisPlayer>()
-        .expect("Expected an mpris player to be on the mpris mode but got a different player somehow")
+        .expect(
+            "Expected an mpris player to be on the mpris mode but got a different player somehow",
+        )
 }

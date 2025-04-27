@@ -87,8 +87,7 @@ impl<'a> Mpris<'a> {
         let mut players: HashMap<String, MprisPlayer> = HashMap::new();
 
         for bus_name in bus_names {
-            let player =
-                MprisPlayer::new(self.connection.clone(), bus_name.to_string()).await?;
+            let player = MprisPlayer::new(self.connection.clone(), bus_name.to_string()).await?;
             players.insert(bus_name, player);
         }
 
@@ -108,10 +107,7 @@ impl<'a> Mpris<'a> {
     }
 
     /// Watch for mpris events.
-    pub async fn watch(
-        &self,
-        tx: tokio::sync::mpsc::Sender<MprisEvent>,
-    ) -> FumResult<()> {
+    pub async fn watch(&self, tx: tokio::sync::mpsc::Sender<MprisEvent>) -> FumResult<()> {
         let connection = Arc::clone(&self.connection);
 
         tokio::spawn(async move {

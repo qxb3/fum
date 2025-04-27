@@ -31,11 +31,11 @@ pub fn container_opts() -> impl Fn(rhai::Map) -> ScriptFnResult<FumWidget> {
 
         // Extract the container justify from opts.
         let justify = match opts.get("justify").cloned() {
-            Some(justify) => {
-                Some(justify.try_cast_result::<taffy::JustifyContent>().map_err(
-                    |_| "Container `justify` needs to be a valid justify value",
-                )?)
-            }
+            Some(justify) => Some(
+                justify
+                    .try_cast_result::<taffy::JustifyContent>()
+                    .map_err(|_| "Container `justify` needs to be a valid justify value")?,
+            ),
             None => None,
         };
 
@@ -68,11 +68,8 @@ pub fn container_opts() -> impl Fn(rhai::Map) -> ScriptFnResult<FumWidget> {
 }
 
 /// Container() widget function with default values.
-pub fn container(
-) -> impl Fn(taffy::FlexDirection, rhai::Array) -> ScriptFnResult<FumWidget> {
-    move |direction: taffy::FlexDirection,
-          children: rhai::Array|
-          -> ScriptFnResult<FumWidget> {
+pub fn container() -> impl Fn(taffy::FlexDirection, rhai::Array) -> ScriptFnResult<FumWidget> {
+    move |direction: taffy::FlexDirection, children: rhai::Array| -> ScriptFnResult<FumWidget> {
         // Build up the opts.
         let mut opts = rhai::Map::new();
         opts.insert("direction".into(), rhai::Dynamic::from(direction));
@@ -104,11 +101,9 @@ pub fn container_ext_opts(
 }
 
 /// ContainerCenter() widget function. A normal container but with align set to CENTER.
-pub fn container_center(
-) -> impl Fn(taffy::FlexDirection, rhai::Array) -> ScriptFnResult<FumWidget> {
-    move |direction: taffy::FlexDirection,
-          children: rhai::Array|
-          -> ScriptFnResult<FumWidget> {
+pub fn container_center() -> impl Fn(taffy::FlexDirection, rhai::Array) -> ScriptFnResult<FumWidget>
+{
+    move |direction: taffy::FlexDirection, children: rhai::Array| -> ScriptFnResult<FumWidget> {
         // Build up the opts.
         let mut opts = rhai::Map::new();
         opts.insert("direction".into(), rhai::Dynamic::from(direction));
@@ -142,11 +137,8 @@ pub fn container_center_ext_opts(
 }
 
 /// ContainerEnd() widget function. A normal container but with align set to END.
-pub fn container_end(
-) -> impl Fn(taffy::FlexDirection, rhai::Array) -> ScriptFnResult<FumWidget> {
-    move |direction: taffy::FlexDirection,
-          children: rhai::Array|
-          -> ScriptFnResult<FumWidget> {
+pub fn container_end() -> impl Fn(taffy::FlexDirection, rhai::Array) -> ScriptFnResult<FumWidget> {
+    move |direction: taffy::FlexDirection, children: rhai::Array| -> ScriptFnResult<FumWidget> {
         // Build up the opts.
         let mut opts = rhai::Map::new();
         opts.insert("direction".into(), rhai::Dynamic::from(direction));

@@ -13,9 +13,7 @@ pub fn slider_opts() -> impl Fn(rhai::Map) -> ScriptFnResult<FumWidget> {
             .cloned()
             .ok_or("Slider widget needs to have a `source`")?
             .try_cast_result::<SliderDataSource>()
-            .map_err(|_| {
-                "Slider `source` needs to be either SOURCE_PROGRESS or SOURCE_VOLUME"
-            })?;
+            .map_err(|_| "Slider `source` needs to be either SOURCE_PROGRESS or SOURCE_VOLUME")?;
 
         // Extract filled from opts.
         let filled_opts = opts

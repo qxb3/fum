@@ -1,8 +1,6 @@
 #![allow(dead_code)]
 
-use std::{
-    any::Any, collections::HashMap, ops::Deref, str::FromStr, sync::Arc, time::Duration,
-};
+use std::{any::Any, collections::HashMap, ops::Deref, str::FromStr, sync::Arc, time::Duration};
 
 use futures::StreamExt;
 use tokio::sync::Mutex;
@@ -72,13 +70,9 @@ pub struct MprisPlayer {
 
 impl MprisPlayer {
     /// Creates a new Player.
-    pub async fn new(
-        connection: Arc<Mutex<Connection>>,
-        bus_name: String,
-    ) -> FumResult<Self> {
+    pub async fn new(connection: Arc<Mutex<Connection>>, bus_name: String) -> FumResult<Self> {
         let player_proxy =
-            MprisPlayer::create_player_proxy(connection.clone(), bus_name.to_string())
-                .await?;
+            MprisPlayer::create_player_proxy(connection.clone(), bus_name.to_string()).await?;
 
         let identity = bus_name
             .split('.')
@@ -120,8 +114,7 @@ impl MprisPlayer {
 
         if rate < min_rate || rate > max_rate {
             return Err(
-                "Cannot set the Rate as its passed on MinimumRate or MaximumRate bounds"
-                    .into(),
+                "Cannot set the Rate as its passed on MinimumRate or MaximumRate bounds".into()
             );
         }
 
@@ -153,8 +146,7 @@ impl MprisPlayer {
 
     /// Can the player go previous.
     pub async fn can_previous(&self) -> FumResult<bool> {
-        let can_go_previous: bool =
-            self.player_proxy.get_property("CanGoPrevious").await?;
+        let can_go_previous: bool = self.player_proxy.get_property("CanGoPrevious").await?;
 
         Ok(can_go_previous)
     }
@@ -188,29 +180,22 @@ impl MprisPlayer {
     }
 
     /// Watch events of player.
-    pub async fn watch(
-        &self,
-        tx: tokio::sync::mpsc::Sender<MprisPlayerEvent>,
-    ) -> FumResult<()> {
+    pub async fn watch(&self, tx: tokio::sync::mpsc::Sender<MprisPlayerEvent>) -> FumResult<()> {
         let connection = Arc::clone(&self.connection);
         let bus_name = self.bus_name.to_string();
 
         tokio::spawn(async move {
             // Properties proxy.
-            let properties_proxy = MprisPlayer::create_properties_proxy(
-                connection.clone(),
-                bus_name.to_string(),
-            )
-            .await
-            .expect("Failed to create properties proxy");
+            let properties_proxy =
+                MprisPlayer::create_properties_proxy(connection.clone(), bus_name.to_string())
+                    .await
+                    .expect("Failed to create properties proxy");
 
             // Player proxy.
-            let player_proxy = MprisPlayer::create_player_proxy(
-                connection.clone(),
-                bus_name.to_string(),
-            )
-            .await
-            .expect("Failed to create player proxy");
+            let player_proxy =
+                MprisPlayer::create_player_proxy(connection.clone(), bus_name.to_string())
+                    .await
+                    .expect("Failed to create player proxy");
 
             // Creates event stream for PropertiesChanged interface.
             let mut properties_event_stream = properties_proxy
@@ -398,8 +383,7 @@ impl Player for MprisPlayer {
     }
 
     async fn playback_status(&self) -> FumResult<PlaybackStatus> {
-        let playback_status: String =
-            self.player_proxy.get_property("PlaybackStatus").await?;
+        let playback_status: String = self.player_proxy.get_property("PlaybackStatus").await?;
 
         Ok(PlaybackStatus::from_str(&playback_status)?)
     }

@@ -10,10 +10,7 @@ use crate::{
 use super::ScriptFnResult;
 
 /// UI() function to set or update the ui with opts.
-pub fn ui_opts(
-    taffy: ScriptTaffy,
-    ui: ScriptUi,
-) -> impl Fn(rhai::Map) -> ScriptFnResult<()> {
+pub fn ui_opts(taffy: ScriptTaffy, ui: ScriptUi) -> impl Fn(rhai::Map) -> ScriptFnResult<()> {
     move |opts: rhai::Map| -> ScriptFnResult<()> {
         // Extract location from opts.
         let location = opts
@@ -107,13 +104,11 @@ pub fn ui_opts(
             .map_err(|err| format!("Failed to create root node for the ui: {err}"))?;
 
         // Fetch the cols & rows of the terminal.
-        let (term_cols, term_rows) = crossterm::terminal::size().map_err(|err| {
-            format!("Failed to fetch the terminal width & height: {err}")
-        })?;
+        let (term_cols, term_rows) = crossterm::terminal::size()
+            .map_err(|err| format!("Failed to fetch the terminal width & height: {err}"))?;
 
         // Resolve the location on where fum should be located.
-        let (window_node_align_items, window_node_justify_content) =
-            location.resolve_location();
+        let (window_node_align_items, window_node_justify_content) = location.resolve_location();
 
         // Creates the terminal node for positioning where in the terminal should fum be displayed.
         let window_node = taffy
@@ -164,9 +159,8 @@ pub fn ui_opts(
         // Builds rects.
         let mut rects = Vec::new();
         for child in root_children {
-            FumWidget::build_rects(&mut rects, &*taffy, &root_rect, child).map_err(
-                |err| format!("Failed to build rect on node: {:?} - {err}", child),
-            )?;
+            FumWidget::build_rects(&mut rects, &*taffy, &root_rect, child)
+                .map_err(|err| format!("Failed to build rect on node: {:?} - {err}", child))?;
         }
 
         // Updates the ui.
@@ -200,10 +194,7 @@ pub fn ui_ext_opts(
     taffy: ScriptTaffy,
     ui: ScriptUi,
 ) -> impl Fn(UiLocation, rhai::Array, rhai::Map) -> ScriptFnResult<()> {
-    move |location: UiLocation,
-          layout: rhai::Array,
-          ext_opts: rhai::Map|
-          -> ScriptFnResult<()> {
+    move |location: UiLocation, layout: rhai::Array, ext_opts: rhai::Map| -> ScriptFnResult<()> {
         let mut opts = rhai::Map::new();
         opts.insert("location".into(), rhai::Dynamic::from(location));
         opts.insert("layout".into(), rhai::Dynamic::from_array(layout));
