@@ -172,7 +172,7 @@ impl<'a> Script<'a> {
             std::sync::mpsc::channel::<notify::Result<notify::Event>>();
 
         let script_event_sender = sender.clone();
-        let mut config_watcher = notify::RecommendedWatcher::new(
+        let config_watcher = notify::RecommendedWatcher::new(
             move |_| {
                 script_event_sender.send(ScriptEvent::ScriptModified).unwrap();
             },
