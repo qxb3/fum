@@ -327,6 +327,7 @@ impl<'a> Script<'a> {
             )))
     }
 
+    /// Watches the script config for changes.
     pub async fn watch_config(&mut self) -> FumResult<()> {
         self.config_watcher
             .watch(self.config_path.as_path(), notify::RecursiveMode::NonRecursive)?;
