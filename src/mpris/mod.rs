@@ -5,7 +5,7 @@ mod proxies;
 
 use std::sync::Arc;
 
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use futures::StreamExt;
 use identity::PlayerIdentity;
 use player::MprisPlayer;
@@ -107,7 +107,7 @@ impl<T: IntoIterator<Item = &'static str> + Clone + Send + 'static> Mpris<T> {
                 Ok(dbus_proxy) => dbus_proxy,
                 Err(err) => {
                     event_sender.send(Err(err)).unwrap();
-                    todo!()
+                    return;
                 }
             };
 
@@ -138,6 +138,7 @@ impl<T: IntoIterator<Item = &'static str> + Clone + Send + 'static> Mpris<T> {
                                 let identity = match PlayerIdentity::new(name.to_string()) {
                                     Ok(identity) => identity,
                                     Err(err) => {
+                                        event_sender.send(Err(err.into())).unwrap();
                                         return;
                                     }
                                 };
@@ -164,11 +165,25 @@ impl<T: IntoIterator<Item = &'static str> + Clone + Send + 'static> Mpris<T> {
 
                             // There has been a mpris player detached.
                             if !old_owner.is_empty() && new_owner.is_empty() {
-                                let players = shared_players.lock().await;
+                                let mut players = shared_players.lock().await;
 
                                 // Only send out the PlayerDetached event if its on the shared players only.
-                                if let Some(player) = players.iter().find(|p| p.identity().check_both_or(&name)) {
+                                if let Some(index) = players.iter().position(|p| p.identity().check_both_or(&name)) {
+                                    let player = match players.get(index) {
+                                        Some(player) => player,
+                                        None => {
+                                            event_sender.send(Err(anyhow!("Expected a player at index {index} but got None"))).unwrap();
+                                            return;
+                                        }
+                                    };
+
+                                    // Gets the player identity.
                                     let identity = player.identity().clone();
+
+                                    // Remove the player at the shared players.
+                                    players.remove(index);
+
+                                    // Send out the PlayerDetached event.
                                     event_sender.send(Ok(MprisEvent::PlayerDetached(identity))).unwrap();
                                 }
                             }
