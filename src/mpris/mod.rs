@@ -123,10 +123,77 @@ impl<T: IntoIterator<Item = &'static str> + Clone + Send + 'static> Mpris<T> {
             let mut noc_stream = match dbus_proxy.receive_signal("NameOwnerChanged").await {
                 Ok(noc_stream) => noc_stream,
                 Err(err) => {
-                    event_sender.send(Err(err.into())).unwrap();
+                    event_sender
+                        .send(Err(anyhow!("Failed to create a stream for NameOwnerChanged: {err}")))
+                        .unwrap();
                     return;
                 }
             };
+
+            // Gets existing mpris player buses.
+            let buses: Vec<String> = match dbus_proxy.call("ListNames", &()).await {
+                Ok(buses) => buses,
+                Err(err) => {
+                    event_sender
+                        .send(Err(anyhow!("Failed to call ListNames through D-Bus: {err}")))
+                        .unwrap();
+                    return;
+                }
+            };
+
+            // Filter only mpris buses and if the bus is on the filter_players option.
+            let existing_players_identity = buses
+                .into_iter()
+                .filter_map(|bus| {
+                    // Creates identity from bus.
+                    let identity = match PlayerIdentity::new(bus.to_string()) {
+                        Ok(identity) => identity,
+                        Err(_) => {
+                            return None;
+                        }
+                    };
+
+                    // Checks if this bus is on the filter_players.
+                    let is_on_filter = options.as_ref().map_or(false, |f| {
+                        f.filter_players
+                            .clone()
+                            .into_iter()
+                            .find(|f| identity.check_both_or(&f))
+                            .is_some()
+                    });
+
+                    if bus.starts_with("org.mpris.MediaPlayer2.") && !is_on_filter {
+                        return Some(identity);
+                    }
+
+                    None
+                })
+                .collect::<Vec<PlayerIdentity>>();
+
+            // Loop over the existing players identity to add it on shared players and send out the PlayerAttached event.
+            for identity in existing_players_identity {
+                // Creates the player.
+                let shared_conn = Arc::clone(&shared_connection);
+                let player = match MprisPlayer::new(shared_conn, identity.clone()).await {
+                    Ok(player) => player,
+                    Err(err) => {
+                        event_sender.send(Err(err.into())).unwrap();
+                        return;
+                    }
+                };
+
+                // Watch this existing player for events.
+                player.watch(event_sender.clone());
+
+                // Push the player in the shared players.
+                let mut players = shared_players.lock().await;
+                players.push(player);
+
+                // Send out PlayerAttached event along with the identity.
+                event_sender
+                    .send(Ok(MprisEvent::PlayerAttached(identity)))
+                    .unwrap();
+            }
 
             loop {
                 tokio::select! {
@@ -156,8 +223,17 @@ impl<T: IntoIterator<Item = &'static str> + Clone + Send + 'static> Mpris<T> {
                                     }
                                 };
 
-                                // Check if the name is on the filter list in the options.
-                                if !options.as_ref().map_or(false, |f| f.filter_players.clone().into_iter().find(|f| identity.check_both_or(&f)).is_some()) {
+                                // Checks if this bus is on the filter_players.
+                                let is_on_filter = options.as_ref().map_or(false, |f| {
+                                    f.filter_players
+                                        .clone()
+                                        .into_iter()
+                                        .find(|f| identity.check_both_or(&f))
+                                        .is_some()
+                                });
+
+                                // Only add the player and send out the PlayerAttached event if the identity is not on the filter_players.
+                                if !is_on_filter {
                                     // Creates the player itself with the shared connection.
                                     let player = match MprisPlayer::new(Arc::clone(&shared_connection), identity.clone()).await {
                                         Ok(player) => player,
