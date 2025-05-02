@@ -1,5 +1,5 @@
 use core::fmt;
-use std::{convert::Infallible, str::FromStr};
+use std::str::FromStr;
 
 use anyhow::anyhow;
 
