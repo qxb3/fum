@@ -6,7 +6,7 @@ mod proxies;
 use std::{sync::Arc, time::Duration};
 
 use anyhow::{anyhow, Context};
-use futures::StreamExt;
+use futures::{lock::MutexGuard, StreamExt};
 use identity::PlayerIdentity;
 use player::MprisPlayer;
 use tokio::sync::{broadcast, mpsc, Mutex};

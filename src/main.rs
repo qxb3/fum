@@ -27,25 +27,21 @@ async fn main() -> FumResult<()> {
 
     mpris.watch();
 
-    loop {
-        let event_result = mpris.recv().await?;
+    while let Ok(event) = mpris.recv().await? {
+        match event {
+            MprisEvent::PlayerAttached(identity) => println!("ATTACHED = {:?}", identity),
+            MprisEvent::PlayerDetached(identity) => println!("DETACHED = {:?}", identity),
+            MprisEvent::PlayerPropertiesChanged(identity) => {
+                let players = players.try_lock()?;
 
-        match event_result {
-            Ok(event) => match event {
-                MprisEvent::PlayerAttached(identity) => println!("ATTACHED = {:?}", identity),
-                MprisEvent::PlayerDetached(identity) => println!("DETACHED = {:?}", identity),
-                MprisEvent::PlayerPropertiesChanged(identity) => {
-                    let players = players.try_lock()?;
-                    if let Some(player) = players.iter().find(|p| *p.identity() == identity) {
-                        println!("PLAYER_PROP_CHANGED = {:?}", player.metadata().await?)
-                    }
+                if let Some(player) = players.iter().find(|p| *p.identity() == identity) {
+                    println!("PLAYER_PROP_CHANGED = {:#?}", player.metadata().await?)
                 }
-                MprisEvent::PlayerSeeked(identity) => println!("PLAYER_SEEKED = {:?}", identity),
-                MprisEvent::PlayerPosition(identity, position) => {
-                    println!("PLAYER_POSITION = {:?} {:?}", identity, position.as_secs())
-                }
-            },
-            Err(err) => panic!("{:?}", err),
+            }
+            MprisEvent::PlayerSeeked(identity) => println!("PLAYER_SEEKED = {:?}", identity),
+            MprisEvent::PlayerPosition(identity, position) => {
+                println!("PLAYER_POSITION = {:?} {:?}", identity, position.as_secs())
+            }
         }
     }
 
