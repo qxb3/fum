@@ -32,7 +32,7 @@ impl PlayerIdentity {
 
     /// Checks if the bus identity starts witht the other string.
     pub fn check_bus(&self, other: &str) -> bool {
-        self.bus().starts_with(&other.to_lowercase())
+        self.bus().starts_with(other)
     }
 
     /// Calls both `check_short()` and `check_bus()` and returns true if even one is true.

@@ -2,7 +2,7 @@ use std::{collections::HashMap, str::FromStr, sync::Arc, time::Duration};
 
 use anyhow::anyhow;
 use futures::StreamExt;
-use tokio::sync::{mpsc, Mutex};
+use tokio::sync::{broadcast, mpsc, Mutex};
 use zbus::{zvariant, Connection, Proxy};
 
 use crate::{status::PlaybackStatus, FumResult};
@@ -57,8 +57,8 @@ impl MprisPlayer {
         shared_connection: Arc<Mutex<Connection>>,
         identity: PlayerIdentity,
     ) -> FumResult<Self> {
-        let player_proxy =
-            proxies::create_player_proxy(Arc::clone(&shared_connection), identity.bus()).await?;
+        let shared_conn = Arc::clone(&shared_connection);
+        let player_proxy = proxies::create_player_proxy(shared_conn, identity.bus()).await?;
 
         Ok(Self {
             connection: shared_connection,
@@ -68,7 +68,11 @@ impl MprisPlayer {
     }
 
     /// Start watching for player events.
-    pub fn watch(&self, event_sender: mpsc::UnboundedSender<FumResult<MprisEvent>>) {
+    pub fn watch(
+        &self,
+        event_sender: mpsc::UnboundedSender<FumResult<MprisEvent>>,
+        mut close_rx: broadcast::Receiver<String>,
+    ) {
         let shared_connection = self.connection();
         let identity = self.identity().clone();
 
@@ -119,11 +123,28 @@ impl MprisPlayer {
             loop {
                 tokio::select! {
                     // Tells tokio::select to check for the result chronologically.
-                    // So it checks if event channel has been closed first, then the rest.
+                    // So it checks if event channel has been closed or
+                    // if this player should stop receiving events first, then the rest.
                     biased;
 
                     // Break out of the loop if the event channel has been closed.
                     _ = event_sender.closed() => break,
+
+                    // Break out of the loop if the close channel event bus matches the identity.
+                    close_res = close_rx.recv() => {
+                        let bus = match close_res {
+                            Ok(bus) => bus,
+                            Err(err) => {
+                                event_sender.send(Err(anyhow!("Failed to receive close event: {err}"))).unwrap();
+                                break;
+                            }
+                        };
+
+                        // Break if it checks out.
+                        if identity.check_bus(&bus) {
+                            break
+                        }
+                    },
 
                     // Receive PropertiesChanged signal.
                     Some(_) = prop_changed_stream.next() => {

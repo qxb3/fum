@@ -9,7 +9,7 @@ use anyhow::{anyhow, Context};
 use futures::StreamExt;
 use identity::PlayerIdentity;
 use player::MprisPlayer;
-use tokio::sync::{mpsc, Mutex};
+use tokio::sync::{broadcast, mpsc, Mutex};
 use zbus::Connection;
 
 use crate::FumResult;
@@ -108,6 +108,11 @@ impl<T: IntoIterator<Item = &'static str> + Clone + Send + 'static> Mpris<T> {
 
         let event_sender = self.sender();
 
+        // Creates a broadcast channel for indicating to a player,
+        // that they have been removed.
+        // This channel will be sending out full bus names.
+        let (close_sender, _) = broadcast::channel::<String>(69); // 69 for good measure.
+
         tokio::spawn(async move {
             // Creates a new dbus proxy.
             let shared_conn = Arc::clone(&shared_connection);
@@ -126,6 +131,7 @@ impl<T: IntoIterator<Item = &'static str> + Clone + Send + 'static> Mpris<T> {
                     event_sender
                         .send(Err(anyhow!("Failed to create a stream for NameOwnerChanged: {err}")))
                         .unwrap();
+
                     return;
                 }
             };
@@ -137,6 +143,7 @@ impl<T: IntoIterator<Item = &'static str> + Clone + Send + 'static> Mpris<T> {
                     event_sender
                         .send(Err(anyhow!("Failed to call ListNames through D-Bus: {err}")))
                         .unwrap();
+
                     return;
                 }
             };
@@ -146,12 +153,7 @@ impl<T: IntoIterator<Item = &'static str> + Clone + Send + 'static> Mpris<T> {
                 .into_iter()
                 .filter_map(|bus| {
                     // Creates identity from bus.
-                    let identity = match PlayerIdentity::new(bus.to_string()) {
-                        Ok(identity) => identity,
-                        Err(_) => {
-                            return None;
-                        }
-                    };
+                    let identity = PlayerIdentity::new(bus.to_string()).ok()?;
 
                     // Checks if this bus is on the filter_players.
                     let is_on_filter = options.as_ref().map_or(false, |f| {
@@ -183,7 +185,7 @@ impl<T: IntoIterator<Item = &'static str> + Clone + Send + 'static> Mpris<T> {
                 };
 
                 // Watch this existing player for events.
-                player.watch(event_sender.clone());
+                player.watch(event_sender.clone(), close_sender.subscribe());
 
                 // Push the player in the shared players.
                 let mut players = shared_players.lock().await;
@@ -235,7 +237,8 @@ impl<T: IntoIterator<Item = &'static str> + Clone + Send + 'static> Mpris<T> {
                                 // Only add the player and send out the PlayerAttached event if the identity is not on the filter_players.
                                 if !is_on_filter {
                                     // Creates the player itself with the shared connection.
-                                    let player = match MprisPlayer::new(Arc::clone(&shared_connection), identity.clone()).await {
+                                    let shared_conn = Arc::clone(&shared_connection);
+                                    let player = match MprisPlayer::new(shared_conn, identity.clone()).await {
                                         Ok(player) => player,
                                         Err(err) => {
                                             event_sender.send(Err(err.into())).unwrap();
@@ -244,7 +247,7 @@ impl<T: IntoIterator<Item = &'static str> + Clone + Send + 'static> Mpris<T> {
                                     };
 
                                     // Watch this newly created player for events.
-                                    player.watch(event_sender.clone());
+                                    player.watch(event_sender.clone(), close_sender.subscribe());
 
                                     // Push the player in the shared players.
                                     let mut players = shared_players.lock().await;
@@ -274,6 +277,9 @@ impl<T: IntoIterator<Item = &'static str> + Clone + Send + 'static> Mpris<T> {
 
                                     // Remove the player at the shared players.
                                     players.remove(index);
+
+                                    // Send an event to the close channel.
+                                    close_sender.send(identity.bus().to_string()).unwrap();
 
                                     // Send out the PlayerDetached event.
                                     event_sender.send(Ok(MprisEvent::PlayerDetached(identity))).unwrap();
