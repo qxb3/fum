@@ -1,5 +1,7 @@
 use core::fmt;
-use std::str::FromStr;
+use std::{convert::Infallible, str::FromStr};
+
+use anyhow::anyhow;
 
 /// Playback status of a player.
 #[derive(Debug, PartialEq, Clone)]
@@ -18,14 +20,14 @@ pub enum LoopStatus {
 }
 
 impl FromStr for PlaybackStatus {
-    type Err = String;
+    type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "Playing" => Ok(PlaybackStatus::Playing),
             "Paused" => Ok(PlaybackStatus::Paused),
             "Stopped" => Ok(PlaybackStatus::Stopped),
-            _ => Err("PlaybackStatus is not Playing,Paused or Stopped.".into()),
+            _ => Err(anyhow!("PlaybackStatus is not Playing,Paused or Stopped")),
         }
     }
 }

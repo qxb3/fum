@@ -1,12 +1,18 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, str::FromStr, sync::Arc, time::Duration};
 
 use anyhow::anyhow;
-use tokio::sync::Mutex;
+use futures::StreamExt;
+use tokio::sync::{mpsc, Mutex};
 use zbus::{zvariant, Connection, Proxy};
 
-use crate::FumResult;
+use crate::{status::PlaybackStatus, FumResult};
 
-use super::{identity::PlayerIdentity, metadata::PlayerMetadata, proxies};
+use super::{
+    identity::PlayerIdentity,
+    metadata::PlayerMetadata,
+    proxies::{self, create_player_proxy, create_properties_proxy},
+    MprisEvent,
+};
 
 /// Represents an MPRIS media player instance.
 ///
@@ -51,16 +57,127 @@ impl MprisPlayer {
         shared_connection: Arc<Mutex<Connection>>,
         identity: PlayerIdentity,
     ) -> FumResult<Self> {
-        let shared_conn = Arc::clone(&shared_connection);
-        let connection = shared_conn.lock().await;
-
-        let player_proxy = proxies::create_player_proxy(&*connection, identity.bus()).await?;
+        let player_proxy =
+            proxies::create_player_proxy(Arc::clone(&shared_connection), identity.bus()).await?;
 
         Ok(Self {
             connection: shared_connection,
             player_proxy,
             identity,
         })
+    }
+
+    /// Start watching for player events.
+    pub fn watch(&self, event_sender: mpsc::UnboundedSender<FumResult<MprisEvent>>) {
+        let shared_connection = self.connection();
+        let identity = self.identity().clone();
+
+        tokio::spawn(async move {
+            // Creates a properties proxy.
+            let shared_conn = Arc::clone(&shared_connection);
+            let properties_proxy = match create_properties_proxy(shared_conn, identity.bus()).await
+            {
+                Ok(properties_proxy) => properties_proxy,
+                Err(err) => {
+                    event_sender.send(Err(err.into())).unwrap();
+                    return;
+                }
+            };
+
+            // Creates a player proxy.
+            let shared_conn = Arc::clone(&shared_connection);
+            let player_proxy = match create_player_proxy(shared_conn, identity.bus()).await {
+                Ok(player_proxy) => player_proxy,
+                Err(err) => {
+                    event_sender.send(Err(err.into())).unwrap();
+                    return;
+                }
+            };
+
+            // Creates a PropertiesChanged signal stream.
+            let mut prop_changed_stream =
+                match properties_proxy.receive_signal("PropertiesChanged").await {
+                    Ok(properties_changed) => properties_changed,
+                    Err(err) => {
+                        event_sender.send(Err(err.into())).unwrap();
+                        return;
+                    }
+                };
+
+            // Creates a Seeked signal stream.
+            let mut seeked_stream = match player_proxy.receive_signal("Seeked").await {
+                Ok(seeked_stream) => seeked_stream,
+                Err(err) => {
+                    event_sender.send(Err(err.into())).unwrap();
+                    return;
+                }
+            };
+
+            // Create a ticker that tick each seconds to tick me.
+            let mut tickler = tokio::time::interval(Duration::from_secs(1));
+
+            loop {
+                tokio::select! {
+                    // Tells tokio::select to check for the result chronologically.
+                    // So it checks if event channel has been closed first, then the rest.
+                    biased;
+
+                    // Break out of the loop if the event channel has been closed.
+                    _ = event_sender.closed() => break,
+
+                    // Receive PropertiesChanged signal.
+                    Some(_) = prop_changed_stream.next() => {
+                        // Send out PlayerPropertiesChanged event.
+                        event_sender.send(Ok(MprisEvent::PlayerPropertiesChanged(identity.clone()))).unwrap();
+                    },
+
+                    // Receive Seeked signal.
+                    Some(_) = seeked_stream.next() => {
+                        // Send out PlayerSeeked event.
+                        event_sender.send(Ok(MprisEvent::PlayerSeeked(identity.clone()))).unwrap();
+                    },
+
+                    // Tick that tickler!
+                    _ = tickler.tick() => {
+                        // Gets the player playback status from D-Bus.
+                        let playback_status: String = match player_proxy.get_property("PlaybackStatus").await {
+                            Ok(playback_status) => playback_status,
+                            Err(err) => {
+                                event_sender.send(Err(anyhow!("Failed to get playback status: {err}"))).unwrap();
+                                return;
+                            }
+                        };
+
+                        // Converts the playback status into PlaybackStatus type.
+                        let playback_status = match PlaybackStatus::from_str(&playback_status) {
+                            Ok(playback_status) => playback_status,
+                            Err(err) => {
+                                event_sender.send(Err(anyhow!("Failed to parse playback status: {err}"))).unwrap();
+                                return;
+                            }
+                        };
+
+                        // Only send out the PlayerPosition event if the playback is Playing.
+                        if playback_status == PlaybackStatus::Playing {
+                            // Gets the player position from the D-Bus.
+                            let position: i64 = match player_proxy.get_property("Position").await {
+                                Ok(position) => position,
+                                Err(err) => {
+                                    event_sender.send(Err(anyhow!("Failed to get player Position: {err}"))).unwrap();
+                                    return;
+                                }
+                            };
+
+                            // Converts the player position into Duration type.
+                            let position = Duration::from_micros(position as u64);
+
+                            // Send out PlayerPosition event.
+                            event_sender.send(Ok(MprisEvent::PlayerPosition(identity.clone(), position))).unwrap();
+                        }
+                    },
+                }
+            }
+        });
     }
 
     /// Metadata of player.
@@ -152,6 +269,11 @@ impl MprisPlayer {
         let can_control: bool = self.player_proxy.get_property("CanControl").await?;
 
         Ok(can_control)
+    }
+
+    /// Gets the shared mpris connection.
+    fn connection(&self) -> Arc<Mutex<Connection>> {
+        Arc::clone(&self.connection)
     }
 
     /// Gets the identity of the player.

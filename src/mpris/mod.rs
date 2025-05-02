@@ -3,7 +3,7 @@ mod metadata;
 mod player;
 mod proxies;
 
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
 use anyhow::{anyhow, Context};
 use futures::StreamExt;
@@ -21,6 +21,15 @@ pub enum MprisEvent {
 
     /// Triggers when an existing player has been detached or removed.
     PlayerDetached(PlayerIdentity),
+
+    /// Triggers when one of the player's properties changed.
+    PlayerPropertiesChanged(PlayerIdentity),
+
+    /// Triggers when one of the player's position changed due to the user manually changing it.
+    PlayerSeeked(PlayerIdentity),
+
+    /// Triggers when one of the player's position changed.
+    PlayerPosition(PlayerIdentity, Duration),
 }
 
 /// Mpris options.
@@ -80,14 +89,14 @@ impl<T: IntoIterator<Item = &'static str> + Clone + Send + 'static> Mpris<T> {
     pub async fn new(options: Option<MprisOptions<T>>) -> FumResult<Self> {
         let connection = Arc::new(Mutex::new(Connection::session().await?));
         let players = Arc::new(Mutex::new(Vec::new()));
-        let (event_sender, event_receiver) = mpsc::unbounded_channel();
+        let (sender, receiver) = mpsc::unbounded_channel();
 
         Ok(Self {
             connection,
             players,
             options,
-            sender: event_sender,
-            receiver: event_receiver,
+            sender,
+            receiver,
         })
     }
 
@@ -97,13 +106,12 @@ impl<T: IntoIterator<Item = &'static str> + Clone + Send + 'static> Mpris<T> {
         let shared_players = self.players();
         let options = self.options();
 
-        let event_sender = self.sender.clone();
+        let event_sender = self.sender();
 
         tokio::spawn(async move {
-            let connection = shared_connection.lock().await;
-
             // Creates a new dbus proxy.
-            let dbus_proxy = match proxies::create_dbus_proxy(&*connection).await {
+            let shared_conn = Arc::clone(&shared_connection);
+            let dbus_proxy = match proxies::create_dbus_proxy(shared_conn).await {
                 Ok(dbus_proxy) => dbus_proxy,
                 Err(err) => {
                     event_sender.send(Err(err)).unwrap();
@@ -122,6 +130,11 @@ impl<T: IntoIterator<Item = &'static str> + Clone + Send + 'static> Mpris<T> {
 
             loop {
                 tokio::select! {
+                    // Tells tokio::select to check for the result chronologically.
+                    // So it checks if event channel has been closed first, then the rest.
+                    biased;
+
+                    // Break out of the loop if the event channel has been closed.
                     _ = event_sender.closed() => break,
 
                     // Receive NameOwnerChanged signal.
@@ -153,6 +166,9 @@ impl<T: IntoIterator<Item = &'static str> + Clone + Send + 'static> Mpris<T> {
                                             return;
                                         }
                                     };
+
+                                    // Watch this newly created player for events.
+                                    player.watch(event_sender.clone());
 
                                     // Push the player in the shared players.
                                     let mut players = shared_players.lock().await;
@@ -215,6 +231,11 @@ impl<T: IntoIterator<Item = &'static str> + Clone + Send + 'static> Mpris<T> {
     /// Gets the shared active players.
     pub fn players(&self) -> Arc<Mutex<Vec<MprisPlayer>>> {
         Arc::clone(&self.players)
+    }
+
+    /// Gets the cloned event sender.
+    fn sender(&self) -> mpsc::UnboundedSender<FumResult<MprisEvent>> {
+        self.sender.clone()
     }
 }
 

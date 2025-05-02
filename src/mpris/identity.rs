@@ -3,7 +3,7 @@ use anyhow::Context;
 use crate::FumResult;
 
 /// The player identity the player can have.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PlayerIdentity {
     /// The short name of player.
     short: String,
@@ -22,10 +22,7 @@ impl PlayerIdentity {
             .context("Failed to get player identity, bus_name might not be formatted correctly")?
             .to_lowercase();
 
-        Ok(Self {
-            short,
-            bus: bus.to_lowercase(),
-        })
+        Ok(Self { short, bus })
     }
 
     /// Checks if the short identity matches the other string.
