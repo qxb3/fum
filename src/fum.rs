@@ -23,8 +23,7 @@ impl Fum {
     pub fn new() -> FumResult<Self> {
         let event_manager = EventManager::new();
         let terminal = Terminal::new(10)?;
-
-        let state = State::default();
+        let state = State::new();
 
         Ok(Self {
             event_manager,
