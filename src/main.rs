@@ -1,11 +1,7 @@
-mod mpris;
-mod status;
-
-/// Type alias for global Result.
+/// Global Result type.
 type FumResult<T> = anyhow::Result<T>;
 
 #[tokio::main]
 async fn main() -> FumResult<()> {
-
     Ok(())
 }
