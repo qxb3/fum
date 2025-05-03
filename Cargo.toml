@@ -9,7 +9,6 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.98"
-async-trait = "0.1.88"
 base64 = "0.22.1"
 clap = { version = "4.5.32", features = ["derive"] }
 crossterm = { version = "0.28.1", features = ["event-stream"] }
@@ -23,7 +22,6 @@ rhai = "1.21.0"
 taffy = "0.8.0"
 tokio = { version = "1.43.0", features = ["full"] }
 unicode-width = "0.2.0"
-zbus = { version = "5.5.0", default-features = false, features = ["tokio"] }
 
 [[bin]]
 name = "fum"
