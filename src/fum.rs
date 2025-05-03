@@ -1,9 +1,7 @@
-use std::{process, sync::Arc};
-
-use tokio::sync::Mutex;
+use std::process;
 
 use crate::{
-    event::{Event, EventManager, TerminalEvent},
+    event::{Event, EventManager},
     state::State,
     terminal::Terminal,
     FumResult,
@@ -18,7 +16,7 @@ pub struct Fum {
     terminal: Terminal,
 
     /// Shared state.
-    state: Arc<Mutex<State>>,
+    state: State,
 }
 
 impl Fum {
@@ -26,7 +24,7 @@ impl Fum {
         let event_manager = EventManager::new();
         let terminal = Terminal::new(10)?;
 
-        let state = Arc::new(Mutex::new(State::default()));
+        let state = State::default();
 
         Ok(Self {
             event_manager,
@@ -39,12 +37,13 @@ impl Fum {
         // Sends events to event manager.
         self.terminal.send_events(self.event_manager.sender());
 
-        while !self.should_exit()? {
+        // Main loop.
+        while !self.state.exit() {
             let event_res = self.event_manager.recv().await?;
 
             match event_res {
                 Ok(event) => match event {
-                    Event::Terminal(term_event) => self.handle_term_event(term_event)?,
+                    Event::Terminal(event) => self.terminal.handle(&mut self.state, event).await?,
                 },
                 Err(err) => {
                     eprintln!("ERROR: {err}");
@@ -53,54 +52,9 @@ impl Fum {
             }
         }
 
+        // Restores the terminal after exiting.
         Terminal::restore()?;
 
         Ok(())
-    }
-
-    /// Handles TerminalEvent events.
-    fn handle_term_event(&mut self, event: TerminalEvent) -> FumResult<()> {
-        match event {
-            TerminalEvent::Term(event) => match event {
-                crossterm::event::Event::Key(key) => self.handle_key_input(key)?,
-
-                _ => {}
-            },
-            TerminalEvent::Tick(fps) => self.handle_tick(fps)?,
-        }
-
-        Ok(())
-    }
-
-    /// Handles keyboard input.
-    fn handle_key_input(&mut self, key: crossterm::event::KeyEvent) -> FumResult<()> {
-        match key.code {
-            crossterm::event::KeyCode::Char('q') => {
-                let mut state = self.state.try_lock()?;
-                state.set_exit();
-            }
-
-            _ => {}
-        }
-
-        Ok(())
-    }
-
-    /// Handles TerminalEvent::Tick event.
-    fn handle_tick(&mut self, fps: u64) -> FumResult<()> {
-        let terminal = self.terminal.ratatui_terminal_mut();
-        terminal.draw(|frame| {
-            frame.render_widget(ratatui::text::Text::from(fps.to_string().as_str()), frame.area());
-        })?;
-
-        Ok(())
-    }
-
-    /// Checks the exit state to see if we should exit.
-    fn should_exit(&self) -> FumResult<bool> {
-        let state = self.state.try_lock()?;
-        let exit = state.exit();
-
-        Ok(exit)
     }
 }

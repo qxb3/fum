@@ -1,3 +1,4 @@
+/// A struct that will contains all the state for fum.
 pub struct State {
     exit: bool,
 }
@@ -5,6 +6,12 @@ pub struct State {
 impl Default for State {
     fn default() -> Self {
         Self { exit: false }
+    }
+}
+
+impl State {
+    pub fn new() -> Self {
+        Self::default()
     }
 }
 

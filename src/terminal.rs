@@ -1,3 +1,4 @@
+use std::io;
 use std::time::{Duration, Instant};
 
 use anyhow::anyhow;
@@ -6,13 +7,14 @@ use ratatui::prelude::CrosstermBackend;
 
 use crate::{
     event::{Event, EventSender, TerminalEvent},
+    state::State,
     FumResult,
 };
 
 /// Manages the terminal input and rendering.
 pub struct Terminal {
     /// Ratatui terminal.
-    terminal: ratatui::Terminal<CrosstermBackend<std::io::Stdout>>,
+    terminal: ratatui::Terminal<CrosstermBackend<io::Stdout>>,
 
     /// The rate the tick event will be sent out.
     tick_rate: Duration,
@@ -20,13 +22,13 @@ pub struct Terminal {
 
 impl Terminal {
     pub fn new(fps: u64) -> FumResult<Self> {
-        let terminal = ratatui::Terminal::new(CrosstermBackend::new(std::io::stdout()))?;
+        let terminal = ratatui::Terminal::new(CrosstermBackend::new(io::stdout()))?;
 
         // Switch to alternative screen.
-        crossterm::execute!(std::io::stdout(), crossterm::terminal::EnterAlternateScreen)?;
+        crossterm::execute!(io::stdout(), crossterm::terminal::EnterAlternateScreen)?;
 
         // Enables mouse capture.
-        crossterm::execute!(std::io::stdout(), crossterm::event::EnableMouseCapture)?;
+        crossterm::execute!(io::stdout(), crossterm::event::EnableMouseCapture)?;
 
         // Enables raw mode.
         crossterm::terminal::enable_raw_mode()?;
@@ -93,13 +95,55 @@ impl Terminal {
         });
     }
 
+    /// Handle the terminal events.
+    pub async fn handle(&mut self, state: &mut State, event: TerminalEvent) -> FumResult<()> {
+        match event {
+            TerminalEvent::Term(event) => match event {
+                crossterm::event::Event::Key(key) => self.handle_key_input(state, key)?,
+
+                _ => {}
+            },
+            TerminalEvent::Tick(fps) => self.handle_tick(fps)?,
+        }
+
+        Ok(())
+    }
+
+    /// Handles keyboard input.
+    fn handle_key_input(
+        &self,
+        state: &mut State,
+        key: crossterm::event::KeyEvent,
+    ) -> FumResult<()> {
+        match key.code {
+            crossterm::event::KeyCode::Char('q') => {
+                state.set_exit();
+            }
+
+            _ => {}
+        }
+
+        Ok(())
+    }
+
+    /// Handles TerminalEvent::Tick event.
+    fn handle_tick(&mut self, fps: u64) -> FumResult<()> {
+        let terminal = self.ratatui_terminal_mut();
+
+        terminal.draw(|frame| {
+            frame.render_widget(ratatui::text::Text::from(fps.to_string().as_str()), frame.area());
+        })?;
+
+        Ok(())
+    }
+
     /// Restores the terminal's original state.
     pub fn restore() -> FumResult<()> {
         // Switch out of alternate screen.
-        crossterm::execute!(std::io::stdout(), crossterm::terminal::LeaveAlternateScreen)?;
+        crossterm::execute!(io::stdout(), crossterm::terminal::LeaveAlternateScreen)?;
 
         // Disables mouse capture.
-        crossterm::execute!(std::io::stdout(), crossterm::event::DisableMouseCapture)?;
+        crossterm::execute!(io::stdout(), crossterm::event::DisableMouseCapture)?;
 
         // Disables raw mode.
         crossterm::terminal::disable_raw_mode()?;
@@ -109,14 +153,12 @@ impl Terminal {
 
     /// Gets the reference to ratatui::Terminal.
     #[allow(dead_code)]
-    pub fn ratatui_terminal(&self) -> &ratatui::Terminal<CrosstermBackend<std::io::Stdout>> {
+    pub fn ratatui_terminal(&self) -> &ratatui::Terminal<CrosstermBackend<io::Stdout>> {
         &self.terminal
     }
 
     /// Gets the mutable reference to ratatui::Terminal.
-    pub fn ratatui_terminal_mut(
-        &mut self,
-    ) -> &mut ratatui::Terminal<CrosstermBackend<std::io::Stdout>> {
+    pub fn ratatui_terminal_mut(&mut self) -> &mut ratatui::Terminal<CrosstermBackend<io::Stdout>> {
         &mut self.terminal
     }
 }
