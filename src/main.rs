@@ -4,6 +4,7 @@ mod fum;
 mod script;
 mod state;
 mod terminal;
+mod track;
 
 use fum::Fum;
 
@@ -14,8 +15,8 @@ pub type FumErr = anyhow::Error;
 #[tokio::main]
 async fn main() -> FumResult<()> {
     if let Some((config_path, run_mode)) = cli::run().await? {
-        let mut fum = Fum::new()?;
-        fum.run(config_path, run_mode).await?;
+        let mut fum = Fum::new(config_path)?;
+        fum.run(run_mode).await?;
     }
 
     Ok(())

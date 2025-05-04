@@ -25,9 +25,9 @@ pub struct Fum<'a> {
 }
 
 impl<'a> Fum<'a> {
-    pub fn new() -> FumResult<Self> {
+    pub fn new(config_path: PathBuf) -> FumResult<Self> {
         let event_manager = EventManager::new();
-        let script = Script::new(event_manager.sender())?;
+        let script = Script::new(config_path, event_manager.sender())?;
         let terminal = Terminal::new(10)?;
         let state = State::new();
 
@@ -40,12 +40,12 @@ impl<'a> Fum<'a> {
     }
 
     /// Runs fum.
-    pub async fn run(&mut self, config_path: PathBuf, _run_mode: RunMode) -> FumResult<()> {
+    pub async fn run(&mut self, _run_mode: RunMode) -> FumResult<()> {
         // Executes the script at start.
         self.script.execute()?;
 
         // Watches the config script file for changes.
-        self.script.watch_config(&config_path)?;
+        self.script.watch_config()?;
 
         // Sends events to event manager.
         self.terminal.send_events(self.event_manager.sender());

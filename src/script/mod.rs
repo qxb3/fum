@@ -1,56 +1,60 @@
+mod engine;
+mod scope;
 mod watcher;
 
 use std::path::PathBuf;
 
-use notify::Watcher;
-use rhai::{Engine, Scope};
+use engine::Engine;
+use scope::GlobalVars;
 use watcher::ConfigWatcher;
 
 use crate::{
-    event::{Event, EventSender, ScriptEvent},
+    event::{EventSender, ScriptEvent},
     state::State,
+    track::Track,
     FumResult,
 };
 
 /// Manages the config script.
 pub struct Script<'a> {
-    /// Where global variables will be put.
-    scope: Scope<'a>,
-
-    /// Main rhai engine.
+    /// The script engine.
     engine: Engine,
+
+    /// Where global variables will be put.
+    global_vars: GlobalVars<'a>,
 
     /// Config watcher.
     config_watcher: ConfigWatcher,
+
+    /// Path to the config script.
+    config_path: PathBuf,
 }
 
 impl<'a> Script<'a> {
-    pub fn new(event_sender: EventSender) -> FumResult<Self> {
-        let scope = Scope::new();
-
-        let mut engine = Engine::new();
-
-        // Have enough expr depths so it won't panic at runtime
-        // about having super nested layouts.
-        engine.set_max_expr_depths(69420, 69420);
-
+    pub fn new(config_path: PathBuf, event_sender: EventSender) -> FumResult<Self> {
+        let engine = Engine::new(config_path.clone())?;
+        let mut global_vars = GlobalVars::new();
         let config_watcher = ConfigWatcher::new(event_sender.clone())?;
 
+        // Sets the global track variables on default track.
+        global_vars.set_track(&Track::default());
+
         Ok(Self {
-            scope,
+            global_vars,
             engine,
             config_watcher,
+            config_path,
         })
     }
 
     /// Handle the script events.
     pub async fn handle(&mut self, state: &mut State, event: ScriptEvent) -> FumResult<()> {
         match event {
-            ScriptEvent::ConfigUpdated => {}
-            ScriptEvent::LayoutUpdated => {}
+            ScriptEvent::ConfigUpdated => state.set_config(()),
+            ScriptEvent::LayoutUpdated => state.set_layout(()),
             ScriptEvent::ConfigModified => {
                 // Recompiles & Reexecute the script when the config script has been modified.
-                self.recompile()?;
+                self.compile()?;
                 self.execute()?;
             }
         }
@@ -58,23 +62,23 @@ impl<'a> Script<'a> {
         Ok(())
     }
 
-    /// Executes the script.
-    pub fn execute(&mut self) -> FumResult<()> {
-        println!("EXECUTE!");
+    /// Compiles the script in engine.
+    pub fn compile(&mut self) -> FumResult<()> {
+        self.engine.compile()?;
 
         Ok(())
     }
 
-    /// Recompiles the ast.
-    pub fn recompile(&mut self) -> FumResult<()> {
-        println!("RECOMPILE!");
+    /// Executes the script in engine.
+    pub fn execute(&mut self) -> FumResult<()> {
+        self.engine.execute(&mut self.global_vars)?;
 
         Ok(())
     }
 
     /// Watches the config for changes.
-    pub fn watch_config(&mut self, config_path: &PathBuf) -> FumResult<()> {
-        self.config_watcher.watch(config_path)?;
+    pub fn watch_config(&mut self) -> FumResult<()> {
+        self.config_watcher.watch(&self.config_path)?;
 
         Ok(())
     }
