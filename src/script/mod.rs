@@ -5,6 +5,7 @@ mod watcher;
 
 use std::path::PathBuf;
 
+use anyhow::anyhow;
 use engine::Engine;
 use scope::GlobalVars;
 use watcher::ConfigWatcher;
@@ -71,6 +72,20 @@ impl<'a> Script<'a> {
                 }
 
                 // Sets the error to None if both compile & executes run successfuly.
+                state.set_error(None);
+            }
+            ScriptEvent::ButtonClicked(func) => {
+                let rhai_engine = self.engine.rhai_engine();
+                let ast = self.engine.ast();
+
+                if let Err(err) = func.call::<()>(rhai_engine, ast, ()) {
+                    self.event_sender
+                        .send(Err(anyhow!("Failed to call a button's function: {err}")))?;
+
+                    return Ok(());
+                }
+
+                // Sets the error to None if the function call runs successfuly.
                 state.set_error(None);
             }
         }

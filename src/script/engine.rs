@@ -88,4 +88,14 @@ impl Engine {
 
         Ok(())
     }
+
+    /// Gets the internal rhai engine.
+    pub fn rhai_engine(&self) -> &rhai::Engine {
+        &self.engine
+    }
+
+    /// Gets the AST.
+    pub fn ast(&self) -> &rhai::AST {
+        &self.ast
+    }
 }

@@ -1,6 +1,9 @@
 use anyhow::anyhow;
 
-use crate::{event::EventSender, widget::FumWidgetKind};
+use crate::{
+    event::EventSender,
+    widget::{FumWidgetKind, SendSyncFnPtr},
+};
 
 /// raw function of BUTTON().
 pub fn button_function_raw(
@@ -48,7 +51,7 @@ pub fn button_function_raw(
 
         // Parse func.
         let func = match func_opt.try_cast_result::<rhai::FnPtr>() {
-            Ok(func) => func,
+            Ok(func) => SendSyncFnPtr::new(func),
             Err(_) => {
                 event_sender
                     .send(Err(anyhow!("Button `func` needs to be a valid function")))

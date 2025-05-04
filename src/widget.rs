@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use anyhow::{anyhow, Context};
 use ratatui::{layout::Rect, style::Color};
 use taffy::{
@@ -5,6 +7,27 @@ use taffy::{
 };
 
 use crate::FumResult;
+
+/// Wraps rhai::FnPtr in Send + Sync struct.
+#[derive(Debug, Clone)]
+pub struct SendSyncFnPtr(rhai::FnPtr);
+
+unsafe impl Send for SendSyncFnPtr {}
+unsafe impl Sync for SendSyncFnPtr {}
+
+impl Deref for SendSyncFnPtr {
+    type Target = rhai::FnPtr;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl SendSyncFnPtr {
+    pub fn new(func: rhai::FnPtr) -> Self {
+        Self(func)
+    }
+}
 
 /// Which source the slider should be using.
 #[derive(Debug, Clone)]
@@ -83,7 +106,7 @@ pub enum FumWidgetKind {
         widget_kind: Box<FumWidgetKind>,
 
         /// The button function when clicked.
-        func: rhai::FnPtr,
+        func: SendSyncFnPtr,
     },
 
     Slider {
@@ -236,6 +259,46 @@ impl FumWidgetKind {
             .context("Failed to set the widget node context")?;
 
         Ok(node)
+    }
+
+    /// Checks if kind is cover container.
+    pub fn is_container(&self) -> bool {
+        match self {
+            FumWidgetKind::Container { .. } => true,
+            _ => false,
+        }
+    }
+
+    /// Checks if kind is cover image.
+    pub fn is_cover_img(&self) -> bool {
+        match self {
+            FumWidgetKind::CoverImage { .. } => true,
+            _ => false,
+        }
+    }
+
+    /// Checks if kind is label.
+    pub fn is_label(&self) -> bool {
+        match self {
+            FumWidgetKind::Label { .. } => true,
+            _ => false,
+        }
+    }
+
+    /// Checks if kind is button.
+    pub fn is_button(&self) -> bool {
+        match self {
+            FumWidgetKind::Button { .. } => true,
+            _ => false,
+        }
+    }
+
+    /// Checks if kind is slider.
+    pub fn is_slider(&self) -> bool {
+        match self {
+            FumWidgetKind::Slider { .. } => true,
+            _ => false,
+        }
     }
 }
 

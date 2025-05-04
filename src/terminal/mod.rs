@@ -8,6 +8,8 @@ use anyhow::anyhow;
 use futures::{FutureExt, StreamExt};
 use ratatui::prelude::CrosstermBackend;
 
+use crate::event::ScriptEvent;
+use crate::widget::FumWidgetKind;
 use crate::{
     event::{Event, EventSender, TerminalEvent},
     state::State,
@@ -111,9 +113,39 @@ impl Terminal {
         match event {
             TerminalEvent::Term(event) => match event {
                 crossterm::event::Event::Key(key) => self.handle_key_input(state, key)?,
+                crossterm::event::Event::Mouse(mouse) => self.handle_mouse_input(state, mouse)?,
                 _ => {}
             },
             TerminalEvent::Tick(fps) => self.handle_tick(state, fps)?,
+        }
+
+        Ok(())
+    }
+
+    /// Handles mouse input.
+    fn handle_mouse_input(
+        &self,
+        state: &mut State,
+        mouse: crossterm::event::MouseEvent,
+    ) -> FumResult<()> {
+        match mouse.kind {
+            crossterm::event::MouseEventKind::Down(crossterm::event::MouseButton::Left) => {
+                let layout = state.layout();
+
+                // Check in layout widgets to see if any buttons has been clicked.
+                for widget in layout {
+                    match &widget.kind {
+                        FumWidgetKind::Button { func, .. } => {
+                            // Sends out ButtonClicked event.
+                            self.event_sender
+                                .send(Ok(Event::Script(ScriptEvent::ButtonClicked(func.clone()))))
+                                .unwrap();
+                        }
+                        _ => {}
+                    }
+                }
+            }
+            _ => {}
         }
 
         Ok(())

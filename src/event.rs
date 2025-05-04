@@ -1,7 +1,11 @@
 use anyhow::anyhow;
 use tokio::sync::mpsc;
 
-use crate::{config::Config, widget::FumWidget, FumResult};
+use crate::{
+    config::Config,
+    widget::{FumWidget, SendSyncFnPtr},
+    FumResult,
+};
 
 /// Script events.
 #[derive(Debug)]
@@ -14,6 +18,9 @@ pub enum ScriptEvent {
 
     /// When the config script file has been changed.
     ConfigModified,
+
+    /// When a button widget has been clicked.
+    ButtonClicked(SendSyncFnPtr),
 }
 
 /// Terminal events.
@@ -22,7 +29,7 @@ pub enum TerminalEvent {
     /// All crossterm events.
     Term(crossterm::event::Event),
 
-    /// Its tick time.
+    /// Its tickler time!.
     Tick(u64),
 }
 
