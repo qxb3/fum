@@ -46,10 +46,17 @@ impl Engine {
 
         // Register custom global functions.
         engine
+            // Top level functions.
             .register_fn("CONFIG", functions::config_function(event_sender.clone()))
             .register_fn("LAYOUT", functions::layout_function_raw(event_sender.clone()))
             .register_fn("LAYOUT", functions::layout_function(event_sender.clone()))
-            .register_fn("LAYOUT", functions::layout_function_ext(event_sender.clone()));
+            .register_fn("LAYOUT", functions::layout_function_ext(event_sender.clone()))
+            // Widget functions.
+            .register_fn("Label", functions::label_function_raw(event_sender.clone()))
+            .register_fn("Label", functions::label_function(event_sender.clone()))
+            .register_fn("Label", functions::label_function_ext(event_sender.clone()))
+            .register_fn("Button", functions::button_function_raw(event_sender.clone()))
+            .register_fn("Button", functions::button_function(event_sender.clone()));
 
         // Compile config script into ast.
         let ast = engine

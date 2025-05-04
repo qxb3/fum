@@ -2,8 +2,7 @@ use std::{path::PathBuf, sync::mpsc};
 
 use anyhow::anyhow;
 use notify::{
-    event::{CreateKind, ModifyKind},
-    recommended_watcher, EventKind, INotifyWatcher, RecursiveMode, Watcher,
+    event::CreateKind, recommended_watcher, EventKind, INotifyWatcher, RecursiveMode, Watcher,
 };
 
 use crate::{

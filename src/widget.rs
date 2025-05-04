@@ -59,10 +59,11 @@ pub enum FumWidgetKind {
         text: String,
 
         /// Whether the label should be vertical.
+        #[allow(dead_code)]
         vertical: bool,
 
         /// The max chars the label will render.
-        max_chars: u16,
+        max_chars: Option<u16>,
 
         /// Foreground color of the label.
         fg: Color,
@@ -78,8 +79,8 @@ pub enum FumWidgetKind {
     },
 
     Button {
-        /// The widget of this button.
-        widget: Box<FumWidgetKind>,
+        /// The widget kind of this button.
+        widget_kind: Box<FumWidgetKind>,
 
         /// The button function when clicked.
         func: rhai::FnPtr,
@@ -101,10 +102,10 @@ pub enum FumWidgetKind {
 #[derive(Debug, Clone)]
 pub struct FumWidget {
     /// The rect of the widget.
-    rect: Rect,
+    pub rect: Rect,
 
     /// The kind of the widget along with its data.
-    kind: FumWidgetKind,
+    pub kind: FumWidgetKind,
 }
 
 unsafe impl Send for FumWidget {}
@@ -195,7 +196,9 @@ impl FumWidgetKind {
                 label_node
             }
 
-            Self::Button { widget, .. } => {
+            Self::Button {
+                widget_kind: widget, ..
+            } => {
                 // Recursively create the node of the button widget.
                 let widget_node = widget.create_node(taffy)?;
 

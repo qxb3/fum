@@ -143,7 +143,7 @@ pub fn layout_function_raw(event_sender: EventSender) -> impl Fn(rhai::Map) {
         let mut nodes = vec![];
         for widget in layout {
             // Parse the widget from layout opt.
-            let widget = match widget.try_cast_result::<FumWidgetKind>() {
+            let widget_res = match widget.try_cast_result::<Option<FumWidgetKind>>() {
                 Ok(widget) => widget,
                 Err(_) => {
                     event_sender
@@ -154,17 +154,20 @@ pub fn layout_function_raw(event_sender: EventSender) -> impl Fn(rhai::Map) {
                 }
             };
 
-            // Creates a node.
-            let node = match widget.create_node(&mut taffy) {
-                Ok(node) => node,
-                Err(err) => {
-                    event_sender.send(Err(err)).unwrap();
+            // A None widget means it errors we skip those.
+            if let Some(widget) = widget_res {
+                // Creates a node.
+                let node = match widget.create_node(&mut taffy) {
+                    Ok(node) => node,
+                    Err(err) => {
+                        event_sender.send(Err(err)).unwrap();
 
-                    return;
-                }
-            };
+                        return;
+                    }
+                };
 
-            nodes.push(node);
+                nodes.push(node);
+            }
         }
 
         // Creates the root node that will contain the widgets.
@@ -298,8 +301,8 @@ pub fn layout_function(event_sender: EventSender) -> impl Fn(LayoutLocation, rha
         opts.insert("location".into(), rhai::Dynamic::from(location));
         opts.insert("layout".into(), rhai::Dynamic::from_array(children));
 
-        let func = layout_function_raw(event_sender.clone());
-        func(opts)
+        let raw = layout_function_raw(event_sender.clone());
+        raw(opts)
     }
 }
 
@@ -310,7 +313,7 @@ pub fn layout_function_ext(event_sender: EventSender) -> impl Fn(rhai::Array, rh
         opts.insert("layout".into(), rhai::Dynamic::from_array(children));
         opts.extend(ext_opts);
 
-        let func = layout_function_raw(event_sender.clone());
-        func(opts)
+        let raw = layout_function_raw(event_sender.clone());
+        raw(opts)
     }
 }

@@ -1,13 +1,56 @@
-use ratatui::Frame;
+use std::ops::Deref;
 
-use crate::state::State;
+use ratatui::{
+    style::Stylize,
+    widgets::{Paragraph, Wrap},
+    Frame,
+};
+
+use crate::{
+    state::State,
+    utils,
+    widget::{FumWidget, FumWidgetKind},
+};
 
 /// Render the ui.
 pub fn render(state: &mut State, frame: &mut Frame<'_>) {
-    let config = state.config();
+    let layout = state.layout();
 
-    frame.render_widget(
-        ratatui::text::Text::from(format!("Fps Set: {}. Current Fps: {}", 10, config.fps)),
-        frame.area(),
-    );
+    for widget in layout {
+        render_widget(&widget, frame);
+    }
+}
+
+/// Render a widget.
+pub fn render_widget(widget: &FumWidget, frame: &mut Frame<'_>) {
+    match &widget.kind {
+        FumWidgetKind::CoverImage { .. } => {}
+
+        FumWidgetKind::Label {
+            text,
+            max_chars,
+            fg,
+            bg,
+            ..
+        } => {
+            let text = match max_chars {
+                Some(max_chars) => utils::truncate(&text, *max_chars as usize),
+                None => text.to_string(),
+            };
+
+            frame.render_widget(
+                Paragraph::new(text).wrap(Wrap::default()).fg(*fg).bg(*bg),
+                widget.rect,
+            );
+        }
+
+        FumWidgetKind::Button { widget_kind, .. } => {
+            let button_widget = FumWidget::new(widget.rect, widget_kind.deref().clone());
+            render_widget(&button_widget, frame);
+        }
+
+        FumWidgetKind::Slider { .. } => {}
+
+        _ => {}
+    }
 }
