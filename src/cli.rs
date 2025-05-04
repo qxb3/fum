@@ -1,6 +1,7 @@
+use anyhow::Context;
 use clap::{command, Parser, Subcommand};
 use mprizzle::{Mpris, MprisEvent};
-use std::path::PathBuf;
+use std::{env, path::PathBuf};
 
 use crate::FumResult;
 
@@ -38,7 +39,25 @@ enum Command {
 
 /// Runs the cli.
 pub async fn run() -> FumResult<Option<(PathBuf, RunMode)>> {
-    let cli = Cli::parse();
+    let mut cli = Cli::parse();
+
+    // Expands the tilde if found one.
+    // Shells already do this for you but if there is no
+    // --config <path> that is specified it will use the `default_value`
+    // and that won't expand.
+    if cli.config.starts_with("~") {
+        // Gets the $HOME path from envs.
+        let home_path = env::var("HOME").context("Missing $HOME variable")?;
+
+        // Strip the ~ from the config path.
+        let stripped_path = cli
+            .config
+            .strip_prefix("~")
+            .context("Expected that ~ to be stripped")?;
+
+        // Updates the config from cli.
+        cli.config = PathBuf::from(home_path).join(stripped_path);
+    }
 
     match cli.command {
         Command::Player => Ok(Some((cli.config, RunMode::Player))),
