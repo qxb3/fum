@@ -1,6 +1,7 @@
 mod cli;
 mod event;
 mod fum;
+mod script;
 mod state;
 mod terminal;
 
@@ -12,9 +13,9 @@ pub type FumErr = anyhow::Error;
 
 #[tokio::main]
 async fn main() -> FumResult<()> {
-    if let Some((_config_path, _run_mode)) = cli::run().await? {
+    if let Some((config_path, run_mode)) = cli::run().await? {
         let mut fum = Fum::new()?;
-        fum.run().await?;
+        fum.run(config_path, run_mode).await?;
     }
 
     Ok(())

@@ -3,16 +3,33 @@ use tokio::sync::mpsc;
 
 use crate::FumResult;
 
+/// Script events.
+#[derive(Debug)]
+pub enum ScriptEvent {
+    /// When the script calls the CONFIG() function.
+    ConfigUpdated,
+
+    /// When the script calls the LAYOUT() function.
+    LayoutUpdated,
+
+    /// When the config script file has been changed.
+    ConfigModified,
+}
+
 /// Terminal events.
 #[derive(Debug)]
 pub enum TerminalEvent {
+    /// All crossterm events.
     Term(crossterm::event::Event),
+
+    /// Its tick time.
     Tick(u64),
 }
 
 /// All events.
 #[derive(Debug)]
 pub enum Event {
+    Script(ScriptEvent),
     Terminal(TerminalEvent),
 }
 
