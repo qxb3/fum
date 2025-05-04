@@ -33,6 +33,9 @@ pub enum TerminalEvent {
     Tick(u64),
 }
 
+/// Mpris events.
+pub enum MprisEvent {}
+
 /// All events.
 #[derive(Debug)]
 pub enum Event {

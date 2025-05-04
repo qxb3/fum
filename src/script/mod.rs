@@ -78,6 +78,7 @@ impl<'a> Script<'a> {
                 let rhai_engine = self.engine.rhai_engine();
                 let ast = self.engine.ast();
 
+                // Calls the button function pointer.
                 if let Err(err) = func.call::<()>(rhai_engine, ast, ()) {
                     self.event_sender
                         .send(Err(anyhow!("Failed to call a button's function: {err}")))?;
