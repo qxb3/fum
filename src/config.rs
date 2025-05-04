@@ -1,6 +1,6 @@
 /// Config of fum.
 /// This will be coming from the script CONFIG() function.
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Config {
     /// How many frames should fum render.
     pub fps: u64,

@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::{config::Config, FumErr};
 
 /// A struct that will contains all the state for fum.
 #[derive(Debug, Default)]
@@ -8,6 +8,9 @@ pub struct State {
 
     /// The layout of widgets.
     layout: (),
+
+    /// When set to Some the terminal will render the error.
+    error: Option<FumErr>,
 
     /// Exit state.
     exit: bool,
@@ -36,6 +39,16 @@ impl State {
     /// Gets the layout state.
     pub fn layout(&mut self) -> () {
         self.layout
+    }
+
+    /// Sets the error state.
+    pub fn set_error(&mut self, error: Option<FumErr>) {
+        self.error = error;
+    }
+
+    /// Gets the error state.
+    pub fn error(&self) -> Option<&FumErr> {
+        self.error.as_ref()
     }
 
     /// Sets the exit state to true.

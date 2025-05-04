@@ -29,6 +29,9 @@ pub struct Script<'a> {
 
     /// Path to the config script.
     config_path: PathBuf,
+
+    /// The centralize event manager sender.
+    event_sender: EventSender,
 }
 
 impl<'a> Script<'a> {
@@ -45,6 +48,7 @@ impl<'a> Script<'a> {
             engine,
             config_watcher,
             config_path,
+            event_sender,
         })
     }
 
@@ -54,9 +58,20 @@ impl<'a> Script<'a> {
             ScriptEvent::ConfigUpdated(config) => state.set_config(config),
             ScriptEvent::LayoutUpdated => state.set_layout(()),
             ScriptEvent::ConfigModified => {
-                // Recompiles & Reexecute the script when the config script has been modified.
-                self.compile()?;
-                self.execute()?;
+                // Re-compile the script
+                if let Err(err) = self.compile() {
+                    self.event_sender.send(Err(err))?;
+                    return Ok(());
+                }
+
+                // Re-execute the script.
+                if let Err(err) = self.execute() {
+                    self.event_sender.send(Err(err))?;
+                    return Ok(());
+                }
+
+                // Sets the error to None if both compile & executes run successfuly.
+                state.set_error(None);
             }
         }
 

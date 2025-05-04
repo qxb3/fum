@@ -4,7 +4,7 @@ use tokio::sync::mpsc;
 use crate::{config::Config, FumResult};
 
 /// Script events.
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum ScriptEvent {
     /// When the script calls the CONFIG() function.
     ConfigUpdated(Config),
@@ -17,7 +17,7 @@ pub enum ScriptEvent {
 }
 
 /// Terminal events.
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum TerminalEvent {
     /// All crossterm events.
     Term(crossterm::event::Event),
@@ -27,7 +27,7 @@ pub enum TerminalEvent {
 }
 
 /// All events.
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Event {
     Script(ScriptEvent),
     Terminal(TerminalEvent),

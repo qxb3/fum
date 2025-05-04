@@ -1,4 +1,4 @@
-use std::{path::PathBuf, process};
+use std::path::PathBuf;
 
 use crate::{
     cli::RunMode,
@@ -28,7 +28,7 @@ impl<'a> Fum<'a> {
     pub fn new(config_path: PathBuf) -> FumResult<Self> {
         let event_manager = EventManager::new();
         let script = Script::new(event_manager.sender(), config_path)?;
-        let terminal = Terminal::new(10)?;
+        let terminal = Terminal::new(event_manager.sender(), 10)?;
         let state = State::new();
 
         Ok(Self {
@@ -48,7 +48,7 @@ impl<'a> Fum<'a> {
         self.script.watch_config()?;
 
         // Sends events to event manager.
-        self.terminal.send_events(self.event_manager.sender());
+        self.terminal.send_events();
 
         // Main loop.
         while !self.state.exit() {
@@ -60,8 +60,7 @@ impl<'a> Fum<'a> {
                     Event::Terminal(event) => self.terminal.handle(&mut self.state, event).await?,
                 },
                 Err(err) => {
-                    eprintln!("ERROR: {err}");
-                    process::exit(1);
+                    self.state.set_error(Some(err));
                 }
             }
         }

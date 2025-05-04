@@ -1,3 +1,6 @@
+mod err_ui;
+mod ui;
+
 use std::io;
 use std::time::{Duration, Instant};
 
@@ -18,10 +21,13 @@ pub struct Terminal {
 
     /// The rate the tick event will be sent out.
     tick_rate: Duration,
+
+    /// The centralize event manager sender.
+    event_sender: EventSender,
 }
 
 impl Terminal {
-    pub fn new(fps: u64) -> FumResult<Self> {
+    pub fn new(event_sender: EventSender, fps: u64) -> FumResult<Self> {
         let terminal = ratatui::Terminal::new(CrosstermBackend::new(io::stdout()))?;
 
         // Switch to alternative screen.
@@ -43,11 +49,16 @@ impl Terminal {
         // Converts the fps into Duration.
         let tick_rate = Duration::from_millis(1000 / fps);
 
-        Ok(Self { terminal, tick_rate })
+        Ok(Self {
+            terminal,
+            tick_rate,
+            event_sender,
+        })
     }
 
     /// Sends events into the centalized event thingy.
-    pub fn send_events(&self, event_sender: EventSender) {
+    pub fn send_events(&self) {
+        let event_sender = self.event_sender.clone();
         let tick_rate = self.tick_rate.clone();
 
         tokio::spawn(async move {
@@ -99,12 +110,25 @@ impl Terminal {
     pub async fn handle(&mut self, state: &mut State, event: TerminalEvent) -> FumResult<()> {
         match event {
             TerminalEvent::Term(event) => match event {
-                crossterm::event::Event::Key(key) => self.handle_key_input(state, key)?,
+                crossterm::event::Event::Key(key) => {
+                    if let Err(err) = self.handle_key_input(state, key) {
+                        self.event_sender.send(Err(err))?;
+                        return Ok(());
+                    }
+                }
 
                 _ => {}
             },
-            TerminalEvent::Tick(fps) => self.handle_tick(state, fps)?,
+            TerminalEvent::Tick(fps) => {
+                if let Err(err) = self.handle_tick(state, fps) {
+                    self.event_sender.send(Err(err))?;
+                    return Ok(());
+                }
+            }
         }
+
+        // Sets the error to None if both all handlers run successfuly.
+        state.set_error(None);
 
         Ok(())
     }
@@ -127,16 +151,16 @@ impl Terminal {
     }
 
     /// Handles TerminalEvent::Tick event.
-    fn handle_tick(&mut self, state: &mut State, fps: u64) -> FumResult<()> {
-        let config = state.config();
-        let terminal = self.ratatui_terminal_mut();
-
-        terminal.draw(|frame| {
-            frame.render_widget(
-                ratatui::text::Text::from(format!("Fps Set: {}. Current Fps: {fps}", config.fps)),
-                frame.area(),
-            );
-        })?;
+    fn handle_tick(&mut self, state: &mut State, _fps: u64) -> FumResult<()> {
+        // Render the error ui or the normal ui if there is an error.
+        match state.error() {
+            Some(err) => {
+                self.terminal.draw(|f| err_ui::render(err, f))?;
+            }
+            None => {
+                self.terminal.draw(|f| ui::render(state, f))?;
+            }
+        }
 
         Ok(())
     }
@@ -153,16 +177,5 @@ impl Terminal {
         crossterm::terminal::disable_raw_mode()?;
 
         Ok(())
-    }
-
-    /// Gets the reference to ratatui::Terminal.
-    #[allow(dead_code)]
-    pub fn ratatui_terminal(&self) -> &ratatui::Terminal<CrosstermBackend<io::Stdout>> {
-        &self.terminal
-    }
-
-    /// Gets the mutable reference to ratatui::Terminal.
-    pub fn ratatui_terminal_mut(&mut self) -> &mut ratatui::Terminal<CrosstermBackend<io::Stdout>> {
-        &mut self.terminal
     }
 }
