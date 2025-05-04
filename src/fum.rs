@@ -60,6 +60,8 @@ impl<'a> Fum<'a> {
                     Event::Terminal(event) => self.terminal.handle(&mut self.state, event).await?,
                 },
                 Err(err) => {
+                    // Sets the error instead of crashing.
+                    // Good shit.
                     self.state.set_error(Some(err));
                 }
             }
