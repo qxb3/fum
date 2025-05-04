@@ -6,6 +6,7 @@ mod script;
 mod state;
 mod terminal;
 mod track;
+mod widget;
 
 use fum::Fum;
 

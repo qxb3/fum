@@ -1,23 +1,23 @@
 use anyhow::anyhow;
 use tokio::sync::mpsc;
 
-use crate::{config::Config, FumResult};
+use crate::{config::Config, widget::FumWidget, FumResult};
 
 /// Script events.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug)]
 pub enum ScriptEvent {
     /// When the script calls the CONFIG() function.
     ConfigUpdated(Config),
 
     /// When the script calls the LAYOUT() function.
-    LayoutUpdated,
+    LayoutUpdated(Vec<FumWidget>),
 
     /// When the config script file has been changed.
     ConfigModified,
 }
 
 /// Terminal events.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug)]
 pub enum TerminalEvent {
     /// All crossterm events.
     Term(crossterm::event::Event),
@@ -27,7 +27,7 @@ pub enum TerminalEvent {
 }
 
 /// All events.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug)]
 pub enum Event {
     Script(ScriptEvent),
     Terminal(TerminalEvent),

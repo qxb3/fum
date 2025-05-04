@@ -56,7 +56,7 @@ impl<'a> Script<'a> {
     pub async fn handle(&mut self, state: &mut State, event: ScriptEvent) -> FumResult<()> {
         match event {
             ScriptEvent::ConfigUpdated(config) => state.set_config(config),
-            ScriptEvent::LayoutUpdated => state.set_layout(()),
+            ScriptEvent::LayoutUpdated(layout) => state.set_layout(layout),
             ScriptEvent::ConfigModified => {
                 // Re-compile the script
                 if let Err(err) = self.compile() {

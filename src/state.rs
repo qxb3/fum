@@ -1,4 +1,4 @@
-use crate::{config::Config, FumErr};
+use crate::{config::Config, widget::FumWidget, FumErr};
 
 /// A struct that will contains all the state for fum.
 #[derive(Debug, Default)]
@@ -7,7 +7,7 @@ pub struct State {
     config: Config,
 
     /// The layout of widgets.
-    layout: (),
+    layout: Vec<FumWidget>,
 
     /// When set to Some the terminal will render the error.
     error: Option<FumErr>,
@@ -32,13 +32,13 @@ impl State {
     }
 
     /// Sets the layout state.
-    pub fn set_layout(&mut self, layout: ()) {
+    pub fn set_layout(&mut self, layout: Vec<FumWidget>) {
         self.layout = layout;
     }
 
     /// Gets the layout state.
-    pub fn layout(&mut self) -> () {
-        self.layout
+    pub fn layout(&self) -> &Vec<FumWidget> {
+        &self.layout
     }
 
     /// Sets the error state.

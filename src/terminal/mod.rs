@@ -99,7 +99,7 @@ impl Terminal {
                         last_tick = now;
 
                         event_sender.send(Ok(Event::Terminal(TerminalEvent::Tick(fps as u64))))
-                            .expect("Failed to send out event: TerminalEvent::Tick");
+                            .unwrap();
                     }
                 }
             }
@@ -110,25 +110,11 @@ impl Terminal {
     pub async fn handle(&mut self, state: &mut State, event: TerminalEvent) -> FumResult<()> {
         match event {
             TerminalEvent::Term(event) => match event {
-                crossterm::event::Event::Key(key) => {
-                    if let Err(err) = self.handle_key_input(state, key) {
-                        self.event_sender.send(Err(err))?;
-                        return Ok(());
-                    }
-                }
-
+                crossterm::event::Event::Key(key) => self.handle_key_input(state, key)?,
                 _ => {}
             },
-            TerminalEvent::Tick(fps) => {
-                if let Err(err) = self.handle_tick(state, fps) {
-                    self.event_sender.send(Err(err))?;
-                    return Ok(());
-                }
-            }
+            TerminalEvent::Tick(fps) => self.handle_tick(state, fps)?,
         }
-
-        // Sets the error to None if both all handlers run successfuly.
-        state.set_error(None);
 
         Ok(())
     }

@@ -44,7 +44,12 @@ impl Engine {
         // about having super nested layouts.
         engine.set_max_expr_depths(69420, 69420);
 
-        engine.register_fn("CONFIG", functions::config_function(event_sender.clone()));
+        // Register custom global functions.
+        engine
+            .register_fn("CONFIG", functions::config_function(event_sender.clone()))
+            .register_fn("LAYOUT", functions::layout_function_raw(event_sender.clone()))
+            .register_fn("LAYOUT", functions::layout_function(event_sender.clone()))
+            .register_fn("LAYOUT", functions::layout_function_ext(event_sender.clone()));
 
         // Compile config script into ast.
         let ast = engine

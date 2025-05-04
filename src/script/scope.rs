@@ -7,7 +7,9 @@ use ratatui::style::Color;
 use rhai::Scope;
 use taffy::{AlignItems, JustifyContent};
 
-use crate::track::Track;
+use crate::{track::Track, widget::SliderDataSource};
+
+use super::functions::LayoutLocation;
 
 /// A wrapper around rhai scope and where global variables will be contained.
 pub struct GlobalVars<'a> {
@@ -32,16 +34,16 @@ impl<'a> GlobalVars<'a> {
     pub fn new() -> Self {
         let mut scope = Scope::new();
 
-        // // UI() function location variables.
-        // scope.push("UI_TOP", UiLocation::Top);
-        // scope.push("UI_TOP_LEFT", UiLocation::TopLeft);
-        // scope.push("UI_TOP_RIGHT", UiLocation::TopRight);
-        // scope.push("UI_BOTTOM", UiLocation::Bottom);
-        // scope.push("UI_BOTTOM_LEFT", UiLocation::BottomLeft);
-        // scope.push("UI_BOTTOM_RIGHT", UiLocation::BottomRight);
-        // scope.push("UI_LEFT", UiLocation::Left);
-        // scope.push("UI_RIGHT", UiLocation::Right);
-        // scope.push("UI_CENTER", UiLocation::Center);
+        // LAYOUT() location.
+        scope.push("UI_TOP", LayoutLocation::Top);
+        scope.push("UI_TOP_LEFT", LayoutLocation::TopLeft);
+        scope.push("UI_TOP_RIGHT", LayoutLocation::TopRight);
+        scope.push("UI_BOTTOM", LayoutLocation::Bottom);
+        scope.push("UI_BOTTOM_LEFT", LayoutLocation::BottomLeft);
+        scope.push("UI_BOTTOM_RIGHT", LayoutLocation::BottomRight);
+        scope.push("UI_LEFT", LayoutLocation::Left);
+        scope.push("UI_RIGHT", LayoutLocation::Right);
+        scope.push("UI_CENTER", LayoutLocation::Center);
 
         // Container alignment variables.
         scope.push("ALIGN_START", AlignItems::Start);
@@ -56,9 +58,9 @@ impl<'a> GlobalVars<'a> {
         scope.push("JUSTIFY_EVENLY", JustifyContent::SpaceEvenly);
         scope.push("JUSTIFY_AROUND", JustifyContent::SpaceAround);
 
-        // // Slider data source variables.
-        // scope.push("SOURCE_PROGRESS", SliderDataSource::Progress);
-        // scope.push("SOURCE_VOLUME", SliderDataSource::Volume);
+        // Slider data source variables.
+        scope.push("SOURCE_PROGRESS", SliderDataSource::Progress);
+        scope.push("SOURCE_VOLUME", SliderDataSource::Volume);
 
         // Color variables.
         scope.push("RESET", Color::Reset);

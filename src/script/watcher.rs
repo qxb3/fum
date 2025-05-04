@@ -32,14 +32,14 @@ impl ConfigWatcher {
                 EventKind::Create(CreateKind::File) | EventKind::Modify(_) => {
                     event_sender
                         .send(Ok(Event::Script(ScriptEvent::ConfigModified)))
-                        .expect("Failed to send out event: ScriptEvent::ConfigModified");
+                        .unwrap();
                 }
                 _ => {}
             },
             Err(err) => {
                 event_sender
                     .send(Err(anyhow!("Error on config watcher event: {err}")))
-                    .expect("Failed to send err event");
+                    .unwrap();
             }
         })?;
 
