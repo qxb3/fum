@@ -103,7 +103,7 @@ impl Terminal {
 
                 _ => {}
             },
-            TerminalEvent::Tick(fps) => self.handle_tick(fps)?,
+            TerminalEvent::Tick(fps) => self.handle_tick(state, fps)?,
         }
 
         Ok(())
@@ -127,11 +127,15 @@ impl Terminal {
     }
 
     /// Handles TerminalEvent::Tick event.
-    fn handle_tick(&mut self, fps: u64) -> FumResult<()> {
+    fn handle_tick(&mut self, state: &mut State, fps: u64) -> FumResult<()> {
+        let config = state.config();
         let terminal = self.ratatui_terminal_mut();
 
         terminal.draw(|frame| {
-            frame.render_widget(ratatui::text::Text::from(fps.to_string().as_str()), frame.area());
+            frame.render_widget(
+                ratatui::text::Text::from(format!("Fps Set: {}. Current Fps: {fps}", config.fps)),
+                frame.area(),
+            );
         })?;
 
         Ok(())

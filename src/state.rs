@@ -1,7 +1,10 @@
+use crate::config::Config;
+
 /// A struct that will contains all the state for fum.
+#[derive(Debug, Default)]
 pub struct State {
-    /// The config.
-    config: (),
+    /// The config that controls behavior of fum.
+    config: Config,
 
     /// The layout of widgets.
     layout: (),
@@ -10,29 +13,19 @@ pub struct State {
     exit: bool,
 }
 
-impl Default for State {
-    fn default() -> Self {
-        Self {
-            config: (),
-            layout: (),
-            exit: false,
-        }
-    }
-}
-
 impl State {
     pub fn new() -> Self {
         Self::default()
     }
 
     /// Sets the config state.
-    pub fn set_config(&mut self, config: ()) {
+    pub fn set_config(&mut self, config: Config) {
         self.config = config;
     }
 
     /// Gets the config state.
-    pub fn config(&mut self) -> () {
-        self.config
+    pub fn config(&self) -> &Config {
+        &self.config
     }
 
     /// Sets the layout state.

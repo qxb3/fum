@@ -27,7 +27,7 @@ pub struct Fum<'a> {
 impl<'a> Fum<'a> {
     pub fn new(config_path: PathBuf) -> FumResult<Self> {
         let event_manager = EventManager::new();
-        let script = Script::new(config_path, event_manager.sender())?;
+        let script = Script::new(event_manager.sender(), config_path)?;
         let terminal = Terminal::new(10)?;
         let state = State::new();
 

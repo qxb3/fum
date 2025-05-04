@@ -1,4 +1,5 @@
 mod cli;
+mod config;
 mod event;
 mod fum;
 mod script;

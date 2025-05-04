@@ -1,4 +1,5 @@
 mod engine;
+mod functions;
 mod scope;
 mod watcher;
 
@@ -31,8 +32,8 @@ pub struct Script<'a> {
 }
 
 impl<'a> Script<'a> {
-    pub fn new(config_path: PathBuf, event_sender: EventSender) -> FumResult<Self> {
-        let engine = Engine::new(config_path.clone())?;
+    pub fn new(event_sender: EventSender, config_path: PathBuf) -> FumResult<Self> {
+        let engine = Engine::new(event_sender.clone(), config_path.clone())?;
         let mut global_vars = GlobalVars::new();
         let config_watcher = ConfigWatcher::new(event_sender.clone())?;
 
@@ -50,7 +51,7 @@ impl<'a> Script<'a> {
     /// Handle the script events.
     pub async fn handle(&mut self, state: &mut State, event: ScriptEvent) -> FumResult<()> {
         match event {
-            ScriptEvent::ConfigUpdated => state.set_config(()),
+            ScriptEvent::ConfigUpdated(config) => state.set_config(config),
             ScriptEvent::LayoutUpdated => state.set_layout(()),
             ScriptEvent::ConfigModified => {
                 // Recompiles & Reexecute the script when the config script has been modified.

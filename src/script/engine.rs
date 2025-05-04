@@ -6,9 +6,9 @@ use std::{
 use anyhow::anyhow;
 use rhai::AST;
 
-use crate::FumResult;
+use crate::{event::EventSender, FumResult};
 
-use super::scope::GlobalVars;
+use super::{functions, scope::GlobalVars};
 
 /// A wrapper around rhai engine.
 pub struct Engine {
@@ -37,12 +37,14 @@ impl DerefMut for Engine {
 }
 
 impl Engine {
-    pub fn new(config_path: PathBuf) -> FumResult<Self> {
+    pub fn new(event_sender: EventSender, config_path: PathBuf) -> FumResult<Self> {
         let mut engine = rhai::Engine::new();
 
         // Sets enough expr depths on engine so it won't panic at runtime
         // about having super nested layouts.
         engine.set_max_expr_depths(69420, 69420);
+
+        engine.register_fn("CONFIG", functions::config_function(event_sender.clone()));
 
         // Compile config script into ast.
         let ast = engine

@@ -1,13 +1,13 @@
 use anyhow::anyhow;
 use tokio::sync::mpsc;
 
-use crate::FumResult;
+use crate::{config::Config, FumResult};
 
 /// Script events.
 #[derive(Debug)]
 pub enum ScriptEvent {
     /// When the script calls the CONFIG() function.
-    ConfigUpdated,
+    ConfigUpdated(Config),
 
     /// When the script calls the LAYOUT() function.
     LayoutUpdated,
