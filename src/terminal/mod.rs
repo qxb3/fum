@@ -80,6 +80,16 @@ impl Terminal {
                 let term_event = term_event_stream.next().fuse();
 
                 tokio::select! {
+                    // Checks the results chronologically,
+                    // So it first first check if the channels has been closed,
+                    // Then the rest.
+                    biased;
+
+                    // Break out of this loop if either
+                    // the event_sender or update_channel has been closed.
+                    _ = event_sender.closed() => break,
+                    _ = update_channel.closed() => break,
+
                     // Watches for update events.
                     update_res = update_receiver.recv() => {
                         match update_res {
