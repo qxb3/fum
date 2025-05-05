@@ -8,7 +8,7 @@ use ratatui::{
 use crate::FumErr;
 
 /// Render the error ui.
-pub fn render(err: &FumErr, frame: &mut Frame<'_>) {
+pub fn render(frame: &mut Frame<'_>, err: &FumErr) {
     let width = frame.area().width / 2;
     let height = frame.area().height / 2;
 

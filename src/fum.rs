@@ -27,8 +27,8 @@ pub struct Fum<'a> {
 impl<'a> Fum<'a> {
     pub fn new(config_path: PathBuf) -> FumResult<Self> {
         let event_manager = EventManager::new();
-        let script = Script::new(event_manager.sender(), config_path)?;
-        let terminal = Terminal::new(event_manager.sender(), 10)?;
+        let script = Script::new(&event_manager, config_path)?;
+        let terminal = Terminal::new(&event_manager, 10)?;
         let state = State::new();
 
         Ok(Self {
@@ -41,14 +41,16 @@ impl<'a> Fum<'a> {
 
     /// Runs fum.
     pub async fn run(&mut self, _run_mode: RunMode) -> FumResult<()> {
-        // Executes the script at start.
+        // Sends events to event manager.
+        // WARNING: the world will be destroyed if this function
+        // has been moved after executing the script below. You've been warned.
+        self.terminal.send_events();
+
+        // Executes the script.
         self.script.execute()?;
 
         // Watches the config script file for changes.
         self.script.watch_config()?;
-
-        // Sends events to event manager.
-        self.terminal.send_events();
 
         // Main loop.
         while !self.state.exit() {

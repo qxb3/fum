@@ -11,7 +11,7 @@ use scope::GlobalVars;
 use watcher::ConfigWatcher;
 
 use crate::{
-    event::{EventSender, ScriptEvent},
+    event::{EventManager, EventSender, ScriptEvent, UpdateChannel, UpdateEvent},
     state::State,
     track::Track,
     FumResult,
@@ -33,13 +33,16 @@ pub struct Script<'a> {
 
     /// The centralize event manager sender.
     event_sender: EventSender,
+
+    /// The side update channel.
+    update_channel: UpdateChannel,
 }
 
 impl<'a> Script<'a> {
-    pub fn new(event_sender: EventSender, config_path: PathBuf) -> FumResult<Self> {
-        let engine = Engine::new(event_sender.clone(), config_path.clone())?;
+    pub fn new(event_manager: &EventManager, config_path: PathBuf) -> FumResult<Self> {
+        let engine = Engine::new(event_manager.sender(), config_path.clone())?;
         let mut global_vars = GlobalVars::new();
-        let config_watcher = ConfigWatcher::new(event_sender.clone())?;
+        let config_watcher = ConfigWatcher::new(event_manager.sender())?;
 
         // Sets the global track variables on default track.
         global_vars.set_track(&Track::default());
@@ -49,14 +52,26 @@ impl<'a> Script<'a> {
             engine,
             config_watcher,
             config_path,
-            event_sender,
+            event_sender: event_manager.sender(),
+            update_channel: event_manager.update_channel(),
         })
     }
 
     /// Handle the script events.
     pub async fn handle(&mut self, state: &mut State, event: ScriptEvent) -> FumResult<()> {
         match event {
-            ScriptEvent::ConfigUpdated(config) => state.set_config(config),
+            ScriptEvent::ConfigUpdated(config) => {
+                // If the updated fps is a new value,
+                // Send out an update event that the fps has been updated.
+                if state.config().fps != config.fps {
+                    self.update_channel
+                        .send(UpdateEvent::FpsUpdated(config.fps))
+                        .unwrap();
+                }
+
+                // Updates the state config.
+                state.set_config(config);
+            }
             ScriptEvent::LayoutUpdated(layout) => state.set_layout(layout),
             ScriptEvent::ConfigModified => {
                 // Re-compile the script
