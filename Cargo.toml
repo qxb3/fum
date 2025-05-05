@@ -14,7 +14,7 @@ clap = { version = "4.5.32", features = ["derive"] }
 crossterm = { version = "0.28.1", features = ["event-stream"] }
 futures = "0.3.31"
 image = "0.25.5"
-mprizzle = "0.0.2"
+mprizzle = "0.0.3"
 notify = "8.0.0"
 ratatui = "0.29.0"
 ratatui-image = { version = "5.0.0", features = ["crossterm"] }

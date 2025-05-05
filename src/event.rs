@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use anyhow::anyhow;
 use tokio::sync::{broadcast, mpsc};
 
@@ -21,6 +23,9 @@ pub enum ScriptEvent {
 
     /// When a button widget has been clicked.
     ButtonClicked(SendSyncFnPtr),
+
+    /// When the track has been updated.
+    TrackUpdated,
 }
 
 /// Terminal events.
@@ -34,18 +39,36 @@ pub enum TerminalEvent {
 }
 
 /// Mpris events.
-pub enum MprisEvent {}
+#[derive(Debug)]
+pub enum MprisEvent {
+    /// When there is a new player attached.
+    PlayerAttached(mprizzle::PlayerIdentity),
+
+    /// When there is a detached player.
+    PlayerDetached(mprizzle::PlayerIdentity),
+
+    /// When a player's properties changed.
+    PlayerPropertiesChanged(mprizzle::PlayerIdentity),
+
+    /// When a player's has been seeked!.
+    PlayerSeeked(mprizzle::PlayerIdentity),
+
+    /// When a player's position updated.
+    PlayerPosition(mprizzle::PlayerIdentity, Duration),
+}
 
 /// All events.
 #[derive(Debug)]
 pub enum Event {
     Script(ScriptEvent),
     Terminal(TerminalEvent),
+    Mpris(MprisEvent),
 }
 
 /// A side update events.
 #[derive(Debug, Clone)]
 pub enum UpdateEvent {
+    /// When the config fps updated.
     FpsUpdated(u64),
 }
 

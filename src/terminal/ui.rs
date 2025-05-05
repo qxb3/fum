@@ -16,8 +16,6 @@ use crate::{
 pub fn render(frame: &mut Frame<'_>, state: &mut State, fps: u64) {
     let layout = state.layout();
 
-    frame.render_widget(Paragraph::new(fps.to_string()), frame.area());
-
     for widget in layout {
         render_widget(&widget, frame);
     }

@@ -1,6 +1,9 @@
 use std::time::Duration;
 
+use anyhow::Context;
 use mprizzle::{PlaybackStatus, TrackId};
+
+use crate::FumResult;
 
 /// Contains the metadata of the current song.
 #[derive(Debug, Clone)]
@@ -39,39 +42,56 @@ impl Track {
         Self::default()
     }
 
-    // /// Creates a new track based on mpris player.
-    // pub async fn from_mpris_player(player: &MprisPlayer) -> FumResult<Self> {
-    //     let metadata = player.metadata().await?;
-    //
-    //     // Comes from the metadata.
-    //     let track_id = metadata.track_id()?;
-    //     let title = metadata.title()?.unwrap_or("No Music".into());
-    //     let album = metadata.album()?.unwrap_or("Album".into());
-    //     let artists = metadata.artists()?.unwrap_or(vec!["Artist".into()]);
-    //     let length = metadata.length()?.unwrap_or(Duration::from_secs(0));
-    //     let art_url = metadata.art_url()?;
-    //
-    //     // Comes from the player.
-    //     let playback_status = player
-    //         .playback_status()
-    //         .await
-    //         .unwrap_or(PlaybackStatus::Stopped);
-    //
-    //     let shuffle = player.shuffle().await.unwrap_or(false);
-    //     let volume = player.volume().await.unwrap_or(0.0);
-    //     let position = player.position().await.unwrap_or(Duration::from_secs(0));
-    //
-    //     Ok(Track {
-    //         track_id,
-    //         title,
-    //         album,
-    //         artists,
-    //         length,
-    //         art_url,
-    //         playback_status,
-    //         shuffle,
-    //         volume,
-    //         position,
-    //     })
-    // }
+    /// Creates a new track based on mpris player.
+    pub async fn from_mpris_player(player: &mprizzle::MprisPlayer) -> FumResult<Self> {
+        let metadata = player.metadata().await?;
+
+        let track_id = metadata.track_id().context("Failed to get the track id")?;
+
+        let title = metadata
+            .title()
+            .context("Failed to get the title")?
+            .unwrap_or("No Music".into());
+
+        let album = metadata
+            .album()
+            .context("Failed to get the album")?
+            .unwrap_or("Album".into());
+
+        let artists = metadata
+            .artists()
+            .context("Failed to get the artists")?
+            .unwrap_or(vec!["Artist".into()]);
+
+        let length = metadata
+            .length()
+            .context("Failed to get the length")?
+            .unwrap_or(Duration::from_secs(0));
+
+        let art_url = metadata.art_url().context("Missing art url")?;
+
+        // Comes from the player.
+        let playback_status = mprizzle::PlaybackStatus::Playing;
+        // player
+        // .playback_status()
+        // .await
+        // .unwrap_or(PlaybackStatus::Stopped);
+
+        // let shuffle = player.shuffle().await.unwrap_or(false);
+        // let volume = player.volume().await.unwrap_or(0.0);
+        // let position = player.position().await.unwrap_or(Duration::from_secs(0));
+
+        Ok(Track {
+            track_id,
+            title,
+            album,
+            artists,
+            length,
+            art_url,
+            playback_status,
+            shuffle: false,
+            volume: 1.0,
+            position: Duration::default(),
+        })
+    }
 }

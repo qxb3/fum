@@ -104,6 +104,20 @@ impl<'a> Script<'a> {
                 // Sets the error to None if the function call runs successfuly.
                 state.set_error(None);
             }
+            ScriptEvent::TrackUpdated => {
+                // Updates the global track variables.
+                let track = state.get_current_track();
+                self.global_vars.set_track(track);
+
+                // Re-execute the script.
+                if let Err(err) = self.execute() {
+                    self.event_sender.send(Err(err))?;
+                    return Ok(());
+                }
+
+                // Sets the error to None if the script execution is success.
+                state.set_error(None);
+            }
         }
 
         Ok(())

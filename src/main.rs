@@ -19,7 +19,7 @@ pub type FumErr = anyhow::Error;
 #[tokio::main]
 async fn main() -> FumResult<()> {
     if let Some((config_path, run_mode)) = cli::run().await? {
-        let mut fum = Fum::new(config_path)?;
+        let mut fum = Fum::new(config_path).await?;
         fum.run(run_mode).await?;
     }
 

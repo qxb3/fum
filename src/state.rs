@@ -1,4 +1,4 @@
-use crate::{config::Config, widget::FumWidget, FumErr};
+use crate::{config::Config, track::Track, widget::FumWidget, FumErr};
 
 /// A struct that will contains all the state for fum.
 #[derive(Debug, Default)]
@@ -8,6 +8,9 @@ pub struct State {
 
     /// The layout of widgets.
     layout: Vec<FumWidget>,
+
+    /// The current loaded track.
+    current_track: Track,
 
     /// When set to Some the terminal will render the error.
     error: Option<FumErr>,
@@ -39,6 +42,21 @@ impl State {
     /// Gets the layout state.
     pub fn layout(&self) -> &Vec<FumWidget> {
         &self.layout
+    }
+
+    /// Sets the current track.
+    pub fn set_current_track(&mut self, track: Track) {
+        self.current_track = track;
+    }
+
+    /// Gets the current loaded track.
+    pub fn get_current_track(&self) -> &Track {
+        &self.current_track
+    }
+
+    /// Gets the current loaded track.
+    pub fn get_current_track_mut(&mut self) -> &mut Track {
+        &mut self.current_track
     }
 
     /// Sets the error state.
