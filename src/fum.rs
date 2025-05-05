@@ -47,6 +47,7 @@ impl<'a> Fum<'a> {
         self.terminal.send_events();
 
         // Executes the script.
+        // Please dont let the guy above be called after me.
         self.script.execute()?;
 
         // Watches the config script file for changes.
