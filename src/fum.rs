@@ -43,7 +43,7 @@ impl<'a> Fum<'a> {
     pub async fn run(&mut self, _run_mode: RunMode) -> FumResult<()> {
         // Sends events to event manager.
         // WARNING: the world will be destroyed if this function
-        // has been moved after executing the script below. You've been warned.
+        // has been called after the guy below. You've been warned!.
         self.terminal.send_events();
 
         // Executes the script.
@@ -51,6 +51,7 @@ impl<'a> Fum<'a> {
         self.script.execute()?;
 
         // Watches the config script file for changes.
+        // The two guys above me is morons.
         self.script.watch_config()?;
 
         // Main loop.
