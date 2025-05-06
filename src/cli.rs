@@ -63,7 +63,7 @@ pub async fn run() -> FumResult<Option<(PathBuf, RunMode)>> {
         Command::Player => Ok(Some((cli.config, RunMode::Player))),
         Command::Mpris => Ok(Some((cli.config, RunMode::Mpris))),
         Command::ListPlayers => {
-            let mut mpris = Mpris::new(None).await?;
+            let mut mpris = Mpris::new().await?;
             mpris.watch();
 
             while let Ok(event) = mpris.recv().await? {
