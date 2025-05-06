@@ -1,6 +1,7 @@
 use std::{
     ops::{Deref, DerefMut},
     path::PathBuf,
+    time::Duration,
 };
 
 use anyhow::anyhow;
@@ -56,7 +57,15 @@ impl Engine {
             .register_fn("Label", functions::label_function(event_sender.clone()))
             .register_fn("Label", functions::label_function_ext(event_sender.clone()))
             .register_fn("Button", functions::button_function_raw(event_sender.clone()))
-            .register_fn("Button", functions::button_function(event_sender.clone()));
+            .register_fn("Button", functions::button_function(event_sender.clone()))
+            // Duration type functions.
+            .register_type_with_name::<Duration>("Duration")
+            .register_fn("as_millis", functions::duration_as_millis())
+            .register_fn("as_nanos", functions::duration_as_nanos())
+            .register_fn("as_secs", functions::duration_as_secs())
+            .register_fn("is_zero", functions::duration_is_zero())
+            .register_fn("fmt", functions::duration_fmt())
+            .register_fn("fmt", functions::duration_fmt_ext());
 
         // Compile config script into ast.
         let ast = engine

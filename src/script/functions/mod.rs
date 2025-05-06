@@ -9,3 +9,6 @@ pub use label::*;
 
 mod button;
 pub use button::*;
+
+mod duration;
+pub use duration::*;

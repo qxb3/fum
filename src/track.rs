@@ -68,18 +68,18 @@ impl Track {
             .context("Failed to get the length")?
             .unwrap_or(Duration::from_secs(0));
 
-        let art_url = metadata.art_url().context("Missing art url")?;
+        let art_url = metadata.art_url().context("Failed to get the art url")?;
 
-        // Comes from the player.
-        let playback_status = mprizzle::PlaybackStatus::Playing;
-        // player
-        // .playback_status()
-        // .await
-        // .unwrap_or(PlaybackStatus::Stopped);
+        let playback_status = player
+            .playback_status()
+            .await
+            .unwrap_or(PlaybackStatus::Stopped);
 
-        // let shuffle = player.shuffle().await.unwrap_or(false);
-        // let volume = player.volume().await.unwrap_or(0.0);
-        // let position = player.position().await.unwrap_or(Duration::from_secs(0));
+        let shuffle = player.shuffle().await.unwrap_or(false);
+
+        let volume = player.volume().await.unwrap_or(0.0);
+
+        let position = player.position().await.unwrap_or(Duration::from_secs(0));
 
         Ok(Track {
             track_id,
@@ -89,9 +89,9 @@ impl Track {
             length,
             art_url,
             playback_status,
-            shuffle: false,
-            volume: 1.0,
-            position: Duration::default(),
+            shuffle,
+            volume,
+            position,
         })
     }
 }
