@@ -35,7 +35,7 @@ impl<'a> Fum<'a> {
         let terminal = Terminal::new(&event_manager, 10)?;
         let state = State::new();
 
-        let mpris = Mpris::new(&event_manager, vec![""]).await?;
+        let mpris = Mpris::new(&event_manager).await?;
 
         Ok(Self {
             event_manager,

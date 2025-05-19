@@ -140,7 +140,7 @@ pub fn layout_function_raw(event_sender: EventSender) -> impl Fn(rhai::Map) {
         // Creates a new taffy engine instance.
         let mut taffy: TaffyTree<FumWidgetKind> = TaffyTree::new();
 
-        let mut nodes = vec![];
+        let mut nodes = Vec::new();
         for widget in layout {
             // Parse the widget from layout opt.
             let widget_res = match widget.try_cast_result::<Option<FumWidgetKind>>() {
@@ -278,7 +278,7 @@ pub fn layout_function_raw(event_sender: EventSender) -> impl Fn(rhai::Map) {
         );
 
         // Create the layout.
-        let mut layout = vec![];
+        let mut layout = Vec::new();
         for child in root_children {
             if let Err(err) = FumWidget::create_layout(&taffy, child, &root_rect, &mut layout) {
                 event_sender.send(Err(err)).unwrap();

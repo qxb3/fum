@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
-use anyhow::anyhow;
+use anyhow::{anyhow, Context};
 use tokio::sync::Mutex;
 
 use crate::{
@@ -15,26 +15,28 @@ pub struct Mpris {
     /// Internal mprizzle Mpris.
     mpris: Arc<Mutex<mprizzle::Mpris>>,
 
-    shared_players: Option<Arc<Mutex<HashMap<mprizzle::PlayerIdentity, mprizzle::MprisPlayer>>>>,
+    /// All of the mpris players.
+    players: HashMap<mprizzle::PlayerIdentity, mprizzle::MprisPlayer>,
 
-    /// The current player identity.
-    current_player_identity: Option<mprizzle::PlayerIdentity>,
+    /// The current player identity to manage.
+    current_player_id: Option<mprizzle::PlayerIdentity>,
+
+    /// A list of player that should only be managed.
+    filter_players: Vec<String>,
 
     /// The centralize event manager sender.
     event_sender: EventSender,
 }
 
 impl Mpris {
-    pub async fn new(
-        event_manager: &EventManager,
-        filter_players: Vec<&'static str>,
-    ) -> FumResult<Self> {
-        let mpris = mprizzle::Mpris::new(Some(mprizzle::MprisOptions { filter_players })).await?;
+    pub async fn new(event_manager: &EventManager) -> FumResult<Self> {
+        let mpris = mprizzle::Mpris::new().await?;
 
         Ok(Self {
             mpris: Arc::new(Mutex::new(mpris)),
-            current_player_identity: None,
-            shared_players: None,
+            players: HashMap::new(),
+            current_player_id: None,
+            filter_players: Vec::new(),
             event_sender: event_manager.sender(),
         })
     }
@@ -43,12 +45,6 @@ impl Mpris {
     pub async fn send_events(&mut self) {
         let mpris = Arc::clone(&self.mpris);
         let event_sender = self.event_sender.clone();
-
-        // Gets the mpris shared players.
-        {
-            let mpris = mpris.lock().await;
-            self.shared_players = Some(mpris.players());
-        }
 
         tokio::spawn(async move {
             let mut mpris = mpris.lock().await;
@@ -80,8 +76,8 @@ impl Mpris {
                         // Just sents out the mpris events to the centralized event.
                         match event {
                             Ok(event) => match event {
-                                mprizzle::MprisEvent::PlayerAttached(identity) => {
-                                    event_sender.send(Ok(Event::Mpris(MprisEvent::PlayerAttached(identity)))).unwrap();
+                                mprizzle::MprisEvent::PlayerAttached(player) => {
+                                    event_sender.send(Ok(Event::Mpris(MprisEvent::PlayerAttached(player)))).unwrap();
                                 }
                                 mprizzle::MprisEvent::PlayerDetached(identity) => {
                                     event_sender.send(Ok(Event::Mpris(MprisEvent::PlayerDetached(identity)))).unwrap();
@@ -113,91 +109,95 @@ impl Mpris {
     /// Handle the mpris events.
     pub async fn handle(&mut self, state: &mut State, event: MprisEvent) -> FumResult<()> {
         match event {
-            MprisEvent::PlayerAttached(identity) => {
-                // When a new player has been attached and the current player is still None,
-                // Update the state's current track and update the current player identity to this newly attached player.
-                if self.current_player_identity.is_none() {
-                    let players = self.shared_players.as_ref().unwrap().try_lock().unwrap();
+            // Insert the attached player into players.
+            MprisEvent::PlayerAttached(attached_player) => {
+                let attached_player_id = attached_player.identity().clone();
 
-                    // Updates the state's current track.
-                    if let Some(current_player) = players.get(&identity) {
-                        let track = Track::from_mpris_player(current_player).await?;
-                        state.set_current_track(track);
-                    }
-
-                    // Updates the current player identity.
-                    self.current_player_identity = Some(identity);
+                if !self.check_is_filtered(&attached_player_id) {
+                    return Ok(());
                 }
+
+                if self.current_player_id.is_none() {
+                    self.current_player_id = Some(attached_player_id.clone());
+
+                    self.event_sender
+                        .send(Ok(Event::Mpris(MprisEvent::PlayerPropertiesChanged(attached_player_id.clone()))))
+                        .unwrap();
+                }
+
+                self.players.insert(attached_player_id, attached_player);
             }
-            MprisEvent::PlayerDetached(identity) => {
-                // If the current player matches the detached player,
-                // Try to set the existing player, If not just make it None.
-                if let Some(current_player_identity) = &self.current_player_identity {
-                    let players = self.shared_players.as_ref().unwrap().try_lock().unwrap();
 
-                    if current_player_identity == &identity {
-                        // Set the current player to the next existing player if there is one.
-                        if let Some((next_player_identity, new_player)) = players.iter().next() {
-                            // Updates the state's current track to this new player.
-                            let track = Track::from_mpris_player(new_player).await?;
-                            state.set_current_track(track);
+            // Removes the detached player into players.
+            MprisEvent::PlayerDetached(detached_id) => {
+                if let Some(detached_player) = self.players.remove(&detached_id) {
+                    if let Some(current_player_id) = &self.current_player_id {
+                        if current_player_id != detached_player.identity() {
+                            return Ok(());
+                        }
 
-                            // Updates the current player identity.
-                            self.current_player_identity = Some(next_player_identity.clone());
+                        if let Some((next_player_id, _)) = self.players.iter().next() {
+                            if !self.check_is_filtered(&next_player_id) {
+                                return Ok(());
+                            }
+
+                            self.current_player_id = Some(next_player_id.clone());
+
+                            self.event_sender
+                                .send(Ok(Event::Mpris(MprisEvent::PlayerPropertiesChanged(next_player_id.clone()))))
+                                .unwrap();
                         } else {
-                            // Resets the state's current track to the default values of track.
-                            let track = Track::default();
-                            state.set_current_track(track);
+                            self.current_player_id = None;
 
-                            // Updates the current player identity.
-                            self.current_player_identity = None;
+                            let default_track = Track::default();
+                            state.set_current_track(default_track);
                         }
                     }
                 }
             }
-            MprisEvent::PlayerPropertiesChanged(identity) => {
-                // If the current player matches the the player that properties has been changed,
-                // Updates the state's current track.
-                if let Some(current_player_identity) = &self.current_player_identity {
-                    if current_player_identity == &identity {
-                        let players = self.shared_players.as_ref().unwrap().try_lock().unwrap();
 
-                        // Updates the state's current track.
-                        if let Some(current_player) = players.get(current_player_identity) {
-                            let track = Track::from_mpris_player(current_player).await?;
-                            state.set_current_track(track);
-                        }
+            // Updates the current track entire metadata.
+            MprisEvent::PlayerPropertiesChanged(props_changed_id) => {
+                if let Some(current_player_id) = &self.current_player_id {
+                    if *current_player_id != props_changed_id {
+                        return Ok(());
+                    }
+
+                    if let Some(current_player) = self.players.get(current_player_id) {
+                        let new_track = Track::from_mpris_player(current_player).await?;
+                        state.set_current_track(new_track);
                     }
                 }
             }
-            MprisEvent::PlayerSeeked(identity) => {
-                // If the current player matches the player that has been seeked,
-                // Updates the state's current track position.
-                if let Some(current_player_identity) = &self.current_player_identity {
-                    if current_player_identity == &identity {
-                        let players = self.shared_players.as_ref().unwrap().try_lock().unwrap();
 
-                        if let Some(current_player) = players.get(current_player_identity) {
-                            // Gets the current player's new position.
-                            let new_position = current_player.position().await?;
-
-                            // Updates the state's current track position.
-                            let current_track = state.get_current_track_mut();
-                            current_track.position = new_position;
-                        }
+            // Updates the current track position.
+            MprisEvent::PlayerSeeked(seeked_id) => {
+                if let Some(current_player_id) = &self.current_player_id {
+                    if *current_player_id != seeked_id {
+                        return Ok(());
                     }
-                }
-            }
-            MprisEvent::PlayerPosition(identity, position) => {
-                // If the current player matches the player position has been changed,
-                // Updates the state's current track position.
-                if let Some(current_player_identity) = &self.current_player_identity {
-                    if current_player_identity == &identity {
-                        // Updates the state's current track position.
+
+                    if let Some(current_player) = self.players.get(current_player_id) {
+                        let seeked_position = current_player.position().await?;
+
                         let current_track = state.get_current_track_mut();
-                        current_track.position = position;
+                        current_track.position = seeked_position;
                     }
                 }
+            }
+
+            // Updates the current track position.
+            MprisEvent::PlayerPosition(pos_changed_id, new_position) => {
+                if let Some(current_player_id) = &self.current_player_id {
+                    if *current_player_id == pos_changed_id {
+                        let current_track = state.get_current_track_mut();
+                        current_track.position = new_position;
+                    }
+                }
+            }
+
+            MprisEvent::PlayerFilterUpdated(new_player_filters) => {
+                self.filter_players = new_player_filters;
             }
         }
 
@@ -207,5 +207,12 @@ impl Mpris {
             .unwrap();
 
         Ok(())
+    }
+
+    /// Checks if the identity is included in the filter.
+    fn check_is_filtered(&self, identity: &mprizzle::PlayerIdentity) -> bool {
+        self.filter_players
+            .iter()
+            .any(|f| identity.matches_either(f))
     }
 }

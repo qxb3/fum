@@ -68,8 +68,14 @@ pub async fn run() -> FumResult<Option<(PathBuf, RunMode)>> {
 
             while let Ok(event) = mpris.recv().await? {
                 match event {
-                    MprisEvent::PlayerAttached(identity) => {
-                        println!("* {} ~> {}", identity.short(), identity.bus());
+                    MprisEvent::PlayerAttached(attached_player) => {
+                        let attached_player_identity = attached_player.identity();
+
+                        println!(
+                            "* {} ~> {}",
+                            attached_player_identity.short(),
+                            attached_player_identity.bus()
+                        );
                     }
                     _ => {}
                 }

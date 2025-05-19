@@ -11,7 +11,7 @@ use scope::GlobalVars;
 use watcher::ConfigWatcher;
 
 use crate::{
-    event::{EventManager, EventSender, ScriptEvent, UpdateChannel, UpdateEvent},
+    event::{Event, EventManager, EventSender, MprisEvent, ScriptEvent, UpdateChannel, UpdateEvent},
     state::State,
     track::Track,
     FumResult,
@@ -61,11 +61,19 @@ impl<'a> Script<'a> {
     pub async fn handle(&mut self, state: &mut State, event: ScriptEvent) -> FumResult<()> {
         match event {
             ScriptEvent::ConfigUpdated(config) => {
-                // If the updated fps is a new value,
-                // Send out an update event that the fps has been updated.
+                // Checks if the `fps` is a new value,
+                // If so send out an update channel FpsUpdated event.
                 if state.config().fps != config.fps {
                     self.update_channel
                         .send(UpdateEvent::FpsUpdated(config.fps))
+                        .unwrap();
+                }
+
+                // Checks if the `filter_players` is a new value,
+                // If so send out an mpris PlayerFilterUpdated event.
+                if state.config().filter_players != config.filter_players {
+                    self.event_sender
+                        .send(Ok(Event::Mpris(MprisEvent::PlayerFilterUpdated(config.filter_players.clone()))))
                         .unwrap();
                 }
 

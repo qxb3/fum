@@ -1539,9 +1539,9 @@ dependencies = [
 
 [[package]]
 name = "mprizzle"
-version = "0.0.5"
+version = "0.0.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "edc4b5592a81f51267e38d2a0c4fd749f46c21406d7fe2a7d87c1d0027f3d2ad"
+checksum = "9f055354c97347a8ba49f9dc8c9d0311d1f7252b7013262866fca7f3cf673a5e"
 dependencies = [
  "futures",
  "thiserror 2.0.12",

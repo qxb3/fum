@@ -42,7 +42,7 @@ pub enum TerminalEvent {
 #[derive(Debug)]
 pub enum MprisEvent {
     /// When there is a new player attached.
-    PlayerAttached(mprizzle::PlayerIdentity),
+    PlayerAttached(mprizzle::MprisPlayer),
 
     /// When there is a detached player.
     PlayerDetached(mprizzle::PlayerIdentity),
@@ -55,6 +55,9 @@ pub enum MprisEvent {
 
     /// When a player's position updated.
     PlayerPosition(mprizzle::PlayerIdentity, Duration),
+
+    /// When the `players` from the config script updated.
+    PlayerFilterUpdated(Vec<String>),
 }
 
 /// All events.
@@ -87,7 +90,8 @@ pub struct EventManager {
     /// Main event receiver
     receiver: EventReceiver,
 
-    /// A side update channel.
+    /// A side update channel,
+    /// This is typically used in a tokio async task context.
     update_channel: UpdateChannel,
 }
 
