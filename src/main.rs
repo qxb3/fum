@@ -1,29 +1,26 @@
 mod cli;
-mod cover;
+mod config;
 mod event;
 mod fum;
-mod mode;
 mod mpris;
-mod player;
 mod script;
 mod state;
-mod status;
+mod terminal;
 mod track;
-mod ui;
 mod utils;
 mod widget;
 
 use fum::Fum;
 
-/// Type alias for global Result.
-type FumResult<T> = anyhow::Result<T>;
+/// Global Result type.
+pub type FumResult<T> = anyhow::Result<T>;
+pub type FumErr = anyhow::Error;
 
 #[tokio::main]
 async fn main() -> FumResult<()> {
-    // None variant signifies that we shouldn't start fum tui.
-    if let Some(args) = cli::run().await? {
-        let mut fum = Fum::new(&args).await?;
-        fum.start(args.mode).await?;
+    if let Some((config_path, run_mode)) = cli::run().await? {
+        let mut fum = Fum::new(config_path).await?;
+        fum.run(run_mode).await?;
     }
 
     Ok(())

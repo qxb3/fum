@@ -1,3 +1,5 @@
-pub mod duration;
-pub mod interaction;
-pub mod text;
+mod text;
+pub use text::*;
+
+mod duration;
+pub use duration::*;

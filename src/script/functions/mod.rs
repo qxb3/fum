@@ -1,26 +1,14 @@
-use rhai::EvalAltResult;
+mod config;
+pub use config::*;
 
-/// Type alias for Result at script function calls.
-pub type ScriptFnResult<T> = Result<T, Box<EvalAltResult>>;
+mod layout;
+pub use layout::*;
+
+mod label;
+pub use label::*;
 
 mod button;
-mod config;
-mod container;
-mod cover_image;
-mod duration;
-mod label;
-mod player_controls;
-mod slider;
-mod ui;
-mod var;
-
 pub use button::*;
-pub use config::*;
-pub use container::*;
-pub use cover_image::*;
+
+mod duration;
 pub use duration::*;
-pub use label::*;
-pub use player_controls::*;
-pub use slider::*;
-pub use ui::*;
-pub use var::*;

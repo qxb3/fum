@@ -1,131 +1,127 @@
 use std::time::Duration;
 
-use futures::{FutureExt, StreamExt};
-use tokio::sync::mpsc;
+use anyhow::anyhow;
+use tokio::sync::{broadcast, mpsc};
 
-use crate::FumResult;
+use crate::{
+    config::Config,
+    widget::{FumWidget, SendSyncFnPtr},
+    FumResult,
+};
 
-/// Fum events.
+/// Script events.
 #[derive(Debug)]
-pub enum FumEvent {
-    /// Terminal render / update.
-    Tick,
+pub enum ScriptEvent {
+    /// When the script calls the CONFIG() function.
+    ConfigUpdated(Config),
 
-    /// Keyboard press.
-    KeyPress(crossterm::event::KeyEvent),
+    /// When the script calls the LAYOUT() function.
+    LayoutUpdated(Vec<FumWidget>),
 
-    /// Mouse event.
-    MouseClick(crossterm::event::MouseEvent, crossterm::event::MouseButton),
+    /// When the config script file has been changed.
+    ConfigModified,
 
-    /// Mouse drag event.
-    MouseDrag(crossterm::event::MouseEvent, crossterm::event::MouseButton),
+    /// When a button widget has been clicked.
+    ButtonClicked(SendSyncFnPtr),
 
-    /// Mouse up event.
-    MouseUp(crossterm::event::MouseButton),
-
-    /// Resize event.
-    Resize(u16, u16),
+    /// When the track has been updated.
+    TrackUpdated,
 }
 
-/// Terminal event handler.
+/// Terminal events.
 #[derive(Debug)]
-pub struct EventHandler {
-    /// Event channel sender.
-    sender: mpsc::UnboundedSender<FumEvent>,
+pub enum TerminalEvent {
+    /// All crossterm events.
+    Term(crossterm::event::Event),
 
-    /// Event channel receiver.
-    receiver: mpsc::UnboundedReceiver<FumEvent>,
-
-    /// Tick rate.
-    tick_rate: Duration,
+    /// Its tickler time!.
+    Tick(u64),
 }
 
-impl EventHandler {
-    pub fn new(fps: u64) -> Self {
-        // Create a new unbounded channel.
+/// Mpris events.
+#[derive(Debug)]
+pub enum MprisEvent {
+    /// When there is a new player attached.
+    PlayerAttached(mprizzle::MprisPlayer),
+
+    /// When there is a detached player.
+    PlayerDetached(mprizzle::PlayerIdentity),
+
+    /// When a player's properties changed.
+    PlayerPropertiesChanged(mprizzle::PlayerIdentity),
+
+    /// When a player's has been seeked!.
+    PlayerSeeked(mprizzle::PlayerIdentity),
+
+    /// When a player's position updated.
+    PlayerPosition(mprizzle::PlayerIdentity, Duration),
+
+    /// When the `players` from the config script updated.
+    PlayerFilterUpdated(Vec<String>),
+}
+
+/// All events.
+#[derive(Debug)]
+pub enum Event {
+    Script(ScriptEvent),
+    Terminal(TerminalEvent),
+    Mpris(MprisEvent),
+}
+
+/// A side update events.
+#[derive(Debug, Clone)]
+pub enum UpdateEvent {
+    /// When the config fps updated.
+    FpsUpdated(u64),
+}
+
+pub type EventResult = FumResult<Event>;
+pub type EventSender = mpsc::UnboundedSender<EventResult>;
+pub type EventReceiver = mpsc::UnboundedReceiver<EventResult>;
+
+pub type UpdateChannel = broadcast::Sender<UpdateEvent>;
+
+/// A centralized event kind of system.
+/// All events will be sent here and read here.
+pub struct EventManager {
+    /// Main event sender.
+    sender: EventSender,
+
+    /// Main event receiver
+    receiver: EventReceiver,
+
+    /// A side update channel,
+    /// This is typically used in a tokio async task context.
+    update_channel: UpdateChannel,
+}
+
+impl EventManager {
+    pub fn new() -> Self {
         let (sender, receiver) = mpsc::unbounded_channel();
-
-        // Create tick_rate Duration that will be converted from fps to millis.
-        let tick_rate = Duration::from_millis(1000 / fps);
+        let (update_channel, _) = broadcast::channel(69);
 
         Self {
             sender,
             receiver,
-            tick_rate,
+            update_channel,
         }
     }
 
-    /// Starts listening and sending out events.
-    pub fn handle(&self) {
-        let sender = self.sender.clone();
-        let tick_rate = self.tick_rate.clone();
-
-        tokio::spawn(async move {
-            let mut event_stream = crossterm::event::EventStream::new();
-            let mut tick_interval = tokio::time::interval(tick_rate);
-
-            loop {
-                let term_event = event_stream.next().fuse();
-
-                tokio::select! {
-                    // If the event channel has been closed, exit out of this loop.
-                    _ = sender.closed() => break,
-
-                    // Send tick event every tick.
-                    _ = tick_interval.tick() => sender.send(FumEvent::Tick).unwrap(),
-
-                    // Terminal events.
-                    Some(Ok(event)) = term_event => {
-                        match event {
-                            // Send keypress event.
-                            crossterm::event::Event::Key(key) if key.kind == crossterm::event::KeyEventKind::Press => {
-                                sender.send(FumEvent::KeyPress(key)).unwrap();
-                            },
-
-                            // Handle mouse events.
-                            crossterm::event::Event::Mouse(mouse) => {
-                                match mouse.kind {
-                                    // Send mouse click event.
-                                    crossterm::event::MouseEventKind::Down(button) => {
-                                        sender.send(FumEvent::MouseClick(mouse, button)).unwrap();
-                                    },
-
-                                    // Send mouse drag event.
-                                    crossterm::event::MouseEventKind::Drag(button) => {
-                                        sender.send(FumEvent::MouseDrag(mouse, button)).unwrap();
-                                    },
-
-                                    // Send mouse up event.
-                                    crossterm::event::MouseEventKind::Up(button) => {
-                                        sender.send(FumEvent::MouseUp(button)).unwrap();
-                                    },
-
-                                    _ => {}
-                                }
-                            },
-
-                            // Handle resize event.
-                            crossterm::event::Event::Resize(width, height) => {
-                                sender.send(FumEvent::Resize(width, height)).unwrap();
-                            },
-
-                            // Ignore the rest of the terminal events.
-                            _ => {}
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    /// Receive the terminal events..
-    pub async fn recv(&mut self) -> FumResult<FumEvent> {
+    /// Receive events.
+    pub async fn recv(&mut self) -> FumResult<EventResult> {
         self.receiver
             .recv()
             .await
-            .ok_or(Box::new(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                "Failed to receive an event from EventHandler",
-            )))
+            .ok_or(anyhow!("EventManager event channel has been closed"))
+    }
+
+    /// Gets the cloned main event manager sender.
+    pub fn sender(&self) -> EventSender {
+        self.sender.clone()
+    }
+
+    /// Gets the cloned side update channel.
+    pub fn update_channel(&self) -> UpdateChannel {
+        self.update_channel.clone()
     }
 }

@@ -1,14 +1,12 @@
 use std::time::Duration;
 
-use crate::{
-    mpris::{MprisPlayer, TrackId},
-    player::Player,
-    status::PlaybackStatus,
-    FumResult,
-};
+use anyhow::Context;
+use mprizzle::{PlaybackStatus, TrackId};
 
-/// Contains the metadata of the current track / song.
-#[derive(Debug)]
+use crate::FumResult;
+
+/// Contains the metadata of the current song.
+#[derive(Debug, Clone)]
 pub struct Track {
     pub track_id: Option<TrackId>,
     pub title: String,
@@ -40,31 +38,47 @@ impl Default for Track {
 }
 
 impl Track {
-    /// Creates a new track.
     pub fn new() -> Self {
         Self::default()
     }
 
     /// Creates a new track based on mpris player.
-    pub async fn from_mpris_player(player: &MprisPlayer) -> FumResult<Self> {
+    pub async fn from_mpris_player(player: &mprizzle::MprisPlayer) -> FumResult<Self> {
         let metadata = player.metadata().await?;
 
-        // Comes from the metadata.
-        let track_id = metadata.track_id()?;
-        let title = metadata.title()?.unwrap_or("No Music".into());
-        let album = metadata.album()?.unwrap_or("Album".into());
-        let artists = metadata.artists()?.unwrap_or(vec!["Artist".into()]);
-        let length = metadata.length()?.unwrap_or(Duration::from_secs(0));
-        let art_url = metadata.art_url()?;
+        let track_id = metadata.track_id().context("Failed to get the track id")?;
 
-        // Comes from the player.
+        let title = metadata
+            .title()
+            .context("Failed to get the title")?
+            .unwrap_or("No Music".into());
+
+        let album = metadata
+            .album()
+            .context("Failed to get the album")?
+            .unwrap_or("Album".into());
+
+        let artists = metadata
+            .artists()
+            .context("Failed to get the artists")?
+            .unwrap_or(vec!["Artist".into()]);
+
+        let length = metadata
+            .length()
+            .context("Failed to get the length")?
+            .unwrap_or(Duration::from_secs(0));
+
+        let art_url = metadata.art_url().context("Failed to get the art url")?;
+
         let playback_status = player
             .playback_status()
             .await
             .unwrap_or(PlaybackStatus::Stopped);
 
         let shuffle = player.shuffle().await.unwrap_or(false);
+
         let volume = player.volume().await.unwrap_or(0.0);
+
         let position = player.position().await.unwrap_or(Duration::from_secs(0));
 
         Ok(Track {

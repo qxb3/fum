@@ -1,67 +1,108 @@
+use anyhow::anyhow;
 use ratatui::style::Color;
 use unicode_width::UnicodeWidthStr;
 
-use crate::widget::FumWidget;
+use crate::{event::EventSender, widget::FumWidgetKind};
 
-use super::ScriptFnResult;
-
-/// Label() widget function with opts.
-pub fn label_opts() -> impl Fn(rhai::Map) -> ScriptFnResult<FumWidget> {
-    move |opts: rhai::Map| -> ScriptFnResult<FumWidget> {
+/// raw function of LABEL().
+pub fn label_function_raw(
+    event_sender: EventSender,
+) -> impl Fn(rhai::Map) -> Option<FumWidgetKind> {
+    move |opts: rhai::Map| -> Option<FumWidgetKind> {
         // Extract text from opts.
-        let text = opts
-            .get("text")
-            .cloned()
-            .ok_or("Label widget needs to have a `text`")?
-            .to_string();
+        let text = match opts.get("text").cloned() {
+            Some(text_opt) => text_opt.to_string(),
+            None => {
+                event_sender
+                    .send(Err(anyhow!("Label widget needs to have a `text`")))
+                    .unwrap();
+
+                return None;
+            }
+        };
 
         // Extract vertical from opts, Will default to false if it doesnt exists.
-        let vertical = opts
+        let vertical = match opts
             .get("vertical")
             .cloned()
             .unwrap_or(rhai::Dynamic::from_bool(false))
             .as_bool()
-            .map_err(|_| "Label `vertical` needs to be a boolean")?;
+        {
+            Ok(vertical) => vertical,
+            Err(_) => {
+                event_sender
+                    .send(Err(anyhow!("Label `vertical` needs to be a boolean")))
+                    .unwrap();
 
-        // Extract max_chars from opts, Will default to -1 if it doesnt exists.
-        let max_chars = opts
-            .get("max_chars")
-            .cloned()
-            .unwrap_or(rhai::Dynamic::from_int(-1))
-            .as_int()
-            .map_err(|_| "Label `max_chars` needs to be a valid number")?;
+                return None;
+            }
+        };
+
+        // Extract max_chars from opts, Will default to None if it doesnt exists.
+        let max_chars = match opts.get("max_chars").cloned() {
+            Some(max_chars) => match max_chars.as_int() {
+                Ok(max_chars) => Some(max_chars as u16),
+                Err(_) => {
+                    event_sender
+                        .send(Err(anyhow!("Label `max_chars` needs to be a valid number")))
+                        .unwrap();
+
+                    return None;
+                }
+            },
+            None => None,
+        };
 
         // Extract fg color from opts, Will default to Color::Reset if it doesnt exists.
-        let fg = opts
+        let fg = match opts
             .get("fg")
             .cloned()
             .unwrap_or(rhai::Dynamic::from(Color::Reset))
             .try_cast_result::<Color>()
-            .map_err(|_| "Label `fg` needs to be a valid color")?;
+        {
+            Ok(fg) => fg,
+            Err(_) => {
+                event_sender
+                    .send(Err(anyhow!("Label `fg` needs to be a valid color")))
+                    .unwrap();
+
+                return None;
+            }
+        };
 
         // Extract bg color from opts, Will default to Color::Reset if it doesnt exists.
-        let bg = opts
+        let bg = match opts
             .get("bg")
             .cloned()
             .unwrap_or(rhai::Dynamic::from(Color::Reset))
             .try_cast_result::<Color>()
-            .map_err(|_| "Label `bg` needs to be a valid color")?;
+        {
+            Ok(bg) => bg,
+            Err(_) => {
+                event_sender
+                    .send(Err(anyhow!("Label `bg` needs to be a valid color")))
+                    .unwrap();
+
+                return None;
+            }
+        };
 
         // Real unicode width of the text label.
         let real_unicode_width = UnicodeWidthStr::width(text.as_str()) as u16;
 
         // If the max_chars isnt set, use the real unicode width, else use the max_chars if its less than the real unicode width.
-        let unicode_width = if max_chars == -1 {
-            real_unicode_width
-        } else {
-            ((max_chars + 3) as u16).min(real_unicode_width) // +3 to account for ellipses (...).
+        let unicode_width = match max_chars {
+            Some(max_chars) => ((max_chars + 3) as u16).min(real_unicode_width), // +3 to account for ellipses (...).
+            None => real_unicode_width,
         };
 
         // Get the width & height of the label accordingly if the label is vertical or not.
-        let (width, height) =
-            if vertical == false { (unicode_width, 1) } else { (1, unicode_width) };
+        let (width, height) = match vertical {
+            true => (1, unicode_width),
+            false => (unicode_width, 1),
+        };
 
-        Ok(FumWidget::Label {
+        Some(FumWidgetKind::Label {
             text: text.to_string(),
             vertical,
             max_chars,
@@ -73,52 +114,29 @@ pub fn label_opts() -> impl Fn(rhai::Map) -> ScriptFnResult<FumWidget> {
     }
 }
 
-/// Label() widget function with default opt values.
-pub fn label() -> impl Fn(rhai::Dynamic) -> ScriptFnResult<FumWidget> {
-    move |text: rhai::Dynamic| -> ScriptFnResult<FumWidget> {
+/// LABEL() a wrapper around raw.
+pub fn label_function(
+    event_sender: EventSender,
+) -> impl Fn(rhai::Dynamic) -> Option<FumWidgetKind> {
+    move |text: rhai::Dynamic| -> Option<FumWidgetKind> {
         let mut opts = rhai::Map::new();
         opts.insert("text".into(), text);
-        opts.insert("vertical".into(), rhai::Dynamic::from_bool(false));
 
-        let label_opts = label_opts();
-        label_opts(opts)
+        let raw = label_function_raw(event_sender.clone());
+        raw(opts)
     }
 }
 
-/// Label() widget function with default opt values & can pass extra opts.
-pub fn label_ext_opts() -> impl Fn(rhai::Dynamic, rhai::Map) -> ScriptFnResult<FumWidget> {
-    move |text: rhai::Dynamic, ext_opts: rhai::Map| -> ScriptFnResult<FumWidget> {
+/// LABEL() a wrapper around raw & can pass extra opts.
+pub fn label_function_ext(
+    event_sender: EventSender,
+) -> impl Fn(rhai::Dynamic, rhai::Map) -> Option<FumWidgetKind> {
+    move |text: rhai::Dynamic, ext_opts: rhai::Map| -> Option<FumWidgetKind> {
         let mut opts = rhai::Map::new();
         opts.insert("text".into(), text);
-        opts.insert("vertical".into(), rhai::Dynamic::from_bool(false));
         opts.extend(ext_opts);
 
-        let label_opts = label_opts();
-        label_opts(opts)
-    }
-}
-
-/// LabelVertical() widget function with vertical opt.
-pub fn label_vertical() -> impl Fn(rhai::Dynamic) -> ScriptFnResult<FumWidget> {
-    move |text: rhai::Dynamic| -> ScriptFnResult<FumWidget> {
-        let mut opts = rhai::Map::new();
-        opts.insert("text".into(), text);
-        opts.insert("vertical".into(), rhai::Dynamic::from_bool(true));
-
-        let label_opts = label_opts();
-        label_opts(opts)
-    }
-}
-
-/// LabelVertical() widget function with vertical opt & can pass extra opts.
-pub fn label_vertical_ext_opts() -> impl Fn(rhai::Dynamic, rhai::Map) -> ScriptFnResult<FumWidget> {
-    move |text: rhai::Dynamic, ext_opts: rhai::Map| -> ScriptFnResult<FumWidget> {
-        let mut opts = rhai::Map::new();
-        opts.insert("text".into(), text);
-        opts.insert("vertical".into(), rhai::Dynamic::from_bool(true));
-        opts.extend(ext_opts);
-
-        let label_opts = label_opts();
-        label_opts(opts)
+        let raw = label_function_raw(event_sender.clone());
+        raw(opts)
     }
 }

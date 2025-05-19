@@ -1,24 +1,28 @@
+use anyhow::Context;
+use clap::{command, Parser, Subcommand};
+use mprizzle::{Mpris, MprisEvent};
 use std::{env, path::PathBuf};
 
-use clap::{Parser, Subcommand};
+use crate::FumResult;
 
-use crate::{mode::FumModes, mpris::Mpris, FumResult};
+#[derive(Debug)]
+pub enum RunMode {
+    Player,
+    Mpris,
+}
 
-/// Fum cli.
-#[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
+#[derive(Debug, Parser)]
 struct Cli {
-    /// Config path.
-    #[arg(short, long, value_name = "path")]
-    pub config: Option<PathBuf>,
+    /// The config path.
+    #[arg(short, long, value_name = "config path", default_value = "~/.config/fum/config.rhai")]
+    pub config: PathBuf,
 
-    /// Executed command.
+    /// Command to execute.
     #[command(subcommand)]
     command: Command,
 }
 
-/// Fum available commands.
-#[derive(Subcommand, Debug)]
+#[derive(Debug, Subcommand)]
 enum Command {
     /// Start fum in mp3 player mode. (alias: pl)
     #[command(alias = "pl")]
@@ -33,67 +37,51 @@ enum Command {
     ListPlayers,
 }
 
-/// Cli arguments.
-pub struct CliArgs {
-    pub config_path: PathBuf,
-    pub mode: FumModes,
-}
-
-/// Run the cli.
-pub async fn run() -> FumResult<Option<CliArgs>> {
+/// Runs the cli.
+pub async fn run() -> FumResult<Option<(PathBuf, RunMode)>> {
     let mut cli = Cli::parse();
 
-    // If config path is not specified use default path.
-    if cli.config.is_none() {
-        let config_path = get_config_path()?;
-        cli.config = Some(config_path);
+    // Expands the tilde if found one.
+    // Shells already do this for you but if there is no
+    // --config <path> that is specified it will use the `default_value`
+    // and that won't expand.
+    if cli.config.starts_with("~") {
+        // Gets the $HOME path from envs.
+        let home_path = env::var("HOME").context("Missing $HOME variable")?;
+
+        // Strip the ~ from the config path.
+        let stripped_path = cli
+            .config
+            .strip_prefix("~")
+            .context("Expected that ~ to be stripped")?;
+
+        // Updates the config from cli.
+        cli.config = PathBuf::from(home_path).join(stripped_path);
     }
 
-    // Its ok to unwrap here since the above.
-    let config_path = cli.config.unwrap();
-
     match cli.command {
-        Command::Player => Ok(Some(CliArgs {
-            config_path,
-            mode: FumModes::Player,
-        })),
-
-        Command::Mpris => Ok(Some(CliArgs {
-            config_path,
-            mode: FumModes::Mpris,
-        })),
-
+        Command::Player => Ok(Some((cli.config, RunMode::Player))),
+        Command::Mpris => Ok(Some((cli.config, RunMode::Mpris))),
         Command::ListPlayers => {
-            let mpris = Mpris::new().await?;
-            let players = mpris.players().await?;
+            let mut mpris = Mpris::new().await?;
+            mpris.watch();
 
-            println!("Active Players:");
+            while let Ok(event) = mpris.recv().await? {
+                match event {
+                    MprisEvent::PlayerAttached(attached_player) => {
+                        let attached_player_identity = attached_player.identity();
 
-            if players.is_empty() {
-                println!("* No active players.");
-            }
-
-            for (_, player) in players.iter() {
-                println!("* {} ~> {}", &player.identity, &player.bus_name);
+                        println!(
+                            "* {} ~> {}",
+                            attached_player_identity.short(),
+                            attached_player_identity.bus()
+                        );
+                    }
+                    _ => {}
+                }
             }
 
             Ok(None)
         }
-    }
-}
-
-/// A utility function to get the config path of fum.
-/// If `$XDG_CONFIG_HOME` exists it will use that, otherwise
-/// it will fallback to using `~/.config/fum`.
-fn get_config_path() -> FumResult<PathBuf> {
-    if let Ok(xdg_config_home) = env::var("XDG_CONFIG_HOME") {
-        Ok(PathBuf::from(xdg_config_home).join("fum/config.rhai"))
-    } else if let Ok(home) = env::var("HOME") {
-        Ok(PathBuf::from(home).join(".config/fum/config.rhai"))
-    } else {
-        Err(Box::new(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            "Could not determine fum config path",
-        )))
     }
 }
