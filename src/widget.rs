@@ -131,9 +131,6 @@ pub struct FumWidget {
     pub kind: FumWidgetKind,
 }
 
-unsafe impl Send for FumWidget {}
-unsafe impl Sync for FumWidget {}
-
 impl FumWidgetKind {
     /// Creates a taffy node.
     pub fn create_node(&self, taffy: &mut TaffyTree<Self>) -> FumResult<NodeId> {
