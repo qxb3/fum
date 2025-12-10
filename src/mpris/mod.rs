@@ -121,7 +121,9 @@ impl Mpris {
                     self.current_player_id = Some(attached_player_id.clone());
 
                     self.event_sender
-                        .send(Ok(Event::Mpris(MprisEvent::PlayerPropertiesChanged(attached_player_id.clone()))))
+                        .send(Ok(Event::Mpris(MprisEvent::PlayerPropertiesChanged(
+                            attached_player_id.clone(),
+                        ))))
                         .unwrap();
                 }
 
@@ -144,7 +146,9 @@ impl Mpris {
                             self.current_player_id = Some(next_player_id.clone());
 
                             self.event_sender
-                                .send(Ok(Event::Mpris(MprisEvent::PlayerPropertiesChanged(next_player_id.clone()))))
+                                .send(Ok(Event::Mpris(MprisEvent::PlayerPropertiesChanged(
+                                    next_player_id.clone(),
+                                ))))
                                 .unwrap();
                         } else {
                             self.current_player_id = None;

@@ -11,7 +11,9 @@ use scope::GlobalVars;
 use watcher::ConfigWatcher;
 
 use crate::{
-    event::{Event, EventManager, EventSender, MprisEvent, ScriptEvent, UpdateChannel, UpdateEvent},
+    event::{
+        Event, EventManager, EventSender, MprisEvent, ScriptEvent, UpdateChannel, UpdateEvent,
+    },
     state::State,
     track::Track,
     FumResult,
@@ -73,7 +75,9 @@ impl<'a> Script<'a> {
                 // If so send out an mpris PlayerFilterUpdated event.
                 if state.config().filter_players != config.filter_players {
                     self.event_sender
-                        .send(Ok(Event::Mpris(MprisEvent::PlayerFilterUpdated(config.filter_players.clone()))))
+                        .send(Ok(Event::Mpris(MprisEvent::PlayerFilterUpdated(
+                            config.filter_players.clone(),
+                        ))))
                         .unwrap();
                 }
 

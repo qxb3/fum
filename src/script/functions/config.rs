@@ -54,9 +54,9 @@ pub fn config_function(event_sender: EventSender) -> impl Fn(rhai::Map) {
             let player = match player.try_cast_result::<String>() {
                 Ok(player) => player,
                 Err(_) => {
-                event_sender
-                    .send(Err(anyhow!("Config `players` needs to be a array of string")))
-                    .unwrap();
+                    event_sender
+                        .send(Err(anyhow!("Config `players` needs to be a array of string")))
+                        .unwrap();
 
                     return;
                 }
@@ -68,7 +68,7 @@ pub fn config_function(event_sender: EventSender) -> impl Fn(rhai::Map) {
         // New config with passed in opts.
         let config = Config {
             fps: fps as u64,
-            filter_players
+            filter_players,
         };
 
         event_sender

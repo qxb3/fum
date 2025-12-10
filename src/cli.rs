@@ -1,44 +1,31 @@
 use anyhow::Context;
 use clap::{command, Parser, Subcommand};
 use mprizzle::{Mpris, MprisEvent};
+
 use std::{env, path::PathBuf};
 
 use crate::FumResult;
 
-#[derive(Debug)]
-pub enum RunMode {
-    Player,
-    Mpris,
-}
-
 #[derive(Debug, Parser)]
-struct Cli {
+pub struct Cli {
     /// The config path.
     #[arg(short, long, value_name = "config path", default_value = "~/.config/fum/config.rhai")]
     pub config: PathBuf,
 
     /// Command to execute.
     #[command(subcommand)]
-    command: Command,
+    command: Option<Command>,
 }
 
 #[derive(Debug, Subcommand)]
-enum Command {
-    /// Start fum in mp3 player mode. (alias: pl)
-    #[command(alias = "pl")]
-    Player,
-
-    /// Start fum in mpris mode. (alias: mp)
-    #[command(alias = "mp")]
-    Mpris,
-
+pub enum Command {
     /// List out active players. (alias: ls)
     #[command(alias = "ls")]
     ListPlayers,
 }
 
 /// Runs the cli.
-pub async fn run() -> FumResult<Option<(PathBuf, RunMode)>> {
+pub async fn run() -> FumResult<Option<Cli>> {
     let mut cli = Cli::parse();
 
     // Expands the tilde if found one.
@@ -59,29 +46,32 @@ pub async fn run() -> FumResult<Option<(PathBuf, RunMode)>> {
         cli.config = PathBuf::from(home_path).join(stripped_path);
     }
 
-    match cli.command {
-        Command::Player => Ok(Some((cli.config, RunMode::Player))),
-        Command::Mpris => Ok(Some((cli.config, RunMode::Mpris))),
-        Command::ListPlayers => {
-            let mut mpris = Mpris::new().await?;
-            mpris.watch();
+    if let Some(command) = &cli.command {
+        match command {
+            Command::ListPlayers => {
+                let mut mpris = Mpris::new().await?;
+                mpris.watch();
 
-            while let Ok(event) = mpris.recv().await? {
-                match event {
-                    MprisEvent::PlayerAttached(attached_player) => {
-                        let attached_player_identity = attached_player.identity();
+                while let Ok(event) = mpris.recv().await? {
+                    match event {
+                        MprisEvent::PlayerAttached(attached_player) => {
+                            let attached_player_identity = attached_player.identity();
 
-                        println!(
-                            "* {} ~> {}",
-                            attached_player_identity.short(),
-                            attached_player_identity.bus()
-                        );
+                            println!(
+                                "* {} ~> {}",
+                                attached_player_identity.short(),
+                                attached_player_identity.bus()
+                            );
+                        }
+
+                        _ => {}
                     }
-                    _ => {}
                 }
-            }
 
-            Ok(None)
+                return Ok(None);
+            }
         }
     }
+
+    Ok(Some(cli))
 }

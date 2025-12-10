@@ -1,7 +1,5 @@
-use std::path::PathBuf;
-
 use crate::{
-    cli::RunMode,
+    cli::Cli,
     event::{Event, EventManager},
     mpris::Mpris,
     script::Script,
@@ -26,12 +24,15 @@ pub struct Fum<'a> {
 
     /// Mpris manager.
     mpris: Mpris,
+
+    /// Fum cli config.
+    config: Cli,
 }
 
 impl<'a> Fum<'a> {
-    pub async fn new(config_path: PathBuf) -> FumResult<Self> {
+    pub async fn new(config: Cli) -> FumResult<Self> {
         let event_manager = EventManager::new();
-        let script = Script::new(&event_manager, config_path)?;
+        let script = Script::new(&event_manager, config.config.to_path_buf())?;
         let terminal = Terminal::new(&event_manager, 10)?;
         let state = State::new();
 
@@ -43,11 +44,12 @@ impl<'a> Fum<'a> {
             terminal,
             state,
             mpris,
+            config,
         })
     }
 
     /// Runs fum.
-    pub async fn run(&mut self, run_mode: RunMode) -> FumResult<()> {
+    pub async fn run(&mut self) -> FumResult<()> {
         // Sends events to event manager.
         // WARNING: the world will be destroyed if this function
         // has been called after the guy below. You've been warned!.
@@ -61,10 +63,8 @@ impl<'a> Fum<'a> {
         // The two guys above me is morons.
         self.script.watch_config()?;
 
-        match run_mode {
-            RunMode::Player => {}
-            RunMode::Mpris => self.mpris.send_events().await,
-        }
+        // Start mpris to end events.
+        self.mpris.send_events().await;
 
         // Main loop.
         while !self.state.exit() {
