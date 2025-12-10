@@ -1,5 +1,5 @@
 use crate::{
-    cli::Cli,
+    cli::CliConfig,
     event::{Event, EventManager},
     mpris::Mpris,
     script::Script,
@@ -26,13 +26,13 @@ pub struct Fum<'a> {
     mpris: Mpris,
 
     /// Fum cli config.
-    config: Cli,
+    cli_config: CliConfig,
 }
 
 impl<'a> Fum<'a> {
-    pub async fn new(config: Cli) -> FumResult<Self> {
+    pub async fn new(cli_config: CliConfig) -> FumResult<Self> {
         let event_manager = EventManager::new();
-        let script = Script::new(&event_manager, config.config.to_path_buf())?;
+        let script = Script::new(&event_manager, cli_config.config.to_path_buf())?;
         let terminal = Terminal::new(&event_manager, 10)?;
         let state = State::new();
 
@@ -44,7 +44,7 @@ impl<'a> Fum<'a> {
             terminal,
             state,
             mpris,
-            config,
+            cli_config,
         })
     }
 

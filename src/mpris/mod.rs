@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
-use anyhow::{anyhow, Context};
+use anyhow::anyhow;
 use tokio::sync::Mutex;
 
 use crate::{

@@ -7,7 +7,7 @@ use std::{env, path::PathBuf};
 use crate::FumResult;
 
 #[derive(Debug, Parser)]
-pub struct Cli {
+pub struct CliConfig {
     /// The config path.
     #[arg(short, long, value_name = "config path", default_value = "~/.config/fum/config.rhai")]
     pub config: PathBuf,
@@ -25,8 +25,8 @@ pub enum Command {
 }
 
 /// Runs the cli.
-pub async fn run() -> FumResult<Option<Cli>> {
-    let mut cli = Cli::parse();
+pub async fn run() -> FumResult<Option<CliConfig>> {
+    let mut cli = CliConfig::parse();
 
     // Expands the tilde if found one.
     // Shells already do this for you but if there is no
